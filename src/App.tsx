@@ -23,6 +23,7 @@ import ProductionDetailPage from "./pages/production/ProductionDetailPage";
 import ProductionEditPage from "./pages/production/ProductionEditPage";
 import ForestryPage from "./pages/forestry/ForestryPage";
 import CoffeePage from "./pages/coffee/CoffeePage";
+import OccurrencesPage from "./pages/occurrences/OccurrencesPage";
 
 // Auth Pages
 import AuthPage from "./pages/auth/AuthPage";
@@ -85,7 +86,7 @@ const App = () => (
             <Route path="/perfil" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
             
             {/* Occurrences */}
-            <Route path="/ocorrencias/*" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+            <Route path="/ocorrencias/*" element={<ProtectedRoute><OccurrencesPage /></ProtectedRoute>} />
             
             {/* Infrastructure */}
             <Route path="/infraestruturas/*" element={<ProtectedRoute><Index /></ProtectedRoute>} />

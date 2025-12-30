@@ -167,6 +167,112 @@ export type Database = {
         }
         Relationships: []
       }
+      climate_occurrences: {
+        Row: {
+          affected_area_ha: number | null
+          affected_farmers_count: number | null
+          ai_classification: Json | null
+          assigned_to: string | null
+          best_practices: string[] | null
+          commune_id: string | null
+          created_at: string
+          description: string | null
+          estimated_loss_aoa: number | null
+          id: string
+          latitude: number | null
+          longitude: number | null
+          municipality_id: string | null
+          occurrence_type: string
+          province_id: string | null
+          report_date: string
+          reported_by: string | null
+          resolution_date: string | null
+          resolution_notes: string | null
+          severity: string
+          source: string
+          source_phone: string | null
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          affected_area_ha?: number | null
+          affected_farmers_count?: number | null
+          ai_classification?: Json | null
+          assigned_to?: string | null
+          best_practices?: string[] | null
+          commune_id?: string | null
+          created_at?: string
+          description?: string | null
+          estimated_loss_aoa?: number | null
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          municipality_id?: string | null
+          occurrence_type: string
+          province_id?: string | null
+          report_date?: string
+          reported_by?: string | null
+          resolution_date?: string | null
+          resolution_notes?: string | null
+          severity?: string
+          source?: string
+          source_phone?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          affected_area_ha?: number | null
+          affected_farmers_count?: number | null
+          ai_classification?: Json | null
+          assigned_to?: string | null
+          best_practices?: string[] | null
+          commune_id?: string | null
+          created_at?: string
+          description?: string | null
+          estimated_loss_aoa?: number | null
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          municipality_id?: string | null
+          occurrence_type?: string
+          province_id?: string | null
+          report_date?: string
+          reported_by?: string | null
+          resolution_date?: string | null
+          resolution_notes?: string | null
+          severity?: string
+          source?: string
+          source_phone?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "climate_occurrences_commune_id_fkey"
+            columns: ["commune_id"]
+            isOneToOne: false
+            referencedRelation: "communes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "climate_occurrences_municipality_id_fkey"
+            columns: ["municipality_id"]
+            isOneToOne: false
+            referencedRelation: "municipalities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "climate_occurrences_province_id_fkey"
+            columns: ["province_id"]
+            isOneToOne: false
+            referencedRelation: "provinces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       communes: {
         Row: {
           code: string | null
@@ -363,6 +469,123 @@ export type Database = {
           },
         ]
       }
+      occurrence_alerts: {
+        Row: {
+          alert_type: string
+          created_at: string
+          delivered_at: string | null
+          error_message: string | null
+          id: string
+          message: string
+          occurrence_id: string
+          recipient_email: string | null
+          recipient_phone: string | null
+          sent_at: string | null
+          status: string
+        }
+        Insert: {
+          alert_type: string
+          created_at?: string
+          delivered_at?: string | null
+          error_message?: string | null
+          id?: string
+          message: string
+          occurrence_id: string
+          recipient_email?: string | null
+          recipient_phone?: string | null
+          sent_at?: string | null
+          status?: string
+        }
+        Update: {
+          alert_type?: string
+          created_at?: string
+          delivered_at?: string | null
+          error_message?: string | null
+          id?: string
+          message?: string
+          occurrence_id?: string
+          recipient_email?: string | null
+          recipient_phone?: string | null
+          sent_at?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "occurrence_alerts_occurrence_id_fkey"
+            columns: ["occurrence_id"]
+            isOneToOne: false
+            referencedRelation: "climate_occurrences"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      occurrence_surveys: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          farmer_id: string | null
+          id: string
+          occurrence_id: string | null
+          province_id: string | null
+          questions: Json
+          responses: Json | null
+          sent_at: string | null
+          status: string
+          survey_type: string
+          target_phone: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          farmer_id?: string | null
+          id?: string
+          occurrence_id?: string | null
+          province_id?: string | null
+          questions: Json
+          responses?: Json | null
+          sent_at?: string | null
+          status?: string
+          survey_type: string
+          target_phone: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          farmer_id?: string | null
+          id?: string
+          occurrence_id?: string | null
+          province_id?: string | null
+          questions?: Json
+          responses?: Json | null
+          sent_at?: string | null
+          status?: string
+          survey_type?: string
+          target_phone?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "occurrence_surveys_farmer_id_fkey"
+            columns: ["farmer_id"]
+            isOneToOne: false
+            referencedRelation: "farmers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "occurrence_surveys_occurrence_id_fkey"
+            columns: ["occurrence_id"]
+            isOneToOne: false
+            referencedRelation: "climate_occurrences"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "occurrence_surveys_province_id_fkey"
+            columns: ["province_id"]
+            isOneToOne: false
+            referencedRelation: "provinces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       production_history: {
         Row: {
           actual_yield_kg: number | null
@@ -485,6 +708,65 @@ export type Database = {
           },
           {
             foreignKeyName: "profiles_province_id_fkey"
+            columns: ["province_id"]
+            isOneToOne: false
+            referencedRelation: "provinces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      province_risk_metrics: {
+        Row: {
+          critical_occurrences: number | null
+          high_occurrences: number | null
+          id: string
+          low_occurrences: number | null
+          medium_occurrences: number | null
+          month: number
+          province_id: string
+          risk_score: number | null
+          total_affected_area_ha: number | null
+          total_affected_farmers: number | null
+          total_estimated_loss_aoa: number | null
+          total_occurrences: number | null
+          updated_at: string
+          year: number
+        }
+        Insert: {
+          critical_occurrences?: number | null
+          high_occurrences?: number | null
+          id?: string
+          low_occurrences?: number | null
+          medium_occurrences?: number | null
+          month: number
+          province_id: string
+          risk_score?: number | null
+          total_affected_area_ha?: number | null
+          total_affected_farmers?: number | null
+          total_estimated_loss_aoa?: number | null
+          total_occurrences?: number | null
+          updated_at?: string
+          year: number
+        }
+        Update: {
+          critical_occurrences?: number | null
+          high_occurrences?: number | null
+          id?: string
+          low_occurrences?: number | null
+          medium_occurrences?: number | null
+          month?: number
+          province_id?: string
+          risk_score?: number | null
+          total_affected_area_ha?: number | null
+          total_affected_farmers?: number | null
+          total_estimated_loss_aoa?: number | null
+          total_occurrences?: number | null
+          updated_at?: string
+          year?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "province_risk_metrics_province_id_fkey"
             columns: ["province_id"]
             isOneToOne: false
             referencedRelation: "provinces"
@@ -854,6 +1136,17 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      calculate_risk_score: {
+        Args: {
+          p_affected_area: number
+          p_affected_farmers: number
+          p_critical: number
+          p_high: number
+          p_low: number
+          p_medium: number
+        }
+        Returns: number
+      }
       can_manage_user: {
         Args: {
           _manager_id: string
