@@ -6,7 +6,7 @@ import { LayoutDashboard, List } from 'lucide-react';
 
 const FarmersListPage = () => {
   return (
-    <MainLayout title="Gestão de Agricultores" subtitle="Pequenos e grandes produtores, cooperativas e escolas de campo">
+    <MainLayout title="Gestão de Agricultores" subtitle="Pequenos e grandes produtores, cooperativas e ECAs">
       <Tabs defaultValue="dashboard">
         <TabsList>
           <TabsTrigger value="dashboard" className="flex items-center gap-2">
