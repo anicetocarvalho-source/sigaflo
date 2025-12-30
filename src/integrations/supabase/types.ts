@@ -513,6 +513,318 @@ export type Database = {
         }
         Relationships: []
       }
+      rice_alerts: {
+        Row: {
+          alert_type: string
+          created_at: string
+          current_value: number | null
+          id: string
+          is_read: boolean | null
+          is_resolved: boolean | null
+          message: string
+          metric_name: string | null
+          province_id: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          severity: string
+          threshold_value: number | null
+          title: string
+        }
+        Insert: {
+          alert_type: string
+          created_at?: string
+          current_value?: number | null
+          id?: string
+          is_read?: boolean | null
+          is_resolved?: boolean | null
+          message: string
+          metric_name?: string | null
+          province_id?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity?: string
+          threshold_value?: number | null
+          title: string
+        }
+        Update: {
+          alert_type?: string
+          created_at?: string
+          current_value?: number | null
+          id?: string
+          is_read?: boolean | null
+          is_resolved?: boolean | null
+          message?: string
+          metric_name?: string | null
+          province_id?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity?: string
+          threshold_value?: number | null
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rice_alerts_province_id_fkey"
+            columns: ["province_id"]
+            isOneToOne: false
+            referencedRelation: "provinces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      rice_consumption: {
+        Row: {
+          created_at: string
+          data_source: string | null
+          id: string
+          notes: string | null
+          per_capita_kg: number
+          population: number
+          province_id: string | null
+          total_consumption_tonnes: number | null
+          updated_at: string
+          year: number
+        }
+        Insert: {
+          created_at?: string
+          data_source?: string | null
+          id?: string
+          notes?: string | null
+          per_capita_kg: number
+          population: number
+          province_id?: string | null
+          total_consumption_tonnes?: number | null
+          updated_at?: string
+          year: number
+        }
+        Update: {
+          created_at?: string
+          data_source?: string | null
+          id?: string
+          notes?: string | null
+          per_capita_kg?: number
+          population?: number
+          province_id?: string | null
+          total_consumption_tonnes?: number | null
+          updated_at?: string
+          year?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rice_consumption_province_id_fkey"
+            columns: ["province_id"]
+            isOneToOne: false
+            referencedRelation: "provinces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      rice_imports: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          importer_name: string | null
+          month: number
+          notes: string | null
+          origin_country: string
+          port_of_entry: string | null
+          price_cif_usd: number | null
+          price_fob_usd: number | null
+          rice_type: string | null
+          total_value_usd: number | null
+          updated_at: string
+          volume_tonnes: number
+          year: number
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          importer_name?: string | null
+          month: number
+          notes?: string | null
+          origin_country: string
+          port_of_entry?: string | null
+          price_cif_usd?: number | null
+          price_fob_usd?: number | null
+          rice_type?: string | null
+          total_value_usd?: number | null
+          updated_at?: string
+          volume_tonnes?: number
+          year: number
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          importer_name?: string | null
+          month?: number
+          notes?: string | null
+          origin_country?: string
+          port_of_entry?: string | null
+          price_cif_usd?: number | null
+          price_fob_usd?: number | null
+          rice_type?: string | null
+          total_value_usd?: number | null
+          updated_at?: string
+          volume_tonnes?: number
+          year?: number
+        }
+        Relationships: []
+      }
+      rice_parameters: {
+        Row: {
+          description: string | null
+          id: string
+          parameter_name: string
+          parameter_value: number
+          unit: string | null
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          description?: string | null
+          id?: string
+          parameter_name: string
+          parameter_value: number
+          unit?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          description?: string | null
+          id?: string
+          parameter_name?: string
+          parameter_value?: number
+          unit?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
+      rice_prices: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          currency: string | null
+          exchange_rate_usd: number | null
+          id: string
+          market_name: string | null
+          notes: string | null
+          province_id: string | null
+          recorded_date: string
+          retail_price_aoa: number
+          rice_type: string | null
+          wholesale_price_aoa: number | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          currency?: string | null
+          exchange_rate_usd?: number | null
+          id?: string
+          market_name?: string | null
+          notes?: string | null
+          province_id?: string | null
+          recorded_date: string
+          retail_price_aoa: number
+          rice_type?: string | null
+          wholesale_price_aoa?: number | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          currency?: string | null
+          exchange_rate_usd?: number | null
+          id?: string
+          market_name?: string | null
+          notes?: string | null
+          province_id?: string | null
+          recorded_date?: string
+          retail_price_aoa?: number
+          rice_type?: string | null
+          wholesale_price_aoa?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rice_prices_province_id_fkey"
+            columns: ["province_id"]
+            isOneToOne: false
+            referencedRelation: "provinces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      rice_production: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          cultivated_area_ha: number
+          harvested_area_ha: number
+          id: string
+          irrigation_type: string | null
+          municipality_id: string | null
+          notes: string | null
+          production_tonnes: number
+          productivity_kg_ha: number | null
+          province_id: string | null
+          season: string
+          updated_at: string
+          variety: string | null
+          year: number
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          cultivated_area_ha?: number
+          harvested_area_ha?: number
+          id?: string
+          irrigation_type?: string | null
+          municipality_id?: string | null
+          notes?: string | null
+          production_tonnes?: number
+          productivity_kg_ha?: number | null
+          province_id?: string | null
+          season?: string
+          updated_at?: string
+          variety?: string | null
+          year: number
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          cultivated_area_ha?: number
+          harvested_area_ha?: number
+          id?: string
+          irrigation_type?: string | null
+          municipality_id?: string | null
+          notes?: string | null
+          production_tonnes?: number
+          productivity_kg_ha?: number | null
+          province_id?: string | null
+          season?: string
+          updated_at?: string
+          variety?: string | null
+          year?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rice_production_municipality_id_fkey"
+            columns: ["municipality_id"]
+            isOneToOne: false
+            referencedRelation: "municipalities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rice_production_province_id_fkey"
+            columns: ["province_id"]
+            isOneToOne: false
+            referencedRelation: "provinces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           granted_at: string
