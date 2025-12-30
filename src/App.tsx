@@ -8,7 +8,13 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import RiceDashboard from "./pages/rice/RiceDashboard";
-import FarmersPage from "./pages/farmers/FarmersPage";
+import FarmersListPage from "./pages/farmers/FarmersListPage";
+import FarmerNewPage from "./pages/farmers/FarmerNewPage";
+import FarmerDetailPage from "./pages/farmers/FarmerDetailPage";
+import FarmerEditPage from "./pages/farmers/FarmerEditPage";
+import CertificatesPage from "./pages/certificates/CertificatesPage";
+import CertificateNewPage from "./pages/certificates/CertificateNewPage";
+import CertificateDetailPage from "./pages/certificates/CertificateDetailPage";
 import ForestryPage from "./pages/forestry/ForestryPage";
 import CoffeePage from "./pages/coffee/CoffeePage";
 
@@ -32,42 +38,30 @@ const App = () => (
           <Route path="/" element={<Index />} />
           
           {/* Farmers Module */}
-          <Route path="/agricultores" element={<FarmersPage />} />
-          <Route path="/agricultores/escolas" element={<FarmersPage />} />
-          <Route path="/agricultores/cooperativas" element={<FarmersPage />} />
+          <Route path="/agricultores" element={<FarmersListPage />} />
+          <Route path="/agricultores/novo" element={<FarmerNewPage />} />
+          <Route path="/agricultores/:id" element={<FarmerDetailPage />} />
+          <Route path="/agricultores/:id/editar" element={<FarmerEditPage />} />
           
-          {/* Certificates */}
-          <Route path="/certificados" element={<FarmersPage />} />
-          <Route path="/certificados/verificar" element={<FarmersPage />} />
+          {/* Certificates Module */}
+          <Route path="/certificados" element={<CertificatesPage />} />
+          <Route path="/certificados/novo" element={<CertificateNewPage />} />
+          <Route path="/certificados/:id" element={<CertificateDetailPage />} />
           
           {/* Occurrences */}
-          <Route path="/ocorrencias/climaticas" element={<FarmersPage />} />
-          <Route path="/ocorrencias/fitossanitarias" element={<FarmersPage />} />
-          <Route path="/ocorrencias/alertas" element={<FarmersPage />} />
+          <Route path="/ocorrencias/*" element={<Index />} />
           
           {/* Infrastructure */}
-          <Route path="/infraestruturas" element={<FarmersPage />} />
-          <Route path="/infraestruturas/mercados" element={<FarmersPage />} />
+          <Route path="/infraestruturas/*" element={<Index />} />
           
           {/* Forestry Module */}
-          <Route path="/florestal/licenciamento" element={<ForestryPage />} />
-          <Route path="/florestal/rastreabilidade" element={<ForestryPage />} />
-          <Route path="/florestal/fiscalizacao" element={<ForestryPage />} />
-          <Route path="/florestal/reflorestamento" element={<ForestryPage />} />
-          <Route path="/florestal/denuncias" element={<ForestryPage />} />
+          <Route path="/florestal/*" element={<ForestryPage />} />
           
           {/* Coffee Module */}
-          <Route path="/cafe/rastreio" element={<CoffeePage />} />
-          <Route path="/cafe/semaforizacao" element={<CoffeePage />} />
-          <Route path="/cafe/verificar" element={<CoffeePage />} />
+          <Route path="/cafe/*" element={<CoffeePage />} />
           
           {/* Rice Strategic Module */}
-          <Route path="/arroz" element={<RiceDashboard />} />
-          <Route path="/arroz/producao" element={<RiceDashboard />} />
-          <Route path="/arroz/importacoes" element={<RiceDashboard />} />
-          <Route path="/arroz/precos" element={<RiceDashboard />} />
-          <Route path="/arroz/consumo" element={<RiceDashboard />} />
-          <Route path="/arroz/politicas" element={<RiceDashboard />} />
+          <Route path="/arroz/*" element={<RiceDashboard />} />
           
           {/* Secondary Navigation */}
           <Route path="/relatorios" element={<Index />} />
