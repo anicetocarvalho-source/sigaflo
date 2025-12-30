@@ -3,6 +3,8 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "@/contexts/AuthContext";
+import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 
 // Pages
 import Index from "./pages/Index";
@@ -22,6 +24,11 @@ import ProductionEditPage from "./pages/production/ProductionEditPage";
 import ForestryPage from "./pages/forestry/ForestryPage";
 import CoffeePage from "./pages/coffee/CoffeePage";
 
+// Auth Pages
+import AuthPage from "./pages/auth/AuthPage";
+import NoPermissionPage from "./pages/auth/NoPermissionPage";
+import UsersPage from "./pages/admin/UsersPage";
+
 // Public Portal
 import VerificationPortal from "./pages/public/VerificationPortal";
 import QRScanner from "./pages/public/QRScanner";
@@ -33,68 +40,84 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          {/* Dashboard */}
-          <Route path="/" element={<Index />} />
-          
-          {/* Farmers Module */}
-          <Route path="/agricultores" element={<FarmersListPage />} />
-          <Route path="/agricultores/novo" element={<FarmerNewPage />} />
-          <Route path="/agricultores/:id" element={<FarmerDetailPage />} />
-          <Route path="/agricultores/:id/editar" element={<FarmerEditPage />} />
-          
-          {/* Certificates Module */}
-          <Route path="/certificados" element={<CertificatesPage />} />
-          <Route path="/certificados/novo" element={<CertificateNewPage />} />
-          <Route path="/certificados/:id" element={<CertificateDetailPage />} />
-          
-          {/* Production Module */}
-          <Route path="/producao" element={<ProductionPage />} />
-          <Route path="/producao/novo" element={<ProductionNewPage />} />
-          <Route path="/producao/:id" element={<ProductionDetailPage />} />
-          <Route path="/producao/:id/editar" element={<ProductionEditPage />} />
-          
-          {/* Occurrences */}
-          <Route path="/ocorrencias/*" element={<Index />} />
-          
-          {/* Infrastructure */}
-          <Route path="/infraestruturas/*" element={<Index />} />
-          
-          {/* Forestry Module */}
-          <Route path="/florestal/*" element={<ForestryPage />} />
-          
-          {/* Coffee Module */}
-          <Route path="/cafe/*" element={<CoffeePage />} />
-          
-          {/* Rice Strategic Module */}
-          <Route path="/arroz/*" element={<RiceDashboard />} />
-          
-          {/* Secondary Navigation */}
-          <Route path="/relatorios" element={<Index />} />
-          <Route path="/mapas" element={<Index />} />
-          <Route path="/documentacao" element={<Index />} />
-          <Route path="/notificacoes" element={<Index />} />
-          <Route path="/configuracoes" element={<Index />} />
-          
-          {/* Public Verification Portal */}
-          <Route path="/verificar" element={<VerificationPortal />} />
-          <Route path="/verificar/scanner" element={<QRScanner />} />
-          <Route path="/verificar/certificado" element={<VerifyCertificate />} />
-          <Route path="/verificar/certificado/:code" element={<VerifyCertificate />} />
-          <Route path="/verificar/licenca" element={<VerifyLicense />} />
-          <Route path="/verificar/licenca/:code" element={<VerifyLicense />} />
-          <Route path="/verificar/cafe" element={<VerifyCoffee />} />
-          <Route path="/verificar/cafe/:code" element={<VerifyCoffee />} />
-          
-          {/* Catch-all */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
+    <AuthProvider>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
+            {/* Auth Routes */}
+            <Route path="/auth" element={<AuthPage />} />
+            <Route path="/sem-permissao" element={<NoPermissionPage />} />
+
+            {/* Protected Routes */}
+            <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+            
+            {/* Farmers Module */}
+            <Route path="/agricultores" element={<ProtectedRoute><FarmersListPage /></ProtectedRoute>} />
+            <Route path="/agricultores/novo" element={<ProtectedRoute><FarmerNewPage /></ProtectedRoute>} />
+            <Route path="/agricultores/:id" element={<ProtectedRoute><FarmerDetailPage /></ProtectedRoute>} />
+            <Route path="/agricultores/:id/editar" element={<ProtectedRoute><FarmerEditPage /></ProtectedRoute>} />
+            
+            {/* Certificates Module */}
+            <Route path="/certificados" element={<ProtectedRoute><CertificatesPage /></ProtectedRoute>} />
+            <Route path="/certificados/novo" element={<ProtectedRoute><CertificateNewPage /></ProtectedRoute>} />
+            <Route path="/certificados/:id" element={<ProtectedRoute><CertificateDetailPage /></ProtectedRoute>} />
+            
+            {/* Production Module */}
+            <Route path="/producao" element={<ProtectedRoute><ProductionPage /></ProtectedRoute>} />
+            <Route path="/producao/novo" element={<ProtectedRoute><ProductionNewPage /></ProtectedRoute>} />
+            <Route path="/producao/:id" element={<ProtectedRoute><ProductionDetailPage /></ProtectedRoute>} />
+            <Route path="/producao/:id/editar" element={<ProtectedRoute><ProductionEditPage /></ProtectedRoute>} />
+            
+            {/* Admin Routes */}
+            <Route 
+              path="/utilizadores" 
+              element={
+                <ProtectedRoute requiredRoles={['admin_national', 'admin_provincial', 'admin_municipal']}>
+                  <UsersPage />
+                </ProtectedRoute>
+              } 
+            />
+            
+            {/* Occurrences */}
+            <Route path="/ocorrencias/*" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+            
+            {/* Infrastructure */}
+            <Route path="/infraestruturas/*" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+            
+            {/* Forestry Module */}
+            <Route path="/florestal/*" element={<ProtectedRoute><ForestryPage /></ProtectedRoute>} />
+            
+            {/* Coffee Module */}
+            <Route path="/cafe/*" element={<ProtectedRoute><CoffeePage /></ProtectedRoute>} />
+            
+            {/* Rice Strategic Module */}
+            <Route path="/arroz/*" element={<ProtectedRoute><RiceDashboard /></ProtectedRoute>} />
+            
+            {/* Secondary Navigation */}
+            <Route path="/relatorios" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+            <Route path="/mapas" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+            <Route path="/documentacao" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+            <Route path="/notificacoes" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+            <Route path="/configuracoes" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+            
+            {/* Public Verification Portal (no auth required) */}
+            <Route path="/verificar" element={<VerificationPortal />} />
+            <Route path="/verificar/scanner" element={<QRScanner />} />
+            <Route path="/verificar/certificado" element={<VerifyCertificate />} />
+            <Route path="/verificar/certificado/:code" element={<VerifyCertificate />} />
+            <Route path="/verificar/licenca" element={<VerifyLicense />} />
+            <Route path="/verificar/licenca/:code" element={<VerifyLicense />} />
+            <Route path="/verificar/cafe" element={<VerifyCoffee />} />
+            <Route path="/verificar/cafe/:code" element={<VerifyCoffee />} />
+            
+            {/* Catch-all */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </AuthProvider>
   </QueryClientProvider>
 );
 

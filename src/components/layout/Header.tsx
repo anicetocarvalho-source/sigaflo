@@ -1,6 +1,7 @@
 import { Bell, Search, HelpCircle, Globe } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { UserMenu } from '@/components/auth/UserMenu';
 
 interface HeaderProps {
   title: string;
@@ -41,6 +42,9 @@ export function Header({ title, subtitle }: HeaderProps) {
         <Button variant="ghost" size="icon">
           <Globe className="h-5 w-5 text-muted-foreground" />
         </Button>
+
+        {/* User Menu */}
+        <UserMenu />
 
         {/* Date/Time */}
         <div className="hidden lg:block border-l border-border pl-4">
