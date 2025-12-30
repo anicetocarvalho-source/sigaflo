@@ -28,6 +28,7 @@ import CoffeePage from "./pages/coffee/CoffeePage";
 import AuthPage from "./pages/auth/AuthPage";
 import NoPermissionPage from "./pages/auth/NoPermissionPage";
 import UsersPage from "./pages/admin/UsersPage";
+import ProfilePage from "./pages/profile/ProfilePage";
 
 // Public Portal
 import VerificationPortal from "./pages/public/VerificationPortal";
@@ -79,6 +80,9 @@ const App = () => (
                 </ProtectedRoute>
               } 
             />
+            
+            {/* Profile */}
+            <Route path="/perfil" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
             
             {/* Occurrences */}
             <Route path="/ocorrencias/*" element={<ProtectedRoute><Index /></ProtectedRoute>} />
