@@ -5,6 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { KPICard } from '@/components/dashboard/KPICard';
 import { LicensesList } from '@/components/forestry/LicensesList';
 import { LicenseForm } from '@/components/forestry/LicenseForm';
+import { TraceabilityDashboard } from '@/components/forestry/TraceabilityDashboard';
 import { useForestryStats, type ForestLicense } from '@/hooks/useForestry';
 import {
   TreePine,
@@ -116,27 +117,7 @@ export default function ForestryPage() {
           </TabsContent>
 
           <TabsContent value="traceability">
-            <div className="card-elevated p-6">
-              <h3 className="text-lg font-semibold mb-4">Rastreabilidade da Madeira</h3>
-              <div className="grid gap-4 md:grid-cols-4">
-                {[
-                  { step: 1, title: 'Árvore', desc: 'Georreferenciação e marcação' },
-                  { step: 2, title: 'Tora', desc: 'Corte, medição e etiquetagem' },
-                  { step: 3, title: 'Transporte', desc: 'Guia de trânsito e verificação' },
-                  { step: 4, title: 'Destino', desc: 'Serraria, exportação ou venda' },
-                ].map((item) => (
-                  <div key={item.step} className="flex items-center gap-3 rounded-lg bg-muted/50 p-4">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground font-bold">
-                      {item.step}
-                    </div>
-                    <div>
-                      <p className="font-medium">{item.title}</p>
-                      <p className="text-sm text-muted-foreground">{item.desc}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+            <TraceabilityDashboard />
           </TabsContent>
 
           <TabsContent value="infractions">
