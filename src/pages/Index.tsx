@@ -15,6 +15,7 @@ import {
   Building2,
   Map,
 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 // Mock data
 const alerts = [
@@ -223,6 +224,17 @@ export default function Index() {
                 stats={[
                   { label: 'lotes', value: '12.3K' },
                   { label: 'exportáveis', value: '8.9K' },
+                ]}
+                status="active"
+              />
+              <ModuleCard
+                title="Gestão do Arroz"
+                description="Módulo estratégico de soberania alimentar"
+                icon={<Wheat className="h-5 w-5" />}
+                href="/arroz"
+                stats={[
+                  { label: 'produção', value: '892K t' },
+                  { label: 'gap', value: '352K t' },
                 ]}
                 status="active"
               />

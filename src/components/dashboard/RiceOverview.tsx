@@ -6,9 +6,12 @@ import {
   Users, 
   Target,
   AlertTriangle,
-  CheckCircle2
+  CheckCircle2,
+  Loader2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useRiceProduction, useRiceImports, useRiceConsumption, useRiceAlerts } from '@/hooks/useRice';
+import { Link } from 'react-router-dom';
 
 interface RiceMetric {
   label: string;
@@ -20,44 +23,67 @@ interface RiceMetric {
   status?: 'good' | 'warning' | 'critical';
 }
 
-const metrics: RiceMetric[] = [
-  {
-    label: 'Produção Nacional',
-    value: '892.450',
-    subValue: 'toneladas/ano',
-    change: 12.5,
-    changeType: 'positive',
-    icon: Package,
-    status: 'good',
-  },
-  {
-    label: 'Importações',
-    value: '1.245.000',
-    subValue: 'toneladas/ano',
-    change: -8.2,
-    changeType: 'positive',
-    icon: ShoppingCart,
-    status: 'warning',
-  },
-  {
-    label: 'Consumo Per Capita',
-    value: '38.5',
-    subValue: 'kg/pessoa/ano',
-    icon: Users,
-    status: 'good',
-  },
-  {
-    label: 'Défice Alimentar',
-    value: '352.550',
-    subValue: 'toneladas (gap)',
-    change: -15.3,
-    changeType: 'positive',
-    icon: Target,
-    status: 'warning',
-  },
-];
-
 export function RiceOverview() {
+  const { data: production, isLoading: loadingProduction } = useRiceProduction();
+  const { data: imports, isLoading: loadingImports } = useRiceImports();
+  const { data: consumption, isLoading: loadingConsumption } = useRiceConsumption();
+  const { data: alerts } = useRiceAlerts();
+
+  const isLoading = loadingProduction || loadingImports || loadingConsumption;
+
+  // Calculate metrics from real data
+  const totalProduction = production?.reduce((sum, p) => sum + p.production_tonnes, 0) || 0;
+  const totalImports = imports?.reduce((sum, i) => sum + i.volume_tonnes, 0) || 0;
+  const latestConsumption = consumption?.[0];
+  const perCapita = latestConsumption?.per_capita_kg || 0;
+  const totalConsumption = latestConsumption?.total_consumption_tonnes || 0;
+  const gap = totalConsumption > 0 ? totalConsumption - totalProduction : 0;
+  
+  const unresolvedAlerts = alerts?.filter(a => !a.is_resolved).length || 0;
+
+  const formatNumber = (num: number) => {
+    if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
+    if (num >= 1000) return `${(num / 1000).toFixed(0)}K`;
+    return num.toLocaleString('pt-AO');
+  };
+
+  const metrics: RiceMetric[] = [
+    {
+      label: 'Produção Nacional',
+      value: formatNumber(totalProduction),
+      subValue: 'toneladas/ano',
+      change: 12.5,
+      changeType: 'positive',
+      icon: Package,
+      status: 'good',
+    },
+    {
+      label: 'Importações',
+      value: formatNumber(totalImports),
+      subValue: 'toneladas/ano',
+      change: -8.2,
+      changeType: 'positive',
+      icon: ShoppingCart,
+      status: totalImports > totalProduction ? 'warning' : 'good',
+    },
+    {
+      label: 'Consumo Per Capita',
+      value: perCapita.toFixed(1),
+      subValue: 'kg/pessoa/ano',
+      icon: Users,
+      status: 'good',
+    },
+    {
+      label: 'Défice Alimentar',
+      value: formatNumber(gap > 0 ? gap : 0),
+      subValue: 'toneladas (gap)',
+      change: -15.3,
+      changeType: gap > 0 ? 'negative' : 'positive',
+      icon: Target,
+      status: gap > totalProduction * 0.5 ? 'critical' : gap > 0 ? 'warning' : 'good',
+    },
+  ];
+
   return (
     <div className="card-elevated overflow-hidden">
       <div className="gradient-primary p-5">
@@ -71,10 +97,17 @@ export function RiceOverview() {
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <span className="flex items-center gap-1.5 rounded-full bg-success/20 px-3 py-1 text-xs font-medium text-success-foreground">
-              <CheckCircle2 className="h-3.5 w-3.5" />
-              Dados actualizados
-            </span>
+            {isLoading ? (
+              <span className="flex items-center gap-1.5 rounded-full bg-muted/20 px-3 py-1 text-xs font-medium text-primary-foreground/80">
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                A carregar...
+              </span>
+            ) : (
+              <span className="flex items-center gap-1.5 rounded-full bg-success/20 px-3 py-1 text-xs font-medium text-success-foreground">
+                <CheckCircle2 className="h-3.5 w-3.5" />
+                {unresolvedAlerts > 0 ? `${unresolvedAlerts} alertas` : 'Dados actualizados'}
+              </span>
+            )}
           </div>
         </div>
       </div>
@@ -111,7 +144,7 @@ export function RiceOverview() {
                 )}
               </div>
               <p className="mt-3 font-display text-2xl font-bold text-foreground">
-                {metric.value}
+                {isLoading ? '—' : metric.value}
               </p>
               <p className="text-xs text-muted-foreground">{metric.subValue}</p>
               <p className="mt-2 text-sm font-medium text-foreground">{metric.label}</p>
@@ -125,9 +158,9 @@ export function RiceOverview() {
           <AlertTriangle className="h-4 w-4 text-warning" />
           <span>Recomendação: Aumentar área cultivada em 15% para reduzir dependência de importações</span>
         </div>
-        <a href="/arroz" className="text-sm font-medium text-primary hover:underline">
+        <Link to="/arroz" className="text-sm font-medium text-primary hover:underline">
           Ver análise completa →
-        </a>
+        </Link>
       </div>
     </div>
   );
