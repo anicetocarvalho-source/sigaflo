@@ -12,6 +12,13 @@ import FarmersPage from "./pages/farmers/FarmersPage";
 import ForestryPage from "./pages/forestry/ForestryPage";
 import CoffeePage from "./pages/coffee/CoffeePage";
 
+// Public Portal
+import VerificationPortal from "./pages/public/VerificationPortal";
+import QRScanner from "./pages/public/QRScanner";
+import VerifyCertificate from "./pages/public/VerifyCertificate";
+import VerifyLicense from "./pages/public/VerifyLicense";
+import VerifyCoffee from "./pages/public/VerifyCoffee";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -68,6 +75,16 @@ const App = () => (
           <Route path="/documentacao" element={<Index />} />
           <Route path="/notificacoes" element={<Index />} />
           <Route path="/configuracoes" element={<Index />} />
+          
+          {/* Public Verification Portal */}
+          <Route path="/verificar" element={<VerificationPortal />} />
+          <Route path="/verificar/scanner" element={<QRScanner />} />
+          <Route path="/verificar/certificado" element={<VerifyCertificate />} />
+          <Route path="/verificar/certificado/:code" element={<VerifyCertificate />} />
+          <Route path="/verificar/licenca" element={<VerifyLicense />} />
+          <Route path="/verificar/licenca/:code" element={<VerifyLicense />} />
+          <Route path="/verificar/cafe" element={<VerifyCoffee />} />
+          <Route path="/verificar/cafe/:code" element={<VerifyCoffee />} />
           
           {/* Catch-all */}
           <Route path="*" element={<NotFound />} />
