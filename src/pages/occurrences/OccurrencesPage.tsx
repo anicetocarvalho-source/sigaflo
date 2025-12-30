@@ -2,13 +2,14 @@ import { useState } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { Plus, AlertTriangle, MessageSquare, Bell, ClipboardList, BarChart3 } from 'lucide-react';
+import { Plus, AlertTriangle, MessageSquare, Bell, ClipboardList, BarChart3, Map } from 'lucide-react';
 import { OccurrenceForm } from '@/components/occurrences/OccurrenceForm';
 import { OccurrencesList } from '@/components/occurrences/OccurrencesList';
 import { SmsSimulator } from '@/components/occurrences/SmsSimulator';
 import { AlertSender } from '@/components/occurrences/AlertSender';
 import { SurveyManager } from '@/components/occurrences/SurveyManager';
 import { RiskDashboard } from '@/components/occurrences/RiskDashboard';
+import { OccurrencesMap } from '@/components/occurrences/OccurrencesMap';
 
 export default function OccurrencesPage() {
   const [showForm, setShowForm] = useState(false);
@@ -36,10 +37,14 @@ export default function OccurrencesPage() {
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid grid-cols-5 w-full max-w-2xl">
+          <TabsList className="grid grid-cols-6 w-full max-w-3xl">
             <TabsTrigger value="dashboard" className="flex items-center gap-2">
               <BarChart3 className="h-4 w-4" />
               <span className="hidden sm:inline">Dashboard</span>
+            </TabsTrigger>
+            <TabsTrigger value="map" className="flex items-center gap-2">
+              <Map className="h-4 w-4" />
+              <span className="hidden sm:inline">Mapa</span>
             </TabsTrigger>
             <TabsTrigger value="list" className="flex items-center gap-2">
               <AlertTriangle className="h-4 w-4" />
@@ -61,6 +66,10 @@ export default function OccurrencesPage() {
 
           <TabsContent value="dashboard" className="mt-6">
             <RiskDashboard />
+          </TabsContent>
+
+          <TabsContent value="map" className="mt-6">
+            <OccurrencesMap />
           </TabsContent>
 
           <TabsContent value="list" className="mt-6">
