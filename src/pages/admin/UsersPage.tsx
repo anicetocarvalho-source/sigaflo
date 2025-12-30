@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth, UserRole, getRoleLabel } from '@/contexts/AuthContext';
@@ -18,7 +18,7 @@ import { toast } from 'sonner';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Search, Shield, Loader2, UserPlus, X } from 'lucide-react';
+import { Search, Shield, Loader2, UserPlus, X, Pencil } from 'lucide-react';
 import { format } from 'date-fns';
 
 const ALL_ROLES: UserRole[] = [
@@ -109,7 +109,17 @@ const createUserSchema = z.object({
   role: z.string().optional(),
 });
 
+const editUserSchema = z.object({
+  full_name: z.string().min(2, 'Nome completo é obrigatório'),
+  phone: z.string().optional(),
+  position: z.string().optional(),
+  department: z.string().optional(),
+  province_id: z.string().optional(),
+  municipality_id: z.string().optional(),
+});
+
 type CreateUserValues = z.infer<typeof createUserSchema>;
+type EditUserValues = z.infer<typeof editUserSchema>;
 
 const UsersPage = () => {
   const { canManageRole, user: currentUser } = useAuth();
@@ -118,10 +128,14 @@ const UsersPage = () => {
   const { data: provinces } = useProvinces();
   const [search, setSearch] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [dialogTab, setDialogTab] = useState<'create' | 'assign'>('create');
   const [selectedProvinceId, setSelectedProvinceId] = useState<string>('');
+  const [editProvinceId, setEditProvinceId] = useState<string>('');
+  const [editingUser, setEditingUser] = useState<UserWithRoles | null>(null);
 
   const { data: municipalities } = useMunicipalities(selectedProvinceId);
+  const { data: editMunicipalities } = useMunicipalities(editProvinceId);
 
   const assignForm = useForm({
     resolver: zodResolver(assignRoleSchema),
@@ -142,6 +156,33 @@ const UsersPage = () => {
       role: '',
     },
   });
+
+  const editForm = useForm<EditUserValues>({
+    resolver: zodResolver(editUserSchema),
+    defaultValues: {
+      full_name: '',
+      phone: '',
+      position: '',
+      department: '',
+      province_id: '',
+      municipality_id: '',
+    },
+  });
+
+  // Reset edit form when editing user changes
+  useEffect(() => {
+    if (editingUser) {
+      editForm.reset({
+        full_name: editingUser.full_name || '',
+        phone: editingUser.phone || '',
+        position: editingUser.position || '',
+        department: editingUser.department || '',
+        province_id: editingUser.province_id || '',
+        municipality_id: editingUser.municipality_id || '',
+      });
+      setEditProvinceId(editingUser.province_id || '');
+    }
+  }, [editingUser, editForm]);
 
   const createUserMutation = useMutation({
     mutationFn: async (data: CreateUserValues) => {
@@ -174,6 +215,35 @@ const UsersPage = () => {
       } else {
         toast.error('Erro ao criar utilizador: ' + error.message);
       }
+    },
+  });
+
+  const updateUserMutation = useMutation({
+    mutationFn: async (data: EditUserValues & { user_id: string }) => {
+      const { data: result, error } = await supabase.functions.invoke('update-user', {
+        body: {
+          user_id: data.user_id,
+          full_name: data.full_name,
+          phone: data.phone || null,
+          position: data.position || null,
+          department: data.department || null,
+          province_id: data.province_id || null,
+          municipality_id: data.municipality_id || null,
+        },
+      });
+      if (error) throw error;
+      if (result?.error) throw new Error(result.error);
+      return result;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['users-with-roles'] });
+      toast.success('Perfil atualizado com sucesso');
+      setIsEditDialogOpen(false);
+      setEditingUser(null);
+      editForm.reset();
+    },
+    onError: (error: any) => {
+      toast.error('Erro ao atualizar perfil: ' + error.message);
     },
   });
 
@@ -219,11 +289,12 @@ const UsersPage = () => {
 
   const toggleActiveMutation = useMutation({
     mutationFn: async ({ user_id, is_active }: { user_id: string; is_active: boolean }) => {
-      const { error } = await supabase
-        .from('profiles')
-        .update({ is_active })
-        .eq('id', user_id);
+      const { data: result, error } = await supabase.functions.invoke('update-user', {
+        body: { user_id, is_active },
+      });
       if (error) throw error;
+      if (result?.error) throw new Error(result.error);
+      return result;
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['users-with-roles'] });
@@ -252,6 +323,16 @@ const UsersPage = () => {
 
   const handleCreateUser = (data: CreateUserValues) => {
     createUserMutation.mutate(data);
+  };
+
+  const handleEditUser = (data: EditUserValues) => {
+    if (!editingUser) return;
+    updateUserMutation.mutate({ ...data, user_id: editingUser.id });
+  };
+
+  const openEditDialog = (user: UserWithRoles) => {
+    setEditingUser(user);
+    setIsEditDialogOpen(true);
   };
 
   return (
@@ -621,18 +702,28 @@ const UsersPage = () => {
                         <TableCell>
                           <div className="flex justify-end gap-1">
                             {user.id !== currentUser?.id && (
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() =>
-                                  toggleActiveMutation.mutate({
-                                    user_id: user.id,
-                                    is_active: !user.is_active,
-                                  })
-                                }
-                              >
-                                {user.is_active ? 'Desativar' : 'Ativar'}
-                              </Button>
+                              <>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => openEditDialog(user)}
+                                  title="Editar perfil"
+                                >
+                                  <Pencil className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() =>
+                                    toggleActiveMutation.mutate({
+                                      user_id: user.id,
+                                      is_active: !user.is_active,
+                                    })
+                                  }
+                                >
+                                  {user.is_active ? 'Desativar' : 'Ativar'}
+                                </Button>
+                              </>
                             )}
                           </div>
                         </TableCell>
@@ -654,6 +745,151 @@ const UsersPage = () => {
             {filteredUsers.length} utilizador(es) encontrado(s)
           </p>
         )}
+
+        {/* Edit User Dialog */}
+        <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+          <DialogContent className="max-w-lg">
+            <DialogHeader>
+              <DialogTitle>Editar Perfil do Utilizador</DialogTitle>
+            </DialogHeader>
+            {editingUser && (
+              <div className="flex items-center gap-3 p-3 bg-muted rounded-lg mb-4">
+                <Avatar className="h-12 w-12">
+                  <AvatarImage src={editingUser.avatar_url} />
+                  <AvatarFallback>
+                    {editingUser.full_name?.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <div>
+                  <p className="font-medium">{editingUser.full_name}</p>
+                  <p className="text-sm text-muted-foreground">{editingUser.email}</p>
+                </div>
+              </div>
+            )}
+            <Form {...editForm}>
+              <form onSubmit={editForm.handleSubmit(handleEditUser)} className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={editForm.control}
+                    name="full_name"
+                    render={({ field }) => (
+                      <FormItem className="col-span-2">
+                        <FormLabel>Nome Completo *</FormLabel>
+                        <FormControl>
+                          <Input placeholder="João Silva" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={editForm.control}
+                    name="phone"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Telefone</FormLabel>
+                        <FormControl>
+                          <Input placeholder="+244 923 456 789" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={editForm.control}
+                    name="position"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Cargo</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Técnico Agrícola" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={editForm.control}
+                    name="department"
+                    render={({ field }) => (
+                      <FormItem className="col-span-2">
+                        <FormLabel>Departamento</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Direcção Provincial" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={editForm.control}
+                    name="province_id"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Província</FormLabel>
+                        <Select 
+                          onValueChange={(value) => {
+                            field.onChange(value);
+                            setEditProvinceId(value);
+                            editForm.setValue('municipality_id', '');
+                          }} 
+                          value={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Selecione" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {provinces?.map((p) => (
+                              <SelectItem key={p.id} value={p.id}>
+                                {p.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={editForm.control}
+                    name="municipality_id"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Município</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value} disabled={!editProvinceId}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Selecione" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {editMunicipalities?.map((m) => (
+                              <SelectItem key={m.id} value={m.id}>
+                                {m.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                <div className="flex justify-end gap-2 pt-4">
+                  <Button type="button" variant="outline" onClick={() => setIsEditDialogOpen(false)}>
+                    Cancelar
+                  </Button>
+                  <Button type="submit" disabled={updateUserMutation.isPending}>
+                    {updateUserMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                    Guardar Alterações
+                  </Button>
+                </div>
+              </form>
+            </Form>
+          </DialogContent>
+        </Dialog>
       </div>
     </MainLayout>
   );
