@@ -422,6 +422,76 @@ export type Database = {
           },
         ]
       }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          department: string | null
+          email: string
+          entity_id: string | null
+          full_name: string
+          id: string
+          is_active: boolean
+          municipality_id: string | null
+          phone: string | null
+          position: string | null
+          province_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          department?: string | null
+          email: string
+          entity_id?: string | null
+          full_name: string
+          id: string
+          is_active?: boolean
+          municipality_id?: string | null
+          phone?: string | null
+          position?: string | null
+          province_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          department?: string | null
+          email?: string
+          entity_id?: string | null
+          full_name?: string
+          id?: string
+          is_active?: boolean
+          municipality_id?: string | null
+          phone?: string | null
+          position?: string | null
+          province_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_entity_id_fkey"
+            columns: ["entity_id"]
+            isOneToOne: false
+            referencedRelation: "farmers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_municipality_id_fkey"
+            columns: ["municipality_id"]
+            isOneToOne: false
+            referencedRelation: "municipalities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_province_id_fkey"
+            columns: ["province_id"]
+            isOneToOne: false
+            referencedRelation: "provinces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       provinces: {
         Row: {
           code: string
@@ -443,12 +513,53 @@ export type Database = {
         }
         Relationships: []
       }
+      user_roles: {
+        Row: {
+          granted_at: string
+          granted_by: string | null
+          id: string
+          role: Database["public"]["Enums"]["user_role"]
+          user_id: string
+        }
+        Insert: {
+          granted_at?: string
+          granted_by?: string | null
+          id?: string
+          role: Database["public"]["Enums"]["user_role"]
+          user_id: string
+        }
+        Update: {
+          granted_at?: string
+          granted_by?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["user_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      can_manage_user: {
+        Args: {
+          _manager_id: string
+          _target_role: Database["public"]["Enums"]["user_role"]
+        }
+        Returns: boolean
+      }
+      get_user_municipality: { Args: { _user_id: string }; Returns: string }
+      get_user_province: { Args: { _user_id: string }; Returns: string }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["user_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      is_admin: { Args: { _user_id: string }; Returns: boolean }
+      is_national_level: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
       certificate_type:
@@ -463,6 +574,15 @@ export type Database = {
         | "cooperative"
         | "field_school"
         | "company"
+      user_role:
+        | "admin_national"
+        | "admin_provincial"
+        | "admin_municipal"
+        | "technician_national"
+        | "technician_provincial"
+        | "technician_municipal"
+        | "private_entity"
+        | "viewer"
       workflow_status:
         | "draft"
         | "submitted"
@@ -611,6 +731,16 @@ export const Constants = {
         "cooperative",
         "field_school",
         "company",
+      ],
+      user_role: [
+        "admin_national",
+        "admin_provincial",
+        "admin_municipal",
+        "technician_national",
+        "technician_provincial",
+        "technician_municipal",
+        "private_entity",
+        "viewer",
       ],
       workflow_status: [
         "draft",
