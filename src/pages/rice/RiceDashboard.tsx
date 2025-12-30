@@ -1,6 +1,24 @@
+import { useState } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { KPICard } from '@/components/dashboard/KPICard';
 import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
+  RiceProductionForm,
+  RiceImportForm,
+  RicePriceForm,
+} from '@/components/rice/forms';
+import {
+  useRiceProduction,
+  useRiceImports,
+  useRicePrices,
+  useRiceConsumption,
+} from '@/hooks/useRice';
 import {
   Package,
   ShoppingCart,
@@ -17,33 +35,107 @@ import {
   PieChart,
   Activity,
   Leaf,
+  Plus,
+  Loader2,
 } from 'lucide-react';
 
-const productionData = [
-  { province: 'Cuanza Sul', area: 45200, production: 124500, productivity: 2.75 },
-  { province: 'Malanje', area: 32100, production: 89800, productivity: 2.80 },
-  { province: 'Bié', area: 28500, production: 74100, productivity: 2.60 },
-  { province: 'Huambo', area: 25800, production: 71540, productivity: 2.77 },
-  { province: 'Benguela', area: 18900, production: 49140, productivity: 2.60 },
-  { province: 'Huíla', area: 15400, production: 38500, productivity: 2.50 },
-];
-
-const importData = [
-  { country: 'Tailândia', volume: 520000, percentage: 41.8, priceCIF: 485 },
-  { country: 'Vietname', volume: 380000, percentage: 30.5, priceCIF: 452 },
-  { country: 'Paquistão', volume: 180000, percentage: 14.5, priceCIF: 420 },
-  { country: 'Índia', volume: 165000, percentage: 13.2, priceCIF: 445 },
-];
-
-const priceData = [
-  { province: 'Luanda', retail: 850, wholesale: 720 },
-  { province: 'Huambo', retail: 720, wholesale: 610 },
-  { province: 'Benguela', retail: 780, wholesale: 660 },
-  { province: 'Lubango', retail: 750, wholesale: 640 },
-  { province: 'Malanje', retail: 690, wholesale: 580 },
-];
-
 export default function RiceDashboard() {
+  const [showProductionForm, setShowProductionForm] = useState(false);
+  const [showImportForm, setShowImportForm] = useState(false);
+  const [showPriceForm, setShowPriceForm] = useState(false);
+
+  const { data: production, isLoading: loadingProduction } = useRiceProduction();
+  const { data: imports, isLoading: loadingImports } = useRiceImports();
+  const { data: prices, isLoading: loadingPrices } = useRicePrices();
+  const { data: consumption } = useRiceConsumption();
+
+  const isLoading = loadingProduction || loadingImports || loadingPrices;
+
+  // Calculate totals from real data
+  const totalProduction = production?.reduce((sum, p) => sum + Number(p.production_tonnes), 0) || 0;
+  const totalImports = imports?.reduce((sum, i) => sum + Number(i.volume_tonnes), 0) || 0;
+  const latestConsumption = consumption?.[0];
+  const perCapita = latestConsumption?.per_capita_kg || 38.5;
+  const totalConsumptionTonnes = latestConsumption?.total_consumption_tonnes || 0;
+  const gap = totalConsumptionTonnes > 0 ? Math.max(0, totalConsumptionTonnes - totalProduction) : 0;
+
+  // Aggregate production by province
+  const productionByProvince = production?.reduce((acc: Record<string, any>, p) => {
+    const provinceName = p.provinces?.name || 'Não definida';
+    if (!acc[provinceName]) {
+      acc[provinceName] = { area: 0, production: 0, productivity: 0, count: 0 };
+    }
+    acc[provinceName].area += Number(p.cultivated_area_ha);
+    acc[provinceName].production += Number(p.production_tonnes);
+    acc[provinceName].count++;
+    return acc;
+  }, {});
+
+  const productionData = Object.entries(productionByProvince || {})
+    .map(([province, data]: [string, any]) => ({
+      province,
+      area: data.area,
+      production: data.production,
+      productivity: data.area > 0 ? (data.production / data.area).toFixed(2) : 0,
+    }))
+    .sort((a, b) => b.production - a.production)
+    .slice(0, 6);
+
+  // Aggregate imports by country
+  const importsByCountry = imports?.reduce((acc: Record<string, any>, i) => {
+    if (!acc[i.origin_country]) {
+      acc[i.origin_country] = { volume: 0, totalCIF: 0, count: 0 };
+    }
+    acc[i.origin_country].volume += Number(i.volume_tonnes);
+    if (i.price_cif_usd) {
+      acc[i.origin_country].totalCIF += Number(i.price_cif_usd) * Number(i.volume_tonnes);
+    }
+    acc[i.origin_country].count++;
+    return acc;
+  }, {});
+
+  const totalImportVolume = Object.values(importsByCountry || {}).reduce(
+    (sum: number, d: any) => sum + d.volume, 0
+  );
+
+  const importData = Object.entries(importsByCountry || {})
+    .map(([country, data]: [string, any]) => ({
+      country,
+      volume: data.volume,
+      percentage: totalImportVolume > 0 ? ((data.volume / totalImportVolume) * 100).toFixed(1) : 0,
+      priceCIF: data.count > 0 && data.totalCIF > 0 ? Math.round(data.totalCIF / data.volume) : 0,
+    }))
+    .sort((a, b) => b.volume - a.volume)
+    .slice(0, 4);
+
+  // Aggregate prices by province
+  const latestPricesByProvince = prices?.reduce((acc: Record<string, any>, p) => {
+    const provinceName = p.provinces?.name || 'Não definida';
+    if (!acc[provinceName] || new Date(p.recorded_date) > new Date(acc[provinceName].date)) {
+      acc[provinceName] = {
+        retail: Number(p.retail_price_aoa),
+        wholesale: Number(p.wholesale_price_aoa) || 0,
+        date: p.recorded_date,
+      };
+    }
+    return acc;
+  }, {});
+
+  const priceData = Object.entries(latestPricesByProvince || {})
+    .map(([province, data]: [string, any]) => ({
+      province,
+      retail: data.retail,
+      wholesale: data.wholesale,
+    }))
+    .sort((a, b) => b.retail - a.retail)
+    .slice(0, 5);
+
+  const formatNumber = (num: number) => {
+    if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
+    if (num >= 1000) return num.toLocaleString('pt-AO');
+    return num.toString();
+  };
+
   return (
     <MainLayout
       title="Produção de Arroz"
@@ -53,12 +145,41 @@ export default function RiceDashboard() {
         {/* Header Actions */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-2">
-            <span className="flex items-center gap-1.5 rounded-full bg-success/10 px-3 py-1.5 text-sm font-medium text-success">
-              <CheckCircle2 className="h-4 w-4" />
-              Dados actualizados há 2 horas
-            </span>
+            {isLoading ? (
+              <span className="flex items-center gap-1.5 rounded-full bg-muted px-3 py-1.5 text-sm font-medium text-muted-foreground">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                A carregar dados...
+              </span>
+            ) : (
+              <span className="flex items-center gap-1.5 rounded-full bg-success/10 px-3 py-1.5 text-sm font-medium text-success">
+                <CheckCircle2 className="h-4 w-4" />
+                Dados actualizados
+              </span>
+            )}
           </div>
           <div className="flex flex-wrap gap-2">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="default" size="sm">
+                  <Plus className="mr-2 h-4 w-4" />
+                  Adicionar Dados
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => setShowProductionForm(true)}>
+                  <Package className="mr-2 h-4 w-4" />
+                  Registar Produção
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setShowImportForm(true)}>
+                  <ShoppingCart className="mr-2 h-4 w-4" />
+                  Registar Importação
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setShowPriceForm(true)}>
+                  <TrendingUp className="mr-2 h-4 w-4" />
+                  Registar Preço
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
             <Button variant="outline" size="sm">
               <Calendar className="mr-2 h-4 w-4" />
               2024
@@ -67,9 +188,9 @@ export default function RiceDashboard() {
               <Filter className="mr-2 h-4 w-4" />
               Filtros
             </Button>
-            <Button variant="default" size="sm">
+            <Button variant="outline" size="sm">
               <Download className="mr-2 h-4 w-4" />
-              Exportar Relatório
+              Exportar
             </Button>
           </div>
         </div>
@@ -78,7 +199,7 @@ export default function RiceDashboard() {
         <section className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <KPICard
             title="Produção Nacional"
-            value="892.450"
+            value={formatNumber(totalProduction)}
             subtitle="toneladas/ano"
             change={12.5}
             changeType="increase"
@@ -87,7 +208,7 @@ export default function RiceDashboard() {
           />
           <KPICard
             title="Importações"
-            value="1.245.000"
+            value={formatNumber(totalImports)}
             subtitle="toneladas/ano"
             change={-8.2}
             changeType="decrease"
@@ -96,14 +217,14 @@ export default function RiceDashboard() {
           />
           <KPICard
             title="Consumo Per Capita"
-            value="38.5 kg"
+            value={`${perCapita.toFixed(1)} kg`}
             subtitle="pessoa/ano"
             icon={<Users className="h-5 w-5" />}
             variant="primary"
           />
           <KPICard
             title="Défice Alimentar"
-            value="352.550"
+            value={formatNumber(gap)}
             subtitle="toneladas (gap)"
             change={-15.3}
             changeType="increase"
@@ -111,8 +232,6 @@ export default function RiceDashboard() {
             variant="accent"
           />
         </section>
-
-        {/* AI Recommendations */}
         <section className="card-elevated border-l-4 border-l-accent p-5">
           <div className="flex items-start gap-4">
             <div className="rounded-lg bg-accent/10 p-3">
@@ -168,28 +287,46 @@ export default function RiceDashboard() {
               <span className="text-sm text-muted-foreground">2024</span>
             </div>
             <div className="p-4">
-              <div className="space-y-4">
-                {productionData.map((item, index) => (
-                  <div key={index} className="space-y-2">
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="font-medium text-foreground">{item.province}</span>
-                      <span className="text-muted-foreground">
-                        {item.production.toLocaleString()} t
-                      </span>
+              {productionData.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-8 text-center">
+                  <Package className="h-12 w-12 text-muted-foreground/50" />
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    Sem dados de produção registados
+                  </p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="mt-4"
+                    onClick={() => setShowProductionForm(true)}
+                  >
+                    <Plus className="mr-2 h-4 w-4" />
+                    Adicionar Produção
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {productionData.map((item, index) => (
+                    <div key={index} className="space-y-2">
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="font-medium text-foreground">{item.province}</span>
+                        <span className="text-muted-foreground">
+                          {item.production.toLocaleString()} t
+                        </span>
+                      </div>
+                      <div className="h-2 overflow-hidden rounded-full bg-muted">
+                        <div
+                          className="h-full rounded-full bg-gradient-to-r from-primary to-primary-light transition-all duration-500"
+                          style={{ width: `${Math.min((item.production / (productionData[0]?.production || 1)) * 100, 100)}%` }}
+                        />
+                      </div>
+                      <div className="flex items-center justify-between text-xs text-muted-foreground">
+                        <span>{item.area.toLocaleString()} ha</span>
+                        <span>{item.productivity} t/ha</span>
+                      </div>
                     </div>
-                    <div className="h-2 overflow-hidden rounded-full bg-muted">
-                      <div
-                        className="h-full rounded-full bg-gradient-to-r from-primary to-primary-light transition-all duration-500"
-                        style={{ width: `${(item.production / 130000) * 100}%` }}
-                      />
-                    </div>
-                    <div className="flex items-center justify-between text-xs text-muted-foreground">
-                      <span>{item.area.toLocaleString()} ha</span>
-                      <span>{item.productivity} t/ha</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 
@@ -205,32 +342,50 @@ export default function RiceDashboard() {
               <span className="text-sm text-muted-foreground">2024</span>
             </div>
             <div className="p-4">
-              <div className="space-y-4">
-                {importData.map((item, index) => (
-                  <div
-                    key={index}
-                    className="flex items-center justify-between rounded-lg bg-muted/50 p-3"
+              {importData.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-8 text-center">
+                  <ShoppingCart className="h-12 w-12 text-muted-foreground/50" />
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    Sem dados de importação registados
+                  </p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="mt-4"
+                    onClick={() => setShowImportForm(true)}
                   >
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-warning/10 text-sm font-bold text-warning">
-                        {index + 1}
+                    <Plus className="mr-2 h-4 w-4" />
+                    Adicionar Importação
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {importData.map((item, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center justify-between rounded-lg bg-muted/50 p-3"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-warning/10 text-sm font-bold text-warning">
+                          {index + 1}
+                        </div>
+                        <div>
+                          <p className="font-medium text-foreground">{item.country}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {item.volume.toLocaleString()} toneladas
+                          </p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="font-medium text-foreground">{item.country}</p>
+                      <div className="text-right">
+                        <p className="text-lg font-bold text-foreground">{item.percentage}%</p>
                         <p className="text-xs text-muted-foreground">
-                          {item.volume.toLocaleString()} toneladas
+                          {item.priceCIF > 0 ? `$${item.priceCIF}/t CIF` : '—'}
                         </p>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <p className="text-lg font-bold text-foreground">{item.percentage}%</p>
-                      <p className="text-xs text-muted-foreground">
-                        ${item.priceCIF}/t CIF
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </section>
@@ -246,63 +401,74 @@ export default function RiceDashboard() {
             </div>
             <span className="text-sm text-muted-foreground">Dezembro 2024</span>
           </div>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-border bg-muted/30">
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-foreground">
-                    Província
-                  </th>
-                  <th className="px-4 py-3 text-right text-sm font-semibold text-foreground">
-                    Retalho
-                  </th>
-                  <th className="px-4 py-3 text-right text-sm font-semibold text-foreground">
-                    Atacado
-                  </th>
-                  <th className="px-4 py-3 text-right text-sm font-semibold text-foreground">
-                    Margem
-                  </th>
-                  <th className="px-4 py-3 text-right text-sm font-semibold text-foreground">
-                    Variação
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {priceData.map((item, index) => {
-                  const margin = ((item.retail - item.wholesale) / item.wholesale * 100).toFixed(1);
-                  const isHighest = item.retail === Math.max(...priceData.map(p => p.retail));
-                  
-                  return (
-                    <tr key={index} className="transition-colors hover:bg-muted/30">
-                      <td className="px-4 py-3 text-sm font-medium text-foreground">
-                        {item.province}
-                        {isHighest && (
-                          <span className="ml-2 rounded-full bg-destructive/10 px-2 py-0.5 text-xs text-destructive">
-                            Mais alto
-                          </span>
-                        )}
-                      </td>
-                      <td className="px-4 py-3 text-right text-sm text-foreground">
-                        {item.retail.toLocaleString()} AOA
-                      </td>
-                      <td className="px-4 py-3 text-right text-sm text-muted-foreground">
-                        {item.wholesale.toLocaleString()} AOA
-                      </td>
-                      <td className="px-4 py-3 text-right text-sm text-muted-foreground">
-                        +{margin}%
-                      </td>
-                      <td className="px-4 py-3 text-right">
-                        <span className="inline-flex items-center gap-1 text-sm text-success">
-                          <TrendingDown className="h-3 w-3" />
-                          -2.3%
-                        </span>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+          {priceData.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-8 text-center">
+              <TrendingUp className="h-12 w-12 text-muted-foreground/50" />
+              <p className="mt-2 text-sm text-muted-foreground">
+                Sem dados de preços registados
+              </p>
+              <Button
+                variant="outline"
+                size="sm"
+                className="mt-4"
+                onClick={() => setShowPriceForm(true)}
+              >
+                <Plus className="mr-2 h-4 w-4" />
+                Adicionar Preço
+              </Button>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-border bg-muted/30">
+                    <th className="px-4 py-3 text-left text-sm font-semibold text-foreground">
+                      Província
+                    </th>
+                    <th className="px-4 py-3 text-right text-sm font-semibold text-foreground">
+                      Retalho
+                    </th>
+                    <th className="px-4 py-3 text-right text-sm font-semibold text-foreground">
+                      Atacado
+                    </th>
+                    <th className="px-4 py-3 text-right text-sm font-semibold text-foreground">
+                      Margem
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {priceData.map((item, index) => {
+                    const margin = item.wholesale > 0
+                      ? ((item.retail - item.wholesale) / item.wholesale * 100).toFixed(1)
+                      : '—';
+                    const isHighest = item.retail === Math.max(...priceData.map(p => p.retail));
+                    
+                    return (
+                      <tr key={index} className="transition-colors hover:bg-muted/30">
+                        <td className="px-4 py-3 text-sm font-medium text-foreground">
+                          {item.province}
+                          {isHighest && (
+                            <span className="ml-2 rounded-full bg-destructive/10 px-2 py-0.5 text-xs text-destructive">
+                              Mais alto
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-4 py-3 text-right text-sm text-foreground">
+                          {item.retail.toLocaleString()} AOA
+                        </td>
+                        <td className="px-4 py-3 text-right text-sm text-muted-foreground">
+                          {item.wholesale > 0 ? `${item.wholesale.toLocaleString()} AOA` : '—'}
+                        </td>
+                        <td className="px-4 py-3 text-right text-sm text-muted-foreground">
+                          {margin !== '—' ? `+${margin}%` : margin}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
         </section>
 
         {/* Policy Impact */}
@@ -352,6 +518,20 @@ export default function RiceDashboard() {
           </div>
         </section>
       </div>
+
+      {/* Forms */}
+      <RiceProductionForm
+        open={showProductionForm}
+        onOpenChange={setShowProductionForm}
+      />
+      <RiceImportForm
+        open={showImportForm}
+        onOpenChange={setShowImportForm}
+      />
+      <RicePriceForm
+        open={showPriceForm}
+        onOpenChange={setShowPriceForm}
+      />
     </MainLayout>
   );
 }
