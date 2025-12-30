@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth, UserRole, getRoleLabel } from '@/contexts/AuthContext';
 import { useProvinces, useMunicipalities } from '@/hooks/useFarmers';
 import { MainLayout } from '@/components/layout/MainLayout';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -13,11 +13,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Plus, Search, Shield, Loader2, UserPlus, Mail, Check, X } from 'lucide-react';
+import { Search, Shield, Loader2, UserPlus, X } from 'lucide-react';
 import { format } from 'date-fns';
 
 const ALL_ROLES: UserRole[] = [
@@ -96,6 +97,20 @@ const assignRoleSchema = z.object({
   role: z.string().min(1, 'Selecione um papel'),
 });
 
+const createUserSchema = z.object({
+  email: z.string().email('Email inválido'),
+  password: z.string().min(6, 'Palavra-passe deve ter pelo menos 6 caracteres'),
+  full_name: z.string().min(2, 'Nome completo é obrigatório'),
+  phone: z.string().optional(),
+  position: z.string().optional(),
+  department: z.string().optional(),
+  province_id: z.string().optional(),
+  municipality_id: z.string().optional(),
+  role: z.string().optional(),
+});
+
+type CreateUserValues = z.infer<typeof createUserSchema>;
+
 const UsersPage = () => {
   const { canManageRole, user: currentUser } = useAuth();
   const queryClient = useQueryClient();
@@ -103,11 +118,63 @@ const UsersPage = () => {
   const { data: provinces } = useProvinces();
   const [search, setSearch] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const [dialogTab, setDialogTab] = useState<'create' | 'assign'>('create');
+  const [selectedProvinceId, setSelectedProvinceId] = useState<string>('');
 
-  const form = useForm({
+  const { data: municipalities } = useMunicipalities(selectedProvinceId);
+
+  const assignForm = useForm({
     resolver: zodResolver(assignRoleSchema),
     defaultValues: { user_id: '', role: '' },
+  });
+
+  const createForm = useForm<CreateUserValues>({
+    resolver: zodResolver(createUserSchema),
+    defaultValues: {
+      email: '',
+      password: '',
+      full_name: '',
+      phone: '',
+      position: '',
+      department: '',
+      province_id: '',
+      municipality_id: '',
+      role: '',
+    },
+  });
+
+  const createUserMutation = useMutation({
+    mutationFn: async (data: CreateUserValues) => {
+      const { data: result, error } = await supabase.functions.invoke('create-user', {
+        body: {
+          email: data.email,
+          password: data.password,
+          full_name: data.full_name,
+          phone: data.phone || undefined,
+          position: data.position || undefined,
+          department: data.department || undefined,
+          province_id: data.province_id || undefined,
+          municipality_id: data.municipality_id || undefined,
+          role: data.role || undefined,
+        },
+      });
+      if (error) throw error;
+      if (result?.error) throw new Error(result.error);
+      return result;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['users-with-roles'] });
+      toast.success('Utilizador criado com sucesso');
+      setIsDialogOpen(false);
+      createForm.reset();
+    },
+    onError: (error: any) => {
+      if (error.message?.includes('already been registered')) {
+        toast.error('Este email já está registado');
+      } else {
+        toast.error('Erro ao criar utilizador: ' + error.message);
+      }
+    },
   });
 
   const assignRoleMutation = useMutation({
@@ -121,7 +188,7 @@ const UsersPage = () => {
       queryClient.invalidateQueries({ queryKey: ['users-with-roles'] });
       toast.success('Papel atribuído com sucesso');
       setIsDialogOpen(false);
-      form.reset();
+      assignForm.reset();
     },
     onError: (error: any) => {
       if (error.message.includes('duplicate')) {
@@ -183,6 +250,10 @@ const UsersPage = () => {
     assignRoleMutation.mutate({ user_id: data.user_id, role: data.role as UserRole });
   };
 
+  const handleCreateUser = (data: CreateUserValues) => {
+    createUserMutation.mutate(data);
+  };
+
   return (
     <MainLayout title="Gestão de Utilizadores" subtitle="Administrar utilizadores e papéis do sistema">
       <div className="space-y-6">
@@ -199,75 +270,265 @@ const UsersPage = () => {
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
               <Button>
-                <Shield className="h-4 w-4 mr-2" />
-                Atribuir Papel
+                <UserPlus className="h-4 w-4 mr-2" />
+                Novo Utilizador
               </Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="max-w-lg">
               <DialogHeader>
-                <DialogTitle>Atribuir Papel a Utilizador</DialogTitle>
+                <DialogTitle>Gestão de Utilizadores</DialogTitle>
               </DialogHeader>
-              <Form {...form}>
-                <form onSubmit={form.handleSubmit(handleAssignRole)} className="space-y-4">
-                  <FormField
-                    control={form.control}
-                    name="user_id"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Utilizador</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Selecione o utilizador" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {users?.map((u) => (
-                              <SelectItem key={u.id} value={u.id}>
-                                {u.full_name} ({u.email})
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="role"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Papel</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Selecione o papel" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {availableRoles.map((role) => (
-                              <SelectItem key={role} value={role}>
-                                {getRoleLabel(role)}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <div className="flex justify-end gap-2">
-                    <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
-                      Cancelar
-                    </Button>
-                    <Button type="submit" disabled={assignRoleMutation.isPending}>
-                      {assignRoleMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                      Atribuir
-                    </Button>
-                  </div>
-                </form>
-              </Form>
+              <Tabs value={dialogTab} onValueChange={(v) => setDialogTab(v as 'create' | 'assign')}>
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="create" className="flex items-center gap-2">
+                    <UserPlus className="h-4 w-4" />
+                    Criar Novo
+                  </TabsTrigger>
+                  <TabsTrigger value="assign" className="flex items-center gap-2">
+                    <Shield className="h-4 w-4" />
+                    Atribuir Papel
+                  </TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="create" className="mt-4">
+                  <Form {...createForm}>
+                    <form onSubmit={createForm.handleSubmit(handleCreateUser)} className="space-y-4">
+                      <div className="grid grid-cols-2 gap-4">
+                        <FormField
+                          control={createForm.control}
+                          name="full_name"
+                          render={({ field }) => (
+                            <FormItem className="col-span-2">
+                              <FormLabel>Nome Completo *</FormLabel>
+                              <FormControl>
+                                <Input placeholder="João Silva" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={createForm.control}
+                          name="email"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Email *</FormLabel>
+                              <FormControl>
+                                <Input placeholder="email@exemplo.com" type="email" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={createForm.control}
+                          name="password"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Palavra-passe *</FormLabel>
+                              <FormControl>
+                                <Input placeholder="••••••••" type="password" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={createForm.control}
+                          name="phone"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Telefone</FormLabel>
+                              <FormControl>
+                                <Input placeholder="+244 923 456 789" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={createForm.control}
+                          name="position"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Cargo</FormLabel>
+                              <FormControl>
+                                <Input placeholder="Técnico Agrícola" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={createForm.control}
+                          name="department"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Departamento</FormLabel>
+                              <FormControl>
+                                <Input placeholder="Direcção Provincial" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={createForm.control}
+                          name="role"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Papel Inicial</FormLabel>
+                              <Select onValueChange={field.onChange} value={field.value}>
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Selecione um papel" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  {availableRoles.map((role) => (
+                                    <SelectItem key={role} value={role}>
+                                      {getRoleLabel(role)}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={createForm.control}
+                          name="province_id"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Província</FormLabel>
+                              <Select 
+                                onValueChange={(value) => {
+                                  field.onChange(value);
+                                  setSelectedProvinceId(value);
+                                  createForm.setValue('municipality_id', '');
+                                }} 
+                                value={field.value}
+                              >
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Selecione" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  {provinces?.map((p) => (
+                                    <SelectItem key={p.id} value={p.id}>
+                                      {p.name}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={createForm.control}
+                          name="municipality_id"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Município</FormLabel>
+                              <Select onValueChange={field.onChange} value={field.value} disabled={!selectedProvinceId}>
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Selecione" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  {municipalities?.map((m) => (
+                                    <SelectItem key={m.id} value={m.id}>
+                                      {m.name}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                      <div className="flex justify-end gap-2 pt-4">
+                        <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
+                          Cancelar
+                        </Button>
+                        <Button type="submit" disabled={createUserMutation.isPending}>
+                          {createUserMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                          Criar Utilizador
+                        </Button>
+                      </div>
+                    </form>
+                  </Form>
+                </TabsContent>
+
+                <TabsContent value="assign" className="mt-4">
+                  <Form {...assignForm}>
+                    <form onSubmit={assignForm.handleSubmit(handleAssignRole)} className="space-y-4">
+                      <FormField
+                        control={assignForm.control}
+                        name="user_id"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Utilizador</FormLabel>
+                            <Select onValueChange={field.onChange} value={field.value}>
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Selecione o utilizador" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                {users?.map((u) => (
+                                  <SelectItem key={u.id} value={u.id}>
+                                    {u.full_name} ({u.email})
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={assignForm.control}
+                        name="role"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Papel</FormLabel>
+                            <Select onValueChange={field.onChange} value={field.value}>
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Selecione o papel" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                {availableRoles.map((role) => (
+                                  <SelectItem key={role} value={role}>
+                                    {getRoleLabel(role)}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <div className="flex justify-end gap-2 pt-4">
+                        <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
+                          Cancelar
+                        </Button>
+                        <Button type="submit" disabled={assignRoleMutation.isPending}>
+                          {assignRoleMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                          Atribuir Papel
+                        </Button>
+                      </div>
+                    </form>
+                  </Form>
+                </TabsContent>
+              </Tabs>
             </DialogContent>
           </Dialog>
         </div>
