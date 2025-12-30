@@ -1,11 +1,13 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { MapPin, AlertTriangle, Loader2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { MapPin, AlertTriangle, Loader2, Plus, MousePointer } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useOccurrences } from '@/hooks/useOccurrences';
+import { OccurrenceForm } from './OccurrenceForm';
 
 // Angola province coordinates (approximate centroids)
 const PROVINCE_COORDINATES: Record<string, [number, number]> = {
@@ -51,10 +53,14 @@ export function OccurrencesMap() {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const markersRef = useRef<mapboxgl.Marker[]>([]);
+  const clickMarkerRef = useRef<mapboxgl.Marker | null>(null);
   const [mapboxToken, setMapboxToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [provinces, setProvinces] = useState<Record<string, string>>({});
+  const [clickMode, setClickMode] = useState(false);
+  const [showForm, setShowForm] = useState(false);
+  const [clickCoordinates, setClickCoordinates] = useState<{ lat: number; lng: number } | null>(null);
 
   const { data: occurrences } = useOccurrences();
 
@@ -91,6 +97,39 @@ export function OccurrencesMap() {
     fetchProvinces();
   }, []);
 
+  // Handle map click
+  const handleMapClick = useCallback((e: mapboxgl.MapMouseEvent) => {
+    if (!clickMode) return;
+    
+    const { lng, lat } = e.lngLat;
+    setClickCoordinates({ lat, lng });
+    
+    // Remove previous click marker
+    if (clickMarkerRef.current) {
+      clickMarkerRef.current.remove();
+    }
+    
+    // Create new click marker
+    const el = document.createElement('div');
+    el.className = 'relative';
+    el.innerHTML = `
+      <div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground shadow-lg animate-bounce">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+      </div>
+    `;
+    
+    clickMarkerRef.current = new mapboxgl.Marker(el)
+      .setLngLat([lng, lat])
+      .addTo(map.current!);
+    
+    // Open form
+    setShowForm(true);
+    setClickMode(false);
+  }, [clickMode]);
+
   // Initialize map
   useEffect(() => {
     if (!mapContainer.current || !mapboxToken) return;
@@ -121,6 +160,36 @@ export function OccurrencesMap() {
       map.current?.remove();
     };
   }, [mapboxToken]);
+
+  // Add click handler
+  useEffect(() => {
+    if (!map.current) return;
+    
+    map.current.on('click', handleMapClick);
+    
+    // Change cursor based on click mode
+    if (clickMode) {
+      map.current.getCanvas().style.cursor = 'crosshair';
+    } else {
+      map.current.getCanvas().style.cursor = '';
+    }
+    
+    return () => {
+      map.current?.off('click', handleMapClick);
+    };
+  }, [handleMapClick, clickMode]);
+
+  // Handle form close
+  const handleFormClose = (open: boolean) => {
+    setShowForm(open);
+    if (!open) {
+      setClickCoordinates(null);
+      if (clickMarkerRef.current) {
+        clickMarkerRef.current.remove();
+        clickMarkerRef.current = null;
+      }
+    }
+  };
 
   // Add markers for occurrences
   useEffect(() => {
@@ -230,44 +299,79 @@ export function OccurrencesMap() {
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <MapPin className="h-5 w-5" />
-          Mapa de Ocorrências
-        </CardTitle>
-        <CardDescription>
-          Visualização geográfica das ocorrências por província
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="p-0">
-        <div className="relative">
-          <div ref={mapContainer} className="h-[500px] rounded-b-lg" />
-          
-          {/* Legend */}
-          <div className="absolute bottom-4 left-4 bg-background/90 backdrop-blur-sm rounded-lg p-3 shadow-lg">
-            <p className="text-xs font-medium mb-2">Severidade</p>
-            <div className="space-y-1">
-              {Object.entries(SEVERITY_COLORS).map(([severity, color]) => (
-                <div key={severity} className="flex items-center gap-2 text-xs">
-                  <div className="w-3 h-3 rounded-full" style={{ backgroundColor: color }} />
-                  <span className="capitalize">{severity === 'critical' ? 'Crítico' : severity === 'high' ? 'Alto' : severity === 'medium' ? 'Médio' : 'Baixo'}</span>
-                </div>
-              ))}
+    <>
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <MapPin className="h-5 w-5" />
+                Mapa de Ocorrências
+              </CardTitle>
+              <CardDescription>
+                Visualização geográfica das ocorrências por província
+              </CardDescription>
             </div>
+            <Button
+              variant={clickMode ? "default" : "outline"}
+              size="sm"
+              onClick={() => setClickMode(!clickMode)}
+              className="gap-2"
+            >
+              {clickMode ? (
+                <>
+                  <MousePointer className="h-4 w-4" />
+                  Clique no mapa...
+                </>
+              ) : (
+                <>
+                  <Plus className="h-4 w-4" />
+                  Nova no Mapa
+                </>
+              )}
+            </Button>
           </div>
+        </CardHeader>
+        <CardContent className="p-0">
+          <div className="relative">
+            {clickMode && (
+              <div className="absolute top-0 left-0 right-0 z-10 bg-primary text-primary-foreground text-center py-2 text-sm animate-pulse">
+                Clique no mapa para selecionar a localização da ocorrência
+              </div>
+            )}
+            <div ref={mapContainer} className="h-[500px] rounded-b-lg" />
+            
+            {/* Legend */}
+            <div className="absolute bottom-4 left-4 bg-background/90 backdrop-blur-sm rounded-lg p-3 shadow-lg">
+              <p className="text-xs font-medium mb-2">Severidade</p>
+              <div className="space-y-1">
+                {Object.entries(SEVERITY_COLORS).map(([severity, color]) => (
+                  <div key={severity} className="flex items-center gap-2 text-xs">
+                    <div className="w-3 h-3 rounded-full" style={{ backgroundColor: color }} />
+                    <span className="capitalize">{severity === 'critical' ? 'Crítico' : severity === 'high' ? 'Alto' : severity === 'medium' ? 'Médio' : 'Baixo'}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
 
-          {/* Stats overlay */}
-          <div className="absolute top-4 left-4 bg-background/90 backdrop-blur-sm rounded-lg p-3 shadow-lg">
-            <div className="flex items-center gap-2">
-              <Badge variant="outline">{occurrences?.length || 0} Ocorrências</Badge>
-              <Badge variant="destructive">
-                {occurrences?.filter(o => o.severity === 'critical').length || 0} Críticas
-              </Badge>
+            {/* Stats overlay */}
+            <div className="absolute top-4 left-4 bg-background/90 backdrop-blur-sm rounded-lg p-3 shadow-lg">
+              <div className="flex items-center gap-2">
+                <Badge variant="outline">{occurrences?.length || 0} Ocorrências</Badge>
+                <Badge variant="destructive">
+                  {occurrences?.filter(o => o.severity === 'critical').length || 0} Críticas
+                </Badge>
+              </div>
             </div>
           </div>
-        </div>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+
+      <OccurrenceForm 
+        open={showForm} 
+        onOpenChange={handleFormClose}
+        initialCoordinates={clickCoordinates}
+      />
+    </>
   );
 }
