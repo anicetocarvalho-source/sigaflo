@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
+import { useAuth, getRoleLabel } from '@/contexts/AuthContext';
 import {
   LayoutDashboard,
   Users,
@@ -21,6 +22,8 @@ import {
   Bell,
   QrCode,
   ExternalLink,
+  TrendingUp,
+  UserCog,
 } from 'lucide-react';
 
 interface NavItem {
@@ -28,6 +31,7 @@ interface NavItem {
   href?: string;
   icon: React.ElementType;
   children?: { label: string; href: string }[];
+  adminOnly?: boolean;
 }
 
 const navigation: NavItem[] = [
@@ -44,6 +48,11 @@ const navigation: NavItem[] = [
       { label: 'Escolas de Campo', href: '/agricultores/escolas' },
       { label: 'Cooperativas', href: '/agricultores/cooperativas' },
     ],
+  },
+  {
+    label: 'Histórico de Produção',
+    href: '/producao',
+    icon: TrendingUp,
   },
   {
     label: 'Certificados',
@@ -102,6 +111,12 @@ const navigation: NavItem[] = [
       { label: 'Políticas', href: '/arroz/politicas' },
     ],
   },
+  {
+    label: 'Gestão de Utilizadores',
+    href: '/utilizadores',
+    icon: UserCog,
+    adminOnly: true,
+  },
 ];
 
 const secondaryNavigation = [
@@ -113,6 +128,7 @@ const secondaryNavigation = [
 
 export function Sidebar() {
   const location = useLocation();
+  const { profile, roles, signOut, isAdmin } = useAuth();
   const [expandedItems, setExpandedItems] = useState<string[]>(['Produção de Arroz']);
 
   const toggleExpand = (label: string) => {
@@ -124,6 +140,17 @@ export function Sidebar() {
   const isActive = (href: string) => location.pathname === href;
   const isChildActive = (children?: { href: string }[]) =>
     children?.some(child => location.pathname === child.href);
+
+  // Filter navigation items based on admin status
+  const visibleNavigation = navigation.filter(item => !item.adminOnly || isAdmin);
+
+  const primaryRole = roles[0];
+  const initials = profile?.full_name
+    ?.split(' ')
+    .map((n) => n[0])
+    .slice(0, 2)
+    .join('')
+    .toUpperCase() || 'U';
 
   return (
     <aside className="fixed left-0 top-0 z-40 flex h-screen w-64 flex-col sidebar-gradient">
@@ -141,7 +168,7 @@ export function Sidebar() {
       {/* Main Navigation */}
       <nav className="flex-1 overflow-y-auto px-3 py-4">
         <div className="space-y-1">
-          {navigation.map(item => (
+          {visibleNavigation.map(item => (
             <div key={item.label}>
               {item.href ? (
                 <Link
@@ -243,11 +270,15 @@ export function Sidebar() {
       <div className="border-t border-sidebar-border p-3">
         <div className="flex items-center gap-3 rounded-lg bg-sidebar-accent/50 p-3">
           <div className="flex h-9 w-9 items-center justify-center rounded-full bg-sidebar-primary text-sm font-semibold text-sidebar-primary-foreground">
-            AD
+            {initials}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="truncate text-sm font-medium text-sidebar-foreground">Admin Nacional</p>
-            <p className="truncate text-xs text-sidebar-foreground/60">MINAGRIF</p>
+            <p className="truncate text-sm font-medium text-sidebar-foreground">
+              {profile?.full_name || 'Utilizador'}
+            </p>
+            <p className="truncate text-xs text-sidebar-foreground/60">
+              {primaryRole ? getRoleLabel(primaryRole) : 'Sem papel atribuído'}
+            </p>
           </div>
         </div>
         <div className="mt-2 flex gap-2">
@@ -258,7 +289,10 @@ export function Sidebar() {
             <Settings className="h-4 w-4" />
             Configurações
           </Link>
-          <button className="flex flex-1 items-center justify-center gap-2 rounded-lg py-2 text-xs text-sidebar-foreground/70 transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground">
+          <button 
+            onClick={signOut}
+            className="flex flex-1 items-center justify-center gap-2 rounded-lg py-2 text-xs text-sidebar-foreground/70 transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground"
+          >
             <LogOut className="h-4 w-4" />
             Sair
           </button>
