@@ -31,6 +31,7 @@ type FormValues = z.infer<typeof formSchema>;
 interface OccurrenceFormProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  initialCoordinates?: { lat: number; lng: number } | null;
 }
 
 const occurrenceTypes = [
@@ -51,7 +52,7 @@ const severityConfig: Record<string, { label: string; color: string; icon: React
   critical: { label: 'Crítico', color: 'bg-red-500', icon: <AlertTriangle className="h-4 w-4" /> },
 };
 
-export function OccurrenceForm({ open, onOpenChange }: OccurrenceFormProps) {
+export function OccurrenceForm({ open, onOpenChange, initialCoordinates }: OccurrenceFormProps) {
   const [provinces, setProvinces] = useState<any[]>([]);
   const [municipalities, setMunicipalities] = useState<any[]>([]);
   const [aiClassification, setAiClassification] = useState<any>(null);
@@ -66,8 +67,18 @@ export function OccurrenceForm({ open, onOpenChange }: OccurrenceFormProps) {
       title: '',
       occurrence_type: '',
       description: '',
+      latitude: initialCoordinates?.lat,
+      longitude: initialCoordinates?.lng,
     },
   });
+
+  // Update coordinates when initialCoordinates changes
+  useEffect(() => {
+    if (initialCoordinates) {
+      form.setValue('latitude', initialCoordinates.lat);
+      form.setValue('longitude', initialCoordinates.lng);
+    }
+  }, [initialCoordinates, form]);
 
   useEffect(() => {
     async function fetchProvinces() {
@@ -316,6 +327,18 @@ export function OccurrenceForm({ open, onOpenChange }: OccurrenceFormProps) {
                 )}
               />
             </div>
+
+            {/* Coordinates display */}
+            {(form.watch('latitude') || form.watch('longitude')) && (
+              <div className="rounded-lg border p-3 bg-muted/30">
+                <div className="flex items-center gap-2 text-sm">
+                  <span className="text-muted-foreground">📍 Coordenadas:</span>
+                  <span className="font-mono">
+                    {form.watch('latitude')?.toFixed(6)}, {form.watch('longitude')?.toFixed(6)}
+                  </span>
+                </div>
+              </div>
+            )}
 
             {/* AI Classification Button */}
             <div className="flex items-center gap-2">
