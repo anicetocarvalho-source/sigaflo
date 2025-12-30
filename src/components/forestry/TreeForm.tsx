@@ -155,7 +155,18 @@ export function TreeForm({ open, onClose, tree, preselectedLicenseId }: TreeForm
     });
 
     await createTree.mutateAsync({
-      ...data,
+      license_id: data.license_id,
+      tree_code: data.tree_code,
+      species: data.species,
+      wood_class: data.wood_class,
+      latitude: data.latitude,
+      longitude: data.longitude,
+      diameter_cm: data.diameter_cm ?? null,
+      height_m: data.height_m ?? null,
+      estimated_volume_m3: data.estimated_volume_m3 ?? null,
+      plot_number: data.plot_number || null,
+      health_status: data.health_status || null,
+      notes: data.notes || null,
       status: 'logged',
     });
     
