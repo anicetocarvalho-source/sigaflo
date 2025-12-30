@@ -19,6 +19,8 @@ import {
   Map,
   BarChart3,
   Bell,
+  QrCode,
+  ExternalLink,
 } from 'lucide-react';
 
 interface NavItem {
@@ -197,8 +199,23 @@ export function Sidebar() {
           ))}
         </div>
 
-        {/* Secondary Navigation */}
+        {/* Portal Público */}
         <div className="mt-6 border-t border-sidebar-border pt-4">
+          <p className="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-sidebar-foreground/50">
+            Portal Público
+          </p>
+          <Link
+            to="/verificar"
+            className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors bg-accent/20 text-sidebar-foreground hover:bg-accent/30"
+          >
+            <QrCode className="h-5 w-5" />
+            <span className="flex-1">Verificação de Documentos</span>
+            <ExternalLink className="h-3.5 w-3.5 opacity-60" />
+          </Link>
+        </div>
+
+        {/* Secondary Navigation */}
+        <div className="mt-4 border-t border-sidebar-border pt-4">
           <p className="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-sidebar-foreground/50">
             Ferramentas
           </p>
