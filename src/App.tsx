@@ -15,6 +15,10 @@ import FarmerEditPage from "./pages/farmers/FarmerEditPage";
 import CertificatesPage from "./pages/certificates/CertificatesPage";
 import CertificateNewPage from "./pages/certificates/CertificateNewPage";
 import CertificateDetailPage from "./pages/certificates/CertificateDetailPage";
+import ProductionPage from "./pages/production/ProductionPage";
+import ProductionNewPage from "./pages/production/ProductionNewPage";
+import ProductionDetailPage from "./pages/production/ProductionDetailPage";
+import ProductionEditPage from "./pages/production/ProductionEditPage";
 import ForestryPage from "./pages/forestry/ForestryPage";
 import CoffeePage from "./pages/coffee/CoffeePage";
 
@@ -47,6 +51,12 @@ const App = () => (
           <Route path="/certificados" element={<CertificatesPage />} />
           <Route path="/certificados/novo" element={<CertificateNewPage />} />
           <Route path="/certificados/:id" element={<CertificateDetailPage />} />
+          
+          {/* Production Module */}
+          <Route path="/producao" element={<ProductionPage />} />
+          <Route path="/producao/novo" element={<ProductionNewPage />} />
+          <Route path="/producao/:id" element={<ProductionDetailPage />} />
+          <Route path="/producao/:id/editar" element={<ProductionEditPage />} />
           
           {/* Occurrences */}
           <Route path="/ocorrencias/*" element={<Index />} />
