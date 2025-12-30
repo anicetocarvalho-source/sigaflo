@@ -1,9 +1,7 @@
-import { useNavigate, useParams, Link } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { FarmerForm } from '@/components/farmers/FarmerForm';
 import { useFarmer, useUpdateFarmer } from '@/hooks/useFarmers';
-import { ArrowLeft } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const FarmerEditPage = () => {
@@ -19,7 +17,7 @@ const FarmerEditPage = () => {
 
   if (isLoading) {
     return (
-      <MainLayout>
+      <MainLayout title="Editar Registo" subtitle="A carregar...">
         <div className="space-y-6">
           <Skeleton className="h-10 w-64" />
           <Skeleton className="h-96 w-full" />
@@ -29,26 +27,12 @@ const FarmerEditPage = () => {
   }
 
   return (
-    <MainLayout>
-      <div className="space-y-6">
-        <div className="flex items-center gap-4">
-          <Link to={`/agricultores/${id}`}>
-            <Button variant="ghost" size="icon">
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-          </Link>
-          <div>
-            <h1 className="text-3xl font-bold">Editar Registo</h1>
-            <p className="text-muted-foreground">{farmer?.name}</p>
-          </div>
-        </div>
-
-        <FarmerForm 
-          farmer={farmer} 
-          onSubmit={handleSubmit} 
-          isLoading={updateFarmer.isPending} 
-        />
-      </div>
+    <MainLayout title="Editar Registo" subtitle={farmer?.name || ''}>
+      <FarmerForm 
+        farmer={farmer} 
+        onSubmit={handleSubmit} 
+        isLoading={updateFarmer.isPending} 
+      />
     </MainLayout>
   );
 };
