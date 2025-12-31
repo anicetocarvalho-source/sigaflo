@@ -1,6 +1,5 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -30,20 +29,7 @@ import {
 } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
-
-const productionSchema = z.object({
-  province_id: z.string().min(1, 'Seleccione uma província'),
-  year: z.coerce.number().min(2000).max(2100),
-  season: z.string().min(1, 'Seleccione uma época'),
-  cultivated_area_ha: z.coerce.number().min(0, 'Valor deve ser positivo'),
-  harvested_area_ha: z.coerce.number().min(0, 'Valor deve ser positivo'),
-  production_tonnes: z.coerce.number().min(0, 'Valor deve ser positivo'),
-  variety: z.string().optional(),
-  irrigation_type: z.string().optional(),
-  notes: z.string().max(500, 'Máximo 500 caracteres').optional(),
-});
-
-type ProductionFormData = z.infer<typeof productionSchema>;
+import { riceProductionFormSchema, type RiceProductionFormValues } from '@/lib/validations';
 
 interface Props {
   open: boolean;
@@ -65,8 +51,8 @@ export function RiceProductionForm({ open, onOpenChange }: Props) {
     },
   });
 
-  const form = useForm<ProductionFormData>({
-    resolver: zodResolver(productionSchema),
+  const form = useForm<RiceProductionFormValues>({
+    resolver: zodResolver(riceProductionFormSchema),
     defaultValues: {
       year: new Date().getFullYear(),
       season: 'principal',
@@ -77,7 +63,7 @@ export function RiceProductionForm({ open, onOpenChange }: Props) {
   });
 
   const mutation = useMutation({
-    mutationFn: async (values: ProductionFormData) => {
+    mutationFn: async (values: RiceProductionFormValues) => {
       const productivity_kg_ha = values.harvested_area_ha > 0
         ? (values.production_tonnes * 1000) / values.harvested_area_ha
         : null;
@@ -108,7 +94,7 @@ export function RiceProductionForm({ open, onOpenChange }: Props) {
     },
   });
 
-  const onSubmit = (values: ProductionFormData) => {
+  const onSubmit = (values: RiceProductionFormValues) => {
     mutation.mutate(values);
   };
 

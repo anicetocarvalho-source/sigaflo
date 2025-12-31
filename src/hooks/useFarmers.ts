@@ -1,9 +1,14 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { 
+  type FarmerType as FarmerTypeConstant, 
+  type WorkflowStatus as WorkflowStatusConstant 
+} from '@/lib/constants';
 
-export type FarmerType = 'individual' | 'family' | 'cooperative' | 'field_school' | 'company';
-export type WorkflowStatus = 'draft' | 'submitted' | 'validated' | 'approved' | 'issued' | 'rejected' | 'expired';
+// Re-export types from constants for backwards compatibility
+export type FarmerType = FarmerTypeConstant | 'individual' | 'family' | 'cooperative' | 'field_school' | 'company';
+export type WorkflowStatus = WorkflowStatusConstant | 'expired';
 
 export interface Farmer {
   id: string;
