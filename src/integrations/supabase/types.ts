@@ -1493,18 +1493,27 @@ export type Database = {
           card_generated_at: string | null
           card_number: string | null
           card_qr_code: string | null
+          children_15_to_18: number | null
+          children_5_to_14: number | null
+          children_count: number | null
+          children_under_5: number | null
           commune_id: string | null
           created_at: string
           created_by: string | null
           cultivated_area_ha: number | null
+          dependents_count: number | null
           document_bi_url: string | null
           document_license_url: string | null
           document_nif_url: string | null
           document_other_url: string | null
           email: string | null
+          family_workers_count: number | null
           farmer_type: Database["public"]["Enums"]["farmer_type"]
           field_school_id: string | null
           fingerprint_data: string | null
+          head_of_household: boolean | null
+          household_members_count: number | null
+          household_notes: string | null
           id: string
           irrigation_type: string | null
           is_active: boolean | null
@@ -1520,6 +1529,8 @@ export type Database = {
           registration_date: string | null
           registration_number: string | null
           secondary_crops: string[] | null
+          spouse_bi_nif: string | null
+          spouse_name: string | null
           status: Database["public"]["Enums"]["workflow_status"] | null
           total_area_ha: number | null
           trade_name: string | null
@@ -1533,18 +1544,27 @@ export type Database = {
           card_generated_at?: string | null
           card_number?: string | null
           card_qr_code?: string | null
+          children_15_to_18?: number | null
+          children_5_to_14?: number | null
+          children_count?: number | null
+          children_under_5?: number | null
           commune_id?: string | null
           created_at?: string
           created_by?: string | null
           cultivated_area_ha?: number | null
+          dependents_count?: number | null
           document_bi_url?: string | null
           document_license_url?: string | null
           document_nif_url?: string | null
           document_other_url?: string | null
           email?: string | null
+          family_workers_count?: number | null
           farmer_type?: Database["public"]["Enums"]["farmer_type"]
           field_school_id?: string | null
           fingerprint_data?: string | null
+          head_of_household?: boolean | null
+          household_members_count?: number | null
+          household_notes?: string | null
           id?: string
           irrigation_type?: string | null
           is_active?: boolean | null
@@ -1560,6 +1580,8 @@ export type Database = {
           registration_date?: string | null
           registration_number?: string | null
           secondary_crops?: string[] | null
+          spouse_bi_nif?: string | null
+          spouse_name?: string | null
           status?: Database["public"]["Enums"]["workflow_status"] | null
           total_area_ha?: number | null
           trade_name?: string | null
@@ -1573,18 +1595,27 @@ export type Database = {
           card_generated_at?: string | null
           card_number?: string | null
           card_qr_code?: string | null
+          children_15_to_18?: number | null
+          children_5_to_14?: number | null
+          children_count?: number | null
+          children_under_5?: number | null
           commune_id?: string | null
           created_at?: string
           created_by?: string | null
           cultivated_area_ha?: number | null
+          dependents_count?: number | null
           document_bi_url?: string | null
           document_license_url?: string | null
           document_nif_url?: string | null
           document_other_url?: string | null
           email?: string | null
+          family_workers_count?: number | null
           farmer_type?: Database["public"]["Enums"]["farmer_type"]
           field_school_id?: string | null
           fingerprint_data?: string | null
+          head_of_household?: boolean | null
+          household_members_count?: number | null
+          household_notes?: string | null
           id?: string
           irrigation_type?: string | null
           is_active?: boolean | null
@@ -1600,6 +1631,8 @@ export type Database = {
           registration_date?: string | null
           registration_number?: string | null
           secondary_crops?: string[] | null
+          spouse_bi_nif?: string | null
+          spouse_name?: string | null
           status?: Database["public"]["Enums"]["workflow_status"] | null
           total_area_ha?: number | null
           trade_name?: string | null

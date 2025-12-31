@@ -21,7 +21,7 @@ import {
 } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { MapPin, User, Leaf, Building2, Users, FileText, Camera, Award } from 'lucide-react';
+import { MapPin, User, Leaf, Building2, Users, FileText, Camera, Award, Home } from 'lucide-react';
 import { useProvinces, useMunicipalities, useCommunes, useFarmers } from '@/hooks/useFarmers';
 import type { Farmer, FarmerType } from '@/hooks/useFarmers';
 import { MemberSelector } from './MemberSelector';
@@ -57,6 +57,18 @@ const farmerSchema = z.object({
   // Fields for company documents
   document_license_url: z.string().optional().nullable(),
   document_nif_url: z.string().optional().nullable(),
+  // Fields for household/family aggregate
+  household_members_count: z.number().min(0).optional().nullable(),
+  dependents_count: z.number().min(0).optional().nullable(),
+  spouse_name: z.string().max(100).optional().nullable(),
+  spouse_bi_nif: z.string().max(20).optional().nullable(),
+  children_count: z.number().min(0).optional().nullable(),
+  children_under_5: z.number().min(0).optional().nullable(),
+  children_5_to_14: z.number().min(0).optional().nullable(),
+  children_15_to_18: z.number().min(0).optional().nullable(),
+  family_workers_count: z.number().min(0).optional().nullable(),
+  head_of_household: z.boolean().optional().nullable(),
+  household_notes: z.string().optional().nullable(),
 });
 
 type FarmerFormData = z.infer<typeof farmerSchema>;
@@ -129,6 +141,18 @@ export const FarmerForm = ({ farmer, onSubmit, isLoading }: FarmerFormProps) => 
       document_other_url: (farmer as any)?.document_other_url || undefined,
       document_license_url: (farmer as any)?.document_license_url || undefined,
       document_nif_url: (farmer as any)?.document_nif_url || undefined,
+      // Household fields
+      household_members_count: (farmer as any)?.household_members_count || undefined,
+      dependents_count: (farmer as any)?.dependents_count || undefined,
+      spouse_name: (farmer as any)?.spouse_name || '',
+      spouse_bi_nif: (farmer as any)?.spouse_bi_nif || '',
+      children_count: (farmer as any)?.children_count || undefined,
+      children_under_5: (farmer as any)?.children_under_5 || undefined,
+      children_5_to_14: (farmer as any)?.children_5_to_14 || undefined,
+      children_15_to_18: (farmer as any)?.children_15_to_18 || undefined,
+      family_workers_count: (farmer as any)?.family_workers_count || undefined,
+      head_of_household: (farmer as any)?.head_of_household ?? true,
+      household_notes: (farmer as any)?.household_notes || '',
     },
   });
 
@@ -158,11 +182,17 @@ export const FarmerForm = ({ farmer, onSubmit, isLoading }: FarmerFormProps) => 
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
         <Tabs defaultValue="basic" className="w-full">
-          <TabsList className={`grid w-full ${(farmerType === 'individual' || farmerType === 'family' || farmerType === 'company') ? 'grid-cols-5' : 'grid-cols-4'}`}>
+          <TabsList className={`grid w-full ${farmerType === 'individual' ? 'grid-cols-6' : (farmerType === 'family' || farmerType === 'company') ? 'grid-cols-5' : 'grid-cols-4'}`}>
             <TabsTrigger value="basic" className="flex items-center gap-2">
               <User className="h-4 w-4" />
               <span className="hidden sm:inline">Dados Básicos</span>
             </TabsTrigger>
+            {farmerType === 'individual' && (
+              <TabsTrigger value="household" className="flex items-center gap-2">
+                <Home className="h-4 w-4" />
+                <span className="hidden sm:inline">Agregado</span>
+              </TabsTrigger>
+            )}
             {(farmerType === 'individual' || farmerType === 'family' || farmerType === 'company') && (
               <TabsTrigger value="documents" className="flex items-center gap-2">
                 <FileText className="h-4 w-4" />
@@ -305,7 +335,263 @@ export const FarmerForm = ({ farmer, onSubmit, isLoading }: FarmerFormProps) => 
             </Card>
           </TabsContent>
 
-          {/* Documents tab - for individual, family, and company */}
+          {/* Household tab - only for individual farmers */}
+          {farmerType === 'individual' && (
+            <TabsContent value="household">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Home className="h-5 w-5" />
+                    Agregado Familiar
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <FormField
+                      control={form.control}
+                      name="head_of_household"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                          <div className="space-y-0.5">
+                            <FormLabel className="text-base">Chefe de Família</FormLabel>
+                            <p className="text-sm text-muted-foreground">
+                              Este agricultor é o chefe do agregado familiar?
+                            </p>
+                          </div>
+                          <FormControl>
+                            <input
+                              type="checkbox"
+                              checked={field.value ?? true}
+                              onChange={field.onChange}
+                              className="h-5 w-5 accent-primary"
+                            />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="household_members_count"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Total de Membros do Agregado</FormLabel>
+                          <FormControl>
+                            <Input 
+                              type="number" 
+                              min="1"
+                              {...field} 
+                              value={field.value ?? ''} 
+                              onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : null)}
+                              placeholder="Número total de pessoas"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <div className="border-t pt-4">
+                    <h4 className="font-medium mb-4">Cônjuge / Companheiro(a)</h4>
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <FormField
+                        control={form.control}
+                        name="spouse_name"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Nome do Cônjuge</FormLabel>
+                            <FormControl>
+                              <Input {...field} value={field.value || ''} placeholder="Nome completo" />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="spouse_bi_nif"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>BI / NIF do Cônjuge</FormLabel>
+                            <FormControl>
+                              <Input {...field} value={field.value || ''} placeholder="Número de identificação" />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="border-t pt-4">
+                    <h4 className="font-medium mb-4">Filhos</h4>
+                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                      <FormField
+                        control={form.control}
+                        name="children_count"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Total de Filhos</FormLabel>
+                            <FormControl>
+                              <Input 
+                                type="number" 
+                                min="0"
+                                {...field} 
+                                value={field.value ?? ''} 
+                                onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : null)}
+                                placeholder="0"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="children_under_5"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Menores de 5 anos</FormLabel>
+                            <FormControl>
+                              <Input 
+                                type="number" 
+                                min="0"
+                                {...field} 
+                                value={field.value ?? ''} 
+                                onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : null)}
+                                placeholder="0"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="children_5_to_14"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Entre 5 e 14 anos</FormLabel>
+                            <FormControl>
+                              <Input 
+                                type="number" 
+                                min="0"
+                                {...field} 
+                                value={field.value ?? ''} 
+                                onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : null)}
+                                placeholder="0"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="children_15_to_18"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Entre 15 e 18 anos</FormLabel>
+                            <FormControl>
+                              <Input 
+                                type="number" 
+                                min="0"
+                                {...field} 
+                                value={field.value ?? ''} 
+                                onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : null)}
+                                placeholder="0"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="border-t pt-4">
+                    <h4 className="font-medium mb-4">Dependentes e Trabalhadores</h4>
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <FormField
+                        control={form.control}
+                        name="dependents_count"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Número de Dependentes</FormLabel>
+                            <FormControl>
+                              <Input 
+                                type="number" 
+                                min="0"
+                                {...field} 
+                                value={field.value ?? ''} 
+                                onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : null)}
+                                placeholder="Pessoas que não trabalham"
+                              />
+                            </FormControl>
+                            <p className="text-xs text-muted-foreground">
+                              Membros do agregado que dependem financeiramente do agricultor
+                            </p>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="family_workers_count"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Trabalhadores Familiares</FormLabel>
+                            <FormControl>
+                              <Input 
+                                type="number" 
+                                min="0"
+                                {...field} 
+                                value={field.value ?? ''} 
+                                onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : null)}
+                                placeholder="Membros que trabalham na exploração"
+                              />
+                            </FormControl>
+                            <p className="text-xs text-muted-foreground">
+                              Membros da família que ajudam nas actividades agrícolas
+                            </p>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="border-t pt-4">
+                    <FormField
+                      control={form.control}
+                      name="household_notes"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Observações sobre o Agregado</FormLabel>
+                          <FormControl>
+                            <textarea
+                              {...field}
+                              value={field.value || ''}
+                              className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                              placeholder="Informações adicionais sobre a composição familiar, condições especiais, etc."
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          )}
+
           {(farmerType === 'individual' || farmerType === 'family') && (
             <TabsContent value="documents">
               <Card>
