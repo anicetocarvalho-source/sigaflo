@@ -29,6 +29,7 @@ import IPNPage from "./pages/ipn/IPNPage";
 import IncentivesPage from "./pages/incentives/IncentivesPage";
 import IncentivesAnalyticsPage from "./pages/incentives-analytics/IncentivesAnalyticsPage";
 import ClimateRiskPage from "./pages/climate-risk/ClimateRiskPage";
+import ClimateRiskAnalyticsPage from "./pages/climate-risk-analytics/ClimateRiskAnalyticsPage";
 import DataLabPage from "./pages/data-lab/DataLabPage";
 
 // Auth Pages
@@ -121,6 +122,9 @@ const App = () => (
             
             {/* Climate Risk Module */}
             <Route path="/risco-climatico/*" element={<ProtectedRoute><ClimateRiskPage /></ProtectedRoute>} />
+            
+            {/* Climate Risk Analytics Module */}
+            <Route path="/risco-climatico-analytics/*" element={<ProtectedRoute><ClimateRiskAnalyticsPage /></ProtectedRoute>} />
             
             {/* Data Lab Module */}
             <Route 
