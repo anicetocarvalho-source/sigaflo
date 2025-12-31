@@ -42,14 +42,8 @@ export function IncentivesDashboard() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Gestão de Incentivos e Subsídios</h1>
-          <p className="text-muted-foreground">
-            Automatize, simule e avalie políticas de incentivo
-          </p>
-        </div>
+      {/* Action Button */}
+      <div className="flex justify-end">
         <Button onClick={() => setShowProgramForm(true)}>
           <Plus className="h-4 w-4 mr-2" />
           Novo Programa
