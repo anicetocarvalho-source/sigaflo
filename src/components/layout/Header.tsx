@@ -45,18 +45,6 @@ export function Header({ title, subtitle }: HeaderProps) {
 
         {/* User Menu */}
         <UserMenu />
-
-        {/* Date/Time */}
-        <div className="hidden lg:block border-l border-border pl-4">
-          <p className="text-sm font-medium text-foreground">
-            {new Date().toLocaleDateString('pt-AO', { 
-              weekday: 'long',
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric'
-            })}
-          </p>
-        </div>
       </div>
     </header>
   );
