@@ -13,6 +13,7 @@ import NotFound from "./pages/NotFound";
 import RiceDashboard from "./pages/rice/RiceDashboard";
 import RiceProductionPage from "./pages/rice/RiceProductionPage";
 import RiceImportsPage from "./pages/rice/RiceImportsPage";
+import RicePricesPage from "./pages/rice/RicePricesPage";
 import FarmersListPage from "./pages/farmers/FarmersListPage";
 import FarmerNewPage from "./pages/farmers/FarmerNewPage";
 import FarmerDetailPage from "./pages/farmers/FarmerDetailPage";
@@ -153,6 +154,7 @@ const App = () => (
             <Route path="/arroz" element={<ProtectedRoute><RiceDashboard /></ProtectedRoute>} />
             <Route path="/arroz/producao" element={<ProtectedRoute><RiceProductionPage /></ProtectedRoute>} />
             <Route path="/arroz/importacoes" element={<ProtectedRoute><RiceImportsPage /></ProtectedRoute>} />
+            <Route path="/arroz/precos" element={<ProtectedRoute><RicePricesPage /></ProtectedRoute>} />
             <Route path="/arroz/*" element={<ProtectedRoute><RiceDashboard /></ProtectedRoute>} />
             
             {/* ONAF Module */}
