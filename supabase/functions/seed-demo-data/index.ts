@@ -6,9 +6,6 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Angola provinces with their IDs from database
-const PROVINCES_MAP: Record<string, string> = {};
-
 // Helper to generate random coordinates within Angola
 const generateAngolaCoordinates = () => {
   const lat = -5.5 - Math.random() * 12; // -5.5 to -17.5
@@ -29,6 +26,7 @@ const generateName = () => `${firstNames[Math.floor(Math.random() * firstNames.l
 
 // Crop types common in Angola
 const crops = ['Milho', 'Mandioca', 'Feijão', 'Arroz', 'Amendoim', 'Batata-doce', 'Sorgo', 'Banana', 'Café', 'Algodão'];
+const currentYear = new Date().getFullYear();
 
 // Occurrence types
 const climateTypes = ['drought', 'flood', 'frost', 'storm', 'heatwave', 'wildfire'];
@@ -55,6 +53,7 @@ serve(async (req) => {
     const results: Record<string, { inserted: number; errors: string[] }> = {};
 
     // 1. Get provinces
+    console.log('Fetching provinces...');
     const { data: provinces, error: provError } = await supabase
       .from('provinces')
       .select('id, name');
@@ -62,8 +61,8 @@ serve(async (req) => {
     if (provError) throw new Error(`Failed to fetch provinces: ${provError.message}`);
     if (!provinces?.length) throw new Error('No provinces found');
 
-    provinces.forEach(p => PROVINCES_MAP[p.name] = p.id);
     const provinceIds = provinces.map(p => p.id);
+    console.log(`Found ${provinces.length} provinces`);
 
     // 2. Get municipalities for each province
     const { data: municipalities, error: munError } = await supabase
@@ -98,6 +97,7 @@ serve(async (req) => {
     console.log('Seeding farmers...');
     const farmerTypes = ['small', 'family', 'cooperative', 'field_school'];
     const farmerStatuses = ['draft', 'submitted', 'validated', 'approved', 'rejected'];
+    const irrigationTypes = ['sequeiro', 'irrigado', 'misto'];
     const farmers: any[] = [];
 
     for (let i = 0; i < 150; i++) {
@@ -119,34 +119,43 @@ serve(async (req) => {
       const farmerType = farmerTypes[Math.floor(Math.random() * farmerTypes.length)];
       const cropCount = Math.floor(Math.random() * 4) + 1;
       const selectedCrops = [...crops].sort(() => Math.random() - 0.5).slice(0, cropCount);
+      const secondaryCrops = [...crops].sort(() => Math.random() - 0.5).slice(0, Math.floor(Math.random() * 2));
+      const totalArea = parseFloat((Math.random() * 50 + 0.5).toFixed(2));
+      const cultivatedArea = parseFloat((totalArea * (0.5 + Math.random() * 0.4)).toFixed(2));
 
       farmers.push({
-        full_name: generateName(),
+        name: generateName(),
         farmer_type: farmerType,
-        document_type: Math.random() > 0.3 ? 'bi' : 'passport',
-        document_number: `BI${String(Math.floor(Math.random() * 1000000000)).padStart(9, '0')}LA`,
+        bi_nif: `BI${String(Math.floor(Math.random() * 1000000000)).padStart(9, '0')}LA`,
         phone: `+244 9${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10000000).toString().padStart(7, '0')}`,
-        email: Math.random() > 0.5 ? `farmer${i}@demo.ao` : null,
+        email: Math.random() > 0.5 ? `agricultor${i}@demo.ao` : null,
         province_id: provinceId,
         municipality_id: municipalityId,
         commune_id: communeId,
-        locality: `Localidade ${Math.floor(Math.random() * 100)}`,
+        village: `Aldeia ${Math.floor(Math.random() * 100)}`,
+        address: `Rua Principal, nº ${Math.floor(Math.random() * 200)}`,
         latitude: coords.lat,
         longitude: coords.lng,
-        total_area_ha: parseFloat((Math.random() * 50 + 0.5).toFixed(2)),
-        cultivated_area_ha: parseFloat((Math.random() * 30 + 0.5).toFixed(2)),
-        crops: selectedCrops,
+        total_area_ha: totalArea,
+        cultivated_area_ha: cultivatedArea,
+        main_crops: selectedCrops,
+        secondary_crops: secondaryCrops.length > 0 ? secondaryCrops : null,
+        irrigation_type: irrigationTypes[Math.floor(Math.random() * irrigationTypes.length)],
         status: farmerStatuses[Math.floor(Math.random() * farmerStatuses.length)],
-        gender: Math.random() > 0.5 ? 'male' : 'female',
-        birth_date: randomDate(new Date(1950, 0, 1), new Date(2000, 0, 1)).toISOString().split('T')[0],
-        household_size: Math.floor(Math.random() * 10) + 1,
-        family_workers: Math.floor(Math.random() * 5),
-        hired_workers: Math.floor(Math.random() * 3),
-        registration_date: randomDate(new Date(2022, 0, 1), new Date()).toISOString(),
+        is_active: Math.random() > 0.1,
+        registration_number: `AGR-${currentYear}-${String(Math.floor(Math.random() * 100000)).padStart(5, '0')}`,
+        registration_date: randomDate(new Date(2022, 0, 1), new Date()).toISOString().split('T')[0],
+        household_members_count: Math.floor(Math.random() * 10) + 1,
+        dependents_count: Math.floor(Math.random() * 6),
+        family_workers_count: Math.floor(Math.random() * 5),
+        head_of_household: Math.random() > 0.3,
       });
     }
 
     const { error: farmersError } = await supabase.from('farmers').insert(farmers);
+    if (farmersError) {
+      console.error('Farmers insert error:', farmersError.message);
+    }
     results.farmers = {
       inserted: farmersError ? 0 : farmers.length,
       errors: farmersError ? [farmersError.message] : []
@@ -155,34 +164,40 @@ serve(async (req) => {
     // Get inserted farmers
     const { data: insertedFarmers } = await supabase
       .from('farmers')
-      .select('id, province_id, crops')
+      .select('id, province_id, main_crops')
+      .order('created_at', { ascending: false })
       .limit(150);
 
     const farmerIds = insertedFarmers?.map(f => f.id) || [];
+    console.log(`Inserted ${farmerIds.length} farmers`);
 
     // ========== PRODUCTION HISTORY ==========
     console.log('Seeding production history...');
     const productions: any[] = [];
     const seasons = ['main', 'secondary'];
-    const qualities = ['premium', 'standard', 'basic'];
+    const qualityGrades = ['A', 'B', 'C'];
 
     for (const farmer of (insertedFarmers || [])) {
       const numRecords = Math.floor(Math.random() * 5) + 1;
       
       for (let i = 0; i < numRecords; i++) {
         const year = 2020 + Math.floor(Math.random() * 5);
-        const cropType = (farmer.crops as string[])?.[0] || 'Milho';
-        const areaHa = parseFloat((Math.random() * 10 + 0.5).toFixed(2));
-        const yieldKg = parseFloat((areaHa * (Math.random() * 3000 + 500)).toFixed(2));
+        const cropType = (farmer.main_crops as string[])?.[0] || 'Milho';
+        const areaPlanted = parseFloat((Math.random() * 10 + 0.5).toFixed(2));
+        const expectedYield = parseFloat((areaPlanted * (Math.random() * 3000 + 500)).toFixed(2));
+        const actualYield = parseFloat((expectedYield * (0.6 + Math.random() * 0.5)).toFixed(2));
+        const yieldPerHa = parseFloat((actualYield / areaPlanted).toFixed(2));
 
         productions.push({
           farmer_id: farmer.id,
           year,
           season: seasons[Math.floor(Math.random() * seasons.length)],
           crop_type: cropType,
-          area_ha: areaHa,
-          yield_kg: yieldKg,
-          quality: qualities[Math.floor(Math.random() * qualities.length)],
+          area_planted_ha: areaPlanted,
+          expected_yield_kg: expectedYield,
+          actual_yield_kg: actualYield,
+          yield_per_ha: yieldPerHa,
+          quality_grade: qualityGrades[Math.floor(Math.random() * qualityGrades.length)],
           harvest_date: `${year}-${String(Math.floor(Math.random() * 6) + 4).padStart(2, '0')}-${String(Math.floor(Math.random() * 28) + 1).padStart(2, '0')}`,
           notes: Math.random() > 0.7 ? 'Dados de demonstração' : null,
         });
@@ -190,6 +205,9 @@ serve(async (req) => {
     }
 
     const { error: prodError } = await supabase.from('production_history').insert(productions);
+    if (prodError) {
+      console.error('Production insert error:', prodError.message);
+    }
     results.production_history = {
       inserted: prodError ? 0 : productions.length,
       errors: prodError ? [prodError.message] : []
@@ -199,7 +217,10 @@ serve(async (req) => {
     const { data: prodRecords } = await supabase
       .from('production_history')
       .select('id, farmer_id, year, season, crop_type')
+      .order('created_at', { ascending: false })
       .limit(100);
+
+    console.log(`Inserted ${prodRecords?.length || 0} production records`);
 
     // ========== AGRICULTURAL CERTIFICATES ==========
     console.log('Seeding certificates...');
@@ -228,6 +249,9 @@ serve(async (req) => {
     }
 
     const { error: certError } = await supabase.from('agricultural_certificates').insert(certificates);
+    if (certError) {
+      console.error('Certificates insert error:', certError.message);
+    }
     results.agricultural_certificates = {
       inserted: certError ? 0 : certificates.length,
       errors: certError ? [certError.message] : []
@@ -270,6 +294,9 @@ serve(async (req) => {
     }
 
     const { error: occError } = await supabase.from('climate_occurrences').insert(occurrences);
+    if (occError) {
+      console.error('Occurrences insert error:', occError.message);
+    }
     results.climate_occurrences = {
       inserted: occError ? 0 : occurrences.length,
       errors: occError ? [occError.message] : []
@@ -305,6 +332,9 @@ serve(async (req) => {
     }
 
     const { error: riceError } = await supabase.from('rice_production').insert(riceProduction);
+    if (riceError) {
+      console.error('Rice production insert error:', riceError.message);
+    }
     results.rice_production = {
       inserted: riceError ? 0 : riceProduction.length,
       errors: riceError ? [riceError.message] : []
@@ -342,6 +372,9 @@ serve(async (req) => {
     }
 
     const { error: impError } = await supabase.from('rice_imports').insert(riceImports);
+    if (impError) {
+      console.error('Rice imports insert error:', impError.message);
+    }
     results.rice_imports = {
       inserted: impError ? 0 : riceImports.length,
       errors: impError ? [impError.message] : []
@@ -374,6 +407,9 @@ serve(async (req) => {
     }
 
     const { error: priceError } = await supabase.from('rice_prices').insert(ricePrices);
+    if (priceError) {
+      console.error('Rice prices insert error:', priceError.message);
+    }
     results.rice_prices = {
       inserted: priceError ? 0 : ricePrices.length,
       errors: priceError ? [priceError.message] : []
@@ -413,6 +449,9 @@ serve(async (req) => {
     }
 
     const { error: consError } = await supabase.from('rice_consumption').insert(riceConsumption);
+    if (consError) {
+      console.error('Rice consumption insert error:', consError.message);
+    }
     results.rice_consumption = {
       inserted: consError ? 0 : riceConsumption.length,
       errors: consError ? [consError.message] : []
@@ -441,6 +480,9 @@ serve(async (req) => {
     }
 
     const { error: alertError } = await supabase.from('rice_alerts').insert(riceAlerts);
+    if (alertError) {
+      console.error('Rice alerts insert error:', alertError.message);
+    }
     results.rice_alerts = {
       inserted: alertError ? 0 : riceAlerts.length,
       errors: alertError ? [alertError.message] : []
@@ -457,6 +499,9 @@ serve(async (req) => {
     ];
 
     const { error: paramError } = await supabase.from('rice_parameters').insert(riceParams);
+    if (paramError) {
+      console.error('Rice parameters insert error:', paramError.message);
+    }
     results.rice_parameters = {
       inserted: paramError ? 0 : riceParams.length,
       errors: paramError ? [paramError.message] : []
@@ -481,7 +526,7 @@ serve(async (req) => {
       }
     };
 
-    console.log('Seed completed:', summary);
+    console.log('Seed completed:', JSON.stringify(summary));
 
     return new Response(
       JSON.stringify(summary),
