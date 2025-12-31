@@ -24,6 +24,8 @@ import ProductionEditPage from "./pages/production/ProductionEditPage";
 import ForestryPage from "./pages/forestry/ForestryPage";
 import CoffeePage from "./pages/coffee/CoffeePage";
 import OccurrencesPage from "./pages/occurrences/OccurrencesPage";
+import ONAFPage from "./pages/onaf/ONAFPage";
+import IPNPage from "./pages/ipn/IPNPage";
 
 // Auth Pages
 import AuthPage from "./pages/auth/AuthPage";
@@ -99,6 +101,12 @@ const App = () => (
             
             {/* Rice Strategic Module */}
             <Route path="/arroz/*" element={<ProtectedRoute><RiceDashboard /></ProtectedRoute>} />
+            
+            {/* ONAF Module */}
+            <Route path="/onaf/*" element={<ProtectedRoute><ONAFPage /></ProtectedRoute>} />
+            
+            {/* IPN Module */}
+            <Route path="/ipn/*" element={<ProtectedRoute><IPNPage /></ProtectedRoute>} />
             
             {/* Secondary Navigation */}
             <Route path="/relatorios" element={<ProtectedRoute><Index /></ProtectedRoute>} />
