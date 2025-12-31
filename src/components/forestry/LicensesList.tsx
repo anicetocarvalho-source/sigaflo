@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -79,6 +80,7 @@ interface LicensesListProps {
 }
 
 export function LicensesList({ onAddNew, onView, onEdit }: LicensesListProps) {
+  const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [typeFilter, setTypeFilter] = useState<string>('all');
@@ -87,6 +89,10 @@ export function LicensesList({ onAddNew, onView, onEdit }: LicensesListProps) {
     status: statusFilter !== 'all' ? statusFilter : undefined,
     type: typeFilter !== 'all' ? typeFilter : undefined,
   });
+
+  const handleViewDetail = (license: ForestLicense) => {
+    navigate(`/florestal/concessao/${license.id}`);
+  };
 
   const filteredLicenses = licenses?.filter(license => {
     if (!search) return true;
@@ -181,7 +187,11 @@ export function LicensesList({ onAddNew, onView, onEdit }: LicensesListProps) {
             </TableHeader>
             <TableBody>
               {filteredLicenses.map((license) => (
-                <TableRow key={license.id} className="cursor-pointer hover:bg-muted/50">
+                <TableRow 
+                  key={license.id} 
+                  className="cursor-pointer hover:bg-muted/50"
+                  onClick={() => handleViewDetail(license)}
+                >
                   <TableCell>
                     <div>
                       <p className="font-mono font-medium">{license.license_number}</p>
