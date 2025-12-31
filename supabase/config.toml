@@ -2,3 +2,9 @@ project_id = "rfgeckzjtbkqoijxwltm"
 
 [functions.occurrence-ai]
 verify_jwt = true
+
+[functions.report-occurrence-ai]
+verify_jwt = false
+
+[functions.occurrence-ai-recommendations]
+verify_jwt = false
