@@ -305,6 +305,50 @@ export type Database = {
           },
         ]
       }
+      eligibility_rules: {
+        Row: {
+          created_at: string
+          id: string
+          is_mandatory: boolean | null
+          operator: string
+          program_id: string
+          rule_name: string
+          rule_type: string
+          value: string
+          weight: number | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_mandatory?: boolean | null
+          operator?: string
+          program_id: string
+          rule_name: string
+          rule_type: string
+          value: string
+          weight?: number | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_mandatory?: boolean | null
+          operator?: string
+          program_id?: string
+          rule_name?: string
+          rule_type?: string
+          value?: string
+          weight?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "eligibility_rules_program_id_fkey"
+            columns: ["program_id"]
+            isOneToOne: false
+            referencedRelation: "incentive_programs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       farmers: {
         Row: {
           address: string | null
@@ -1782,6 +1826,284 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      incentive_alerts: {
+        Row: {
+          actual_value: number | null
+          alert_type: string
+          allocation_id: string | null
+          created_at: string
+          expected_value: number | null
+          id: string
+          is_read: boolean | null
+          is_resolved: boolean | null
+          message: string
+          metric_name: string | null
+          program_id: string | null
+          resolution_notes: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          severity: string
+          title: string
+        }
+        Insert: {
+          actual_value?: number | null
+          alert_type: string
+          allocation_id?: string | null
+          created_at?: string
+          expected_value?: number | null
+          id?: string
+          is_read?: boolean | null
+          is_resolved?: boolean | null
+          message: string
+          metric_name?: string | null
+          program_id?: string | null
+          resolution_notes?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity?: string
+          title: string
+        }
+        Update: {
+          actual_value?: number | null
+          alert_type?: string
+          allocation_id?: string | null
+          created_at?: string
+          expected_value?: number | null
+          id?: string
+          is_read?: boolean | null
+          is_resolved?: boolean | null
+          message?: string
+          metric_name?: string | null
+          program_id?: string | null
+          resolution_notes?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "incentive_alerts_allocation_id_fkey"
+            columns: ["allocation_id"]
+            isOneToOne: false
+            referencedRelation: "incentive_allocations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "incentive_alerts_program_id_fkey"
+            columns: ["program_id"]
+            isOneToOne: false
+            referencedRelation: "incentive_programs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      incentive_allocations: {
+        Row: {
+          allocation_date: string
+          amount_aoa: number
+          approved_at: string | null
+          approved_by: string | null
+          created_at: string
+          created_by: string | null
+          disbursed_at: string | null
+          disbursement_reference: string | null
+          eligibility_details: Json | null
+          eligibility_score: number | null
+          farmer_id: string
+          id: string
+          notes: string | null
+          program_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          allocation_date?: string
+          amount_aoa: number
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          created_by?: string | null
+          disbursed_at?: string | null
+          disbursement_reference?: string | null
+          eligibility_details?: Json | null
+          eligibility_score?: number | null
+          farmer_id: string
+          id?: string
+          notes?: string | null
+          program_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          allocation_date?: string
+          amount_aoa?: number
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          created_by?: string | null
+          disbursed_at?: string | null
+          disbursement_reference?: string | null
+          eligibility_details?: Json | null
+          eligibility_score?: number | null
+          farmer_id?: string
+          id?: string
+          notes?: string | null
+          program_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "incentive_allocations_farmer_id_fkey"
+            columns: ["farmer_id"]
+            isOneToOne: false
+            referencedRelation: "farmers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "incentive_allocations_program_id_fkey"
+            columns: ["program_id"]
+            isOneToOne: false
+            referencedRelation: "incentive_programs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      incentive_impacts: {
+        Row: {
+          allocation_id: string
+          area_after_ha: number | null
+          area_before_ha: number | null
+          area_change_pct: number | null
+          compliance_score: number | null
+          created_at: string
+          evaluation_date: string
+          evaluation_type: string
+          evaluator_id: string | null
+          id: string
+          income_after_aoa: number | null
+          income_before_aoa: number | null
+          income_change_pct: number | null
+          jobs_created: number | null
+          notes: string | null
+          production_after_kg: number | null
+          production_before_kg: number | null
+          production_change_pct: number | null
+        }
+        Insert: {
+          allocation_id: string
+          area_after_ha?: number | null
+          area_before_ha?: number | null
+          area_change_pct?: number | null
+          compliance_score?: number | null
+          created_at?: string
+          evaluation_date: string
+          evaluation_type: string
+          evaluator_id?: string | null
+          id?: string
+          income_after_aoa?: number | null
+          income_before_aoa?: number | null
+          income_change_pct?: number | null
+          jobs_created?: number | null
+          notes?: string | null
+          production_after_kg?: number | null
+          production_before_kg?: number | null
+          production_change_pct?: number | null
+        }
+        Update: {
+          allocation_id?: string
+          area_after_ha?: number | null
+          area_before_ha?: number | null
+          area_change_pct?: number | null
+          compliance_score?: number | null
+          created_at?: string
+          evaluation_date?: string
+          evaluation_type?: string
+          evaluator_id?: string | null
+          id?: string
+          income_after_aoa?: number | null
+          income_before_aoa?: number | null
+          income_change_pct?: number | null
+          jobs_created?: number | null
+          notes?: string | null
+          production_after_kg?: number | null
+          production_before_kg?: number | null
+          production_change_pct?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "incentive_impacts_allocation_id_fkey"
+            columns: ["allocation_id"]
+            isOneToOne: false
+            referencedRelation: "incentive_allocations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      incentive_programs: {
+        Row: {
+          actual_beneficiaries: number | null
+          allocated_aoa: number | null
+          budget_aoa: number | null
+          code: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          disbursed_aoa: number | null
+          end_date: string | null
+          id: string
+          name: string
+          program_type: string
+          sector: string
+          start_date: string
+          status: string
+          target_beneficiaries: number | null
+          target_provinces: string[] | null
+          updated_at: string
+        }
+        Insert: {
+          actual_beneficiaries?: number | null
+          allocated_aoa?: number | null
+          budget_aoa?: number | null
+          code: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          disbursed_aoa?: number | null
+          end_date?: string | null
+          id?: string
+          name: string
+          program_type?: string
+          sector?: string
+          start_date: string
+          status?: string
+          target_beneficiaries?: number | null
+          target_provinces?: string[] | null
+          updated_at?: string
+        }
+        Update: {
+          actual_beneficiaries?: number | null
+          allocated_aoa?: number | null
+          budget_aoa?: number | null
+          code?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          disbursed_aoa?: number | null
+          end_date?: string | null
+          id?: string
+          name?: string
+          program_type?: string
+          sector?: string
+          start_date?: string
+          status?: string
+          target_beneficiaries?: number | null
+          target_provinces?: string[] | null
+          updated_at?: string
+        }
+        Relationships: []
       }
       municipalities: {
         Row: {
