@@ -5,6 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { KPICard } from '@/components/dashboard/KPICard';
 import { LicensesList } from '@/components/forestry/LicensesList';
 import { LicenseForm } from '@/components/forestry/LicenseForm';
+import { LicenseRequestForm } from '@/components/forestry/LicenseRequestForm';
 import { TraceabilityDashboard } from '@/components/forestry/TraceabilityDashboard';
 import { useForestryStats, type ForestLicense } from '@/hooks/useForestry';
 import {
@@ -22,6 +23,7 @@ import {
 export default function ForestryPage() {
   const [activeTab, setActiveTab] = useState('licenses');
   const [showLicenseForm, setShowLicenseForm] = useState(false);
+  const [showLicenseRequestForm, setShowLicenseRequestForm] = useState(false);
   const [selectedLicense, setSelectedLicense] = useState<ForestLicense | null>(null);
   
   const { data: stats, isLoading: statsLoading } = useForestryStats();
@@ -110,7 +112,7 @@ export default function ForestryPage() {
 
           <TabsContent value="licenses">
             <LicensesList
-              onAddNew={() => setShowLicenseForm(true)}
+              onAddNew={() => setShowLicenseRequestForm(true)}
               onView={handleViewLicense}
               onEdit={handleEditLicense}
             />
@@ -166,11 +168,17 @@ export default function ForestryPage() {
         </Tabs>
       </div>
 
-      {/* License Form Dialog */}
+      {/* License Form Dialog (Edit) */}
       <LicenseForm
         open={showLicenseForm}
         onClose={handleCloseLicenseForm}
         license={selectedLicense}
+      />
+
+      {/* License Request Form Dialog (New) */}
+      <LicenseRequestForm
+        open={showLicenseRequestForm}
+        onClose={() => setShowLicenseRequestForm(false)}
       />
     </MainLayout>
   );
