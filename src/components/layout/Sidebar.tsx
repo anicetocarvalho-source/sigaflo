@@ -98,9 +98,10 @@ const navigation: NavItem[] = [
     ],
   },
   {
-    label: 'Cadeia do Café',
+    label: 'Cadeia do Café (INCA)',
     icon: Coffee,
     children: [
+      { label: 'Lotes de Café', href: '/cafe/lotes' },
       { label: 'Rastreio por Lote', href: '/cafe/rastreio' },
       { label: 'Semaforização', href: '/cafe/semaforizacao' },
       { label: 'Portal de Verificação', href: '/cafe/verificar' },

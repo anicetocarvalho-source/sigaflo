@@ -341,6 +341,131 @@ export type Database = {
           },
         ]
       }
+      coffee_lots: {
+        Row: {
+          bags_count: number | null
+          buyer_name: string | null
+          created_at: string
+          created_by: string | null
+          destination_country: string | null
+          dispatched_at: string | null
+          export_declaration_number: string | null
+          exported_at: string | null
+          exporter_id: string | null
+          exporter_name: string | null
+          harvest_season: string | null
+          harvest_year: number | null
+          id: string
+          lot_code: string
+          notes: string | null
+          origin_commune_id: string | null
+          origin_location: string | null
+          origin_municipality_id: string | null
+          origin_province_id: string | null
+          processing_method: string | null
+          producers_count: number | null
+          quality_grade: string | null
+          registered_at: string | null
+          status: string
+          transport_document_number: string | null
+          updated_at: string
+          updated_by: string | null
+          variety: string | null
+          volume_kg: number
+        }
+        Insert: {
+          bags_count?: number | null
+          buyer_name?: string | null
+          created_at?: string
+          created_by?: string | null
+          destination_country?: string | null
+          dispatched_at?: string | null
+          export_declaration_number?: string | null
+          exported_at?: string | null
+          exporter_id?: string | null
+          exporter_name?: string | null
+          harvest_season?: string | null
+          harvest_year?: number | null
+          id?: string
+          lot_code: string
+          notes?: string | null
+          origin_commune_id?: string | null
+          origin_location?: string | null
+          origin_municipality_id?: string | null
+          origin_province_id?: string | null
+          processing_method?: string | null
+          producers_count?: number | null
+          quality_grade?: string | null
+          registered_at?: string | null
+          status?: string
+          transport_document_number?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          variety?: string | null
+          volume_kg?: number
+        }
+        Update: {
+          bags_count?: number | null
+          buyer_name?: string | null
+          created_at?: string
+          created_by?: string | null
+          destination_country?: string | null
+          dispatched_at?: string | null
+          export_declaration_number?: string | null
+          exported_at?: string | null
+          exporter_id?: string | null
+          exporter_name?: string | null
+          harvest_season?: string | null
+          harvest_year?: number | null
+          id?: string
+          lot_code?: string
+          notes?: string | null
+          origin_commune_id?: string | null
+          origin_location?: string | null
+          origin_municipality_id?: string | null
+          origin_province_id?: string | null
+          processing_method?: string | null
+          producers_count?: number | null
+          quality_grade?: string | null
+          registered_at?: string | null
+          status?: string
+          transport_document_number?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          variety?: string | null
+          volume_kg?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coffee_lots_exporter_id_fkey"
+            columns: ["exporter_id"]
+            isOneToOne: false
+            referencedRelation: "forest_operators"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "coffee_lots_origin_commune_id_fkey"
+            columns: ["origin_commune_id"]
+            isOneToOne: false
+            referencedRelation: "communes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "coffee_lots_origin_municipality_id_fkey"
+            columns: ["origin_municipality_id"]
+            isOneToOne: false
+            referencedRelation: "municipalities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "coffee_lots_origin_province_id_fkey"
+            columns: ["origin_province_id"]
+            isOneToOne: false
+            referencedRelation: "provinces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       communes: {
         Row: {
           code: string | null
