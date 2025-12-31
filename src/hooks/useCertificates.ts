@@ -40,7 +40,10 @@ export interface Certificate {
     name: string;
     registration_number: string;
     farmer_type: string;
+    bi_nif?: string;
     provinces?: { name: string };
+    municipalities?: { name: string };
+    communes?: { name: string };
   };
 }
 
@@ -121,7 +124,7 @@ export const useCertificateByNumber = (certificateNumber: string) => {
         .from('agricultural_certificates')
         .select(`
           *,
-          farmers(name, registration_number, farmer_type, provinces(name), municipalities(name))
+          farmers(name, registration_number, farmer_type, bi_nif, provinces(name), municipalities(name), communes(name))
         `)
         .eq('certificate_number', certificateNumber)
         .maybeSingle();
