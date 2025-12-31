@@ -25,6 +25,7 @@ import ForestryPage from "./pages/forestry/ForestryPage";
 import ForestInventoryPage from "./pages/forestry/ForestInventoryPage";
 import ConcessionDetailPage from "./pages/forestry/ConcessionDetailPage";
 import CoffeePage from "./pages/coffee/CoffeePage";
+import CoffeeLotsPage from "./pages/coffee/CoffeeLotsPage";
 import OccurrencesPage from "./pages/occurrences/OccurrencesPage";
 import ONAFPage from "./pages/onaf/ONAFPage";
 import IPNPage from "./pages/ipn/IPNPage";
@@ -108,6 +109,8 @@ const App = () => (
             <Route path="/florestal/*" element={<ProtectedRoute><ForestryPage /></ProtectedRoute>} />
             
             {/* Coffee Module */}
+            <Route path="/cafe" element={<ProtectedRoute><CoffeePage /></ProtectedRoute>} />
+            <Route path="/cafe/lotes" element={<ProtectedRoute><CoffeeLotsPage /></ProtectedRoute>} />
             <Route path="/cafe/*" element={<ProtectedRoute><CoffeePage /></ProtectedRoute>} />
             
             {/* Rice Strategic Module */}
