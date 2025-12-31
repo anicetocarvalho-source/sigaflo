@@ -2,7 +2,9 @@ import { MainLayout } from '@/components/layout/MainLayout';
 import { ProductionDashboard } from '@/components/production/ProductionDashboard';
 import { ProductionList } from '@/components/production/ProductionList';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { LayoutDashboard, List } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { LayoutDashboard, List, Plus } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const ProductionPage = () => {
   return (
@@ -19,6 +21,14 @@ const ProductionPage = () => {
           </TabsTrigger>
         </TabsList>
         <TabsContent value="dashboard" className="mt-6">
+          <div className="flex justify-end mb-4">
+            <Button asChild>
+              <Link to="/producao/novo">
+                <Plus className="h-4 w-4 mr-2" />
+                Novo Registo
+              </Link>
+            </Button>
+          </div>
           <ProductionDashboard />
         </TabsContent>
         <TabsContent value="list" className="mt-6">
