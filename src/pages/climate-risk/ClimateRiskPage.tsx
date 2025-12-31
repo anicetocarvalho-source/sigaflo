@@ -3,7 +3,10 @@ import { ClimateRiskDashboard } from '@/components/climate-risk/ClimateRiskDashb
 
 export default function ClimateRiskPage() {
   return (
-    <MainLayout title="Gestão de Risco Climático e Seguro Agrícola">
+    <MainLayout 
+      title="Gestão de Risco Climático"
+      subtitle="Ocorrências, impactos e evidências para seguro agrícola"
+    >
       <ClimateRiskDashboard />
     </MainLayout>
   );

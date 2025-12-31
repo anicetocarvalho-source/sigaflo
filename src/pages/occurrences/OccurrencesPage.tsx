@@ -16,7 +16,7 @@ export default function OccurrencesPage() {
   const [activeTab, setActiveTab] = useState('dashboard');
 
   return (
-    <MainLayout title="Gestão de Ocorrências">
+    <MainLayout title="Gestão de Ocorrências" subtitle="Monitorização de eventos climáticos e fitossanitários">
       <div className="space-y-6">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
