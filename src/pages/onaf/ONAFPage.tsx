@@ -27,8 +27,8 @@ export default function ONAFPage() {
 
   return (
     <MainLayout
-      title="ONAF - Observatório Nacional"
-      subtitle="Análise integrada para políticas públicas agro-florestais"
+      title="Observatório Nacional"
+      subtitle="Análise integrada para políticas públicas"
     >
       <div className="space-y-6">
         {/* Access Level Banner */}
