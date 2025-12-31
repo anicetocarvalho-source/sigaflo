@@ -34,6 +34,7 @@ const formSchema = z.object({
     .max(2000, 'Descrição muito longa'),
   province_id: z.string().min(1, 'Selecione a província'),
   municipality_id: z.string().optional(),
+  commune_id: z.string().optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -75,6 +76,7 @@ const severityConfig: Record<string, { label: string; color: string; textColor: 
 export function ReportOccurrenceForm({ open, onOpenChange }: ReportOccurrenceFormProps) {
   const [provinces, setProvinces] = useState<any[]>([]);
   const [municipalities, setMunicipalities] = useState<any[]>([]);
+  const [communes, setCommunes] = useState<any[]>([]);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [aiResult, setAiResult] = useState<{
     type: string;
@@ -93,10 +95,12 @@ export function ReportOccurrenceForm({ open, onOpenChange }: ReportOccurrenceFor
       description: '',
       province_id: '',
       municipality_id: '',
+      commune_id: '',
     },
   });
 
   const selectedProvinceId = form.watch('province_id');
+  const selectedMunicipalityId = form.watch('municipality_id');
   const description = form.watch('description');
 
   // Load provinces
@@ -123,10 +127,31 @@ export function ReportOccurrenceForm({ open, onOpenChange }: ReportOccurrenceFor
         if (!error && data) setMunicipalities(data);
       };
       loadMunicipalities();
+      form.setValue('municipality_id', '');
+      form.setValue('commune_id', '');
     } else {
       setMunicipalities([]);
+      setCommunes([]);
     }
   }, [selectedProvinceId]);
+
+  // Load communes when municipality changes
+  useEffect(() => {
+    if (selectedMunicipalityId) {
+      const loadCommunes = async () => {
+        const { data, error } = await supabase
+          .from('communes')
+          .select('id, name')
+          .eq('municipality_id', selectedMunicipalityId)
+          .order('name');
+        if (!error && data) setCommunes(data);
+      };
+      loadCommunes();
+      form.setValue('commune_id', '');
+    } else {
+      setCommunes([]);
+    }
+  }, [selectedMunicipalityId]);
 
   // Auto-analyze with AI when description is long enough
   useEffect(() => {
@@ -298,7 +323,7 @@ export function ReportOccurrenceForm({ open, onOpenChange }: ReportOccurrenceFor
             )}
 
             {/* Location */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-3 gap-3">
               <FormField
                 control={form.control}
                 name="province_id"
@@ -347,6 +372,35 @@ export function ReportOccurrenceForm({ open, onOpenChange }: ReportOccurrenceFor
                         {municipalities.map((mun) => (
                           <SelectItem key={mun.id} value={mun.id}>
                             {mun.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="commune_id"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Comuna</FormLabel>
+                    <Select 
+                      onValueChange={field.onChange} 
+                      value={field.value}
+                      disabled={!selectedMunicipalityId}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {communes.map((commune) => (
+                          <SelectItem key={commune.id} value={commune.id}>
+                            {commune.name}
                           </SelectItem>
                         ))}
                       </SelectContent>

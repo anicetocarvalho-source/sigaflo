@@ -19,6 +19,7 @@ const formSchema = z.object({
   description: z.string().min(10, 'Descrição deve ter pelo menos 10 caracteres'),
   province_id: z.string().optional(),
   municipality_id: z.string().optional(),
+  commune_id: z.string().optional(),
   affected_area_ha: z.number().optional(),
   affected_farmers_count: z.number().optional(),
   estimated_loss_aoa: z.number().optional(),
@@ -55,6 +56,7 @@ const severityConfig: Record<string, { label: string; color: string; icon: React
 export function OccurrenceForm({ open, onOpenChange, initialCoordinates }: OccurrenceFormProps) {
   const [provinces, setProvinces] = useState<any[]>([]);
   const [municipalities, setMunicipalities] = useState<any[]>([]);
+  const [communes, setCommunes] = useState<any[]>([]);
   const [aiClassification, setAiClassification] = useState<any>(null);
   const [bestPractices, setBestPractices] = useState<string[]>([]);
 
@@ -100,10 +102,28 @@ export function OccurrenceForm({ open, onOpenChange, initialCoordinates }: Occur
         if (data) setMunicipalities(data);
       } else {
         setMunicipalities([]);
+        setCommunes([]);
       }
     }
     fetchMunicipalities();
   }, [form.watch('province_id')]);
+
+  useEffect(() => {
+    async function fetchCommunes() {
+      const municipalityId = form.watch('municipality_id');
+      if (municipalityId) {
+        const { data } = await supabase
+          .from('communes')
+          .select('*')
+          .eq('municipality_id', municipalityId)
+          .order('name');
+        if (data) setCommunes(data);
+      } else {
+        setCommunes([]);
+      }
+    }
+    fetchCommunes();
+  }, [form.watch('municipality_id')]);
 
   const handleClassify = async () => {
     const values = form.getValues();
@@ -222,34 +242,65 @@ export function OccurrenceForm({ open, onOpenChange, initialCoordinates }: Occur
               />
             </div>
 
-            <FormField
-              control={form.control}
-              name="municipality_id"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Município</FormLabel>
-                  <Select 
-                    onValueChange={field.onChange} 
-                    value={field.value}
-                    disabled={municipalities.length === 0}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecione o município" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {municipalities.map((municipality) => (
-                        <SelectItem key={municipality.id} value={municipality.id}>
-                          {municipality.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="municipality_id"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Município</FormLabel>
+                    <Select 
+                      onValueChange={field.onChange} 
+                      value={field.value}
+                      disabled={municipalities.length === 0}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione o município" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {municipalities.map((municipality) => (
+                          <SelectItem key={municipality.id} value={municipality.id}>
+                            {municipality.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="commune_id"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Comuna</FormLabel>
+                    <Select 
+                      onValueChange={field.onChange} 
+                      value={field.value}
+                      disabled={communes.length === 0}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione a comuna" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {communes.map((commune) => (
+                          <SelectItem key={commune.id} value={commune.id}>
+                            {commune.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
             <FormField
               control={form.control}
