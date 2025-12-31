@@ -1,6 +1,6 @@
 import { useNavigate, useParams } from 'react-router-dom';
 import { MainLayout } from '@/components/layout/MainLayout';
-import { FarmerForm } from '@/components/farmers/FarmerForm';
+import { FarmerForm, type FarmerFormSubmitData } from '@/components/farmers/FarmerForm';
 import { useFarmer, useUpdateFarmer } from '@/hooks/useFarmers';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -10,7 +10,7 @@ const FarmerEditPage = () => {
   const { data: farmer, isLoading } = useFarmer(id!);
   const updateFarmer = useUpdateFarmer();
 
-  const handleSubmit = async (data: any) => {
+  const handleSubmit = async (data: FarmerFormSubmitData) => {
     await updateFarmer.mutateAsync({ id: id!, ...data });
     navigate(`/agricultores/${id}`);
   };

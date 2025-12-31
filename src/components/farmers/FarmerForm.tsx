@@ -22,9 +22,10 @@ import {
 } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { MapPin, User, Leaf, Building2 } from 'lucide-react';
+import { MapPin, User, Leaf, Building2, Users } from 'lucide-react';
 import { useProvinces, useMunicipalities, useCommunes, useFarmers } from '@/hooks/useFarmers';
 import type { Farmer, FarmerType } from '@/hooks/useFarmers';
+import { MemberSelector } from './MemberSelector';
 
 const farmerSchema = z.object({
   farmer_type: z.enum(['individual', 'family', 'cooperative', 'field_school', 'company']),
@@ -50,9 +51,13 @@ const farmerSchema = z.object({
 
 type FarmerFormData = z.infer<typeof farmerSchema>;
 
+export interface FarmerFormSubmitData extends FarmerFormData {
+  memberIds?: string[];
+}
+
 interface FarmerFormProps {
   farmer?: Farmer | null;
-  onSubmit: (data: FarmerFormData) => void;
+  onSubmit: (data: FarmerFormSubmitData) => void;
   isLoading?: boolean;
 }
 
@@ -78,6 +83,7 @@ const irrigationOptions = [
 export const FarmerForm = ({ farmer, onSubmit, isLoading }: FarmerFormProps) => {
   const [selectedProvince, setSelectedProvince] = useState<string | undefined>(farmer?.province_id || undefined);
   const [selectedMunicipality, setSelectedMunicipality] = useState<string | undefined>(farmer?.municipality_id || undefined);
+  const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
 
   const { data: provinces } = useProvinces();
   const { data: municipalities } = useMunicipalities(selectedProvince);
@@ -122,9 +128,12 @@ export const FarmerForm = ({ farmer, onSubmit, isLoading }: FarmerFormProps) => 
   }, [farmer]);
 
   const handleSubmit = (data: FarmerFormData) => {
-    const cleanedData = {
+    const cleanedData: FarmerFormSubmitData = {
       ...data,
       email: data.email === '' ? null : data.email,
+      memberIds: (farmerType === 'cooperative' || farmerType === 'field_school') 
+        ? selectedMembers 
+        : undefined,
     };
     onSubmit(cleanedData);
   };
@@ -147,8 +156,14 @@ export const FarmerForm = ({ farmer, onSubmit, isLoading }: FarmerFormProps) => 
               <span className="hidden sm:inline">Agricultura</span>
             </TabsTrigger>
             <TabsTrigger value="associations" className="flex items-center gap-2">
-              <Building2 className="h-4 w-4" />
-              <span className="hidden sm:inline">Vínculos</span>
+              {(farmerType === 'cooperative' || farmerType === 'field_school') ? (
+                <Users className="h-4 w-4" />
+              ) : (
+                <Building2 className="h-4 w-4" />
+              )}
+              <span className="hidden sm:inline">
+                {(farmerType === 'cooperative' || farmerType === 'field_school') ? 'Membros' : 'Vínculos'}
+              </span>
             </TabsTrigger>
           </TabsList>
 
@@ -560,7 +575,11 @@ export const FarmerForm = ({ farmer, onSubmit, isLoading }: FarmerFormProps) => 
           <TabsContent value="associations">
             <Card>
               <CardHeader>
-                <CardTitle>Vínculos Institucionais</CardTitle>
+                <CardTitle>
+                  {(farmerType === 'cooperative' || farmerType === 'field_school') 
+                    ? 'Membros' 
+                    : 'Vínculos Institucionais'}
+                </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 {(farmerType === 'individual' || farmerType === 'family') && (
@@ -617,11 +636,27 @@ export const FarmerForm = ({ farmer, onSubmit, isLoading }: FarmerFormProps) => 
                   </>
                 )}
 
-                {(farmerType === 'cooperative' || farmerType === 'field_school' || farmerType === 'company') && (
+                {farmerType === 'cooperative' && (
+                  <MemberSelector
+                    organizationId={farmer?.id}
+                    organizationType="cooperative"
+                    selectedMembers={selectedMembers}
+                    onMembersChange={setSelectedMembers}
+                  />
+                )}
+
+                {farmerType === 'field_school' && (
+                  <MemberSelector
+                    organizationId={farmer?.id}
+                    organizationType="field_school"
+                    selectedMembers={selectedMembers}
+                    onMembersChange={setSelectedMembers}
+                  />
+                )}
+
+                {farmerType === 'company' && (
                   <p className="text-sm text-muted-foreground">
-                    Este tipo de registo não possui vínculos institucionais associados. 
-                    {farmerType === 'cooperative' && ' Os membros da cooperativa podem vincular-se a este registo.'}
-                    {farmerType === 'field_school' && ' Os participantes da escola de campo podem vincular-se a este registo.'}
+                    Empresas não possuem vínculos institucionais associados.
                   </p>
                 )}
               </CardContent>
