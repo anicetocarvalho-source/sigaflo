@@ -1,4 +1,5 @@
 import { Toaster } from "@/components/ui/toaster";
+import CoffeeTraceabilityPage from "./pages/coffee/CoffeeTraceabilityPage";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -111,6 +112,7 @@ const App = () => (
             {/* Coffee Module */}
             <Route path="/cafe" element={<ProtectedRoute><CoffeePage /></ProtectedRoute>} />
             <Route path="/cafe/lotes" element={<ProtectedRoute><CoffeeLotsPage /></ProtectedRoute>} />
+            <Route path="/cafe/rastreio" element={<ProtectedRoute><CoffeeTraceabilityPage /></ProtectedRoute>} />
             <Route path="/cafe/*" element={<ProtectedRoute><CoffeePage /></ProtectedRoute>} />
             
             {/* Rice Strategic Module */}
