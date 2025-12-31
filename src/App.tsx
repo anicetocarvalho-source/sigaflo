@@ -22,6 +22,7 @@ import ProductionNewPage from "./pages/production/ProductionNewPage";
 import ProductionDetailPage from "./pages/production/ProductionDetailPage";
 import ProductionEditPage from "./pages/production/ProductionEditPage";
 import ForestryPage from "./pages/forestry/ForestryPage";
+import ForestInventoryPage from "./pages/forestry/ForestInventoryPage";
 import CoffeePage from "./pages/coffee/CoffeePage";
 import OccurrencesPage from "./pages/occurrences/OccurrencesPage";
 import ONAFPage from "./pages/onaf/ONAFPage";
@@ -100,6 +101,8 @@ const App = () => (
             <Route path="/infraestruturas/*" element={<ProtectedRoute><Index /></ProtectedRoute>} />
             
             {/* Forestry Module */}
+            <Route path="/florestal" element={<ProtectedRoute><ForestryPage /></ProtectedRoute>} />
+            <Route path="/florestal/inventario" element={<ProtectedRoute><ForestInventoryPage /></ProtectedRoute>} />
             <Route path="/florestal/*" element={<ProtectedRoute><ForestryPage /></ProtectedRoute>} />
             
             {/* Coffee Module */}
