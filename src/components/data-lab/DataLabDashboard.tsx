@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { useDataLabStats } from '@/hooks/useDataLab';
 import { 
   Database, 
@@ -11,13 +10,9 @@ import {
   Download, 
   History, 
   Shield,
-  Activity,
-  Clock,
   TrendingUp,
   Scale,
   AlertTriangle,
-  BookOpen,
-  FlaskConical
 } from 'lucide-react';
 import { DatasetsCatalog } from './DatasetsCatalog';
 import { QuerySandbox } from './QuerySandbox';
@@ -40,37 +35,6 @@ export function DataLabDashboard() {
 
   return (
     <div className="space-y-6">
-      {/* Header with Profile Badges */}
-      <Card>
-        <CardHeader className="pb-3">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div>
-              <CardTitle className="flex items-center gap-2">
-                <FlaskConical className="h-5 w-5" />
-                Laboratório Nacional de Dados Agro-Florestais
-              </CardTitle>
-              <p className="text-sm text-muted-foreground mt-1">
-                Exploração avançada e controlada dos dados SIGAF para análise científica
-              </p>
-            </div>
-            <div className="flex items-center gap-2">
-              <Badge variant="outline" className="gap-1">
-                <Building2 className="h-3 w-3" />
-                INE
-              </Badge>
-              <Badge variant="outline" className="gap-1">
-                <BookOpen className="h-3 w-3" />
-                Universidades
-              </Badge>
-              <Badge variant="outline" className="gap-1 bg-amber-50">
-                <Shield className="h-3 w-3" />
-                Parceiros (Restrito)
-              </Badge>
-            </div>
-          </div>
-        </CardHeader>
-      </Card>
-
       {/* KPI Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card className="bg-gradient-to-br from-blue-500/10 to-blue-600/5 border-blue-500/20">

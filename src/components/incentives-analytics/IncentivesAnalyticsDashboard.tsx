@@ -1,7 +1,6 @@
 import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import {
   Select,
   SelectContent,
@@ -10,11 +9,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { 
-  BarChart3, 
   Filter,
   FileDown,
-  Calendar,
-  Building2
 } from 'lucide-react';
 import { 
   useIncentivesFinancialKPIs,
@@ -51,28 +47,9 @@ export function IncentivesAnalyticsDashboard() {
 
   return (
     <div className="space-y-6">
-      {/* Header with Filters */}
+      {/* Filters */}
       <Card>
-        <CardHeader>
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div>
-              <CardTitle className="flex items-center gap-2">
-                <BarChart3 className="h-5 w-5" />
-                Gestão Inteligente de Incentivos
-              </CardTitle>
-              <p className="text-sm text-muted-foreground mt-1">
-                Avaliação de impacto e orientação orçamental
-              </p>
-            </div>
-            <div className="flex items-center gap-2">
-              <Badge variant="outline" className="gap-1">
-                <Building2 className="h-3 w-3" />
-                MINAGRIP / Finanças / UIP
-              </Badge>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
+        <CardContent className="pt-6">
           <div className="flex flex-col md:flex-row gap-4 items-end">
             <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
