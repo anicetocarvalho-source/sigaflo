@@ -15,6 +15,8 @@ import FarmersListPage from "./pages/farmers/FarmersListPage";
 import FarmerNewPage from "./pages/farmers/FarmerNewPage";
 import FarmerDetailPage from "./pages/farmers/FarmerDetailPage";
 import FarmerEditPage from "./pages/farmers/FarmerEditPage";
+import FieldSchoolsPage from "./pages/farmers/FieldSchoolsPage";
+import CooperativesPage from "./pages/farmers/CooperativesPage";
 import CertificatesPage from "./pages/certificates/CertificatesPage";
 import CertificateNewPage from "./pages/certificates/CertificateNewPage";
 import CertificateDetailPage from "./pages/certificates/CertificateDetailPage";
@@ -72,6 +74,8 @@ const App = () => (
             {/* Farmers Module */}
             <Route path="/agricultores" element={<ProtectedRoute><FarmersListPage /></ProtectedRoute>} />
             <Route path="/agricultores/novo" element={<ProtectedRoute><FarmerNewPage /></ProtectedRoute>} />
+            <Route path="/agricultores/escolas" element={<ProtectedRoute><FieldSchoolsPage /></ProtectedRoute>} />
+            <Route path="/agricultores/cooperativas" element={<ProtectedRoute><CooperativesPage /></ProtectedRoute>} />
             <Route path="/agricultores/:id" element={<ProtectedRoute><FarmerDetailPage /></ProtectedRoute>} />
             <Route path="/agricultores/:id/editar" element={<ProtectedRoute><FarmerEditPage /></ProtectedRoute>} />
             
