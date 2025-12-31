@@ -40,6 +40,10 @@ const DATA_ICONS: Record<string, React.ElementType> = {
   rice_consumption: PieChart,
   rice_alerts: Bell,
   rice_parameters: Settings,
+  incentive_programs: DollarSign,
+  financial_profiles: Users,
+  data_lab_datasets: Database,
+  data_lab_organizations: Users,
 };
 
 const DATA_LABELS: Record<string, string> = {
@@ -53,6 +57,10 @@ const DATA_LABELS: Record<string, string> = {
   rice_consumption: 'Consumo de Arroz',
   rice_alerts: 'Alertas de Arroz',
   rice_parameters: 'Parâmetros de Arroz',
+  incentive_programs: 'Programas de Incentivo',
+  financial_profiles: 'Perfis Financeiros',
+  data_lab_datasets: 'Datasets Lab',
+  data_lab_organizations: 'Organizações Lab',
 };
 
 export function SeedDataPanel() {
