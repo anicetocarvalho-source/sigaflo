@@ -1498,6 +1498,8 @@ export type Database = {
           created_by: string | null
           cultivated_area_ha: number | null
           document_bi_url: string | null
+          document_license_url: string | null
+          document_nif_url: string | null
           document_other_url: string | null
           email: string | null
           farmer_type: Database["public"]["Enums"]["farmer_type"]
@@ -1536,6 +1538,8 @@ export type Database = {
           created_by?: string | null
           cultivated_area_ha?: number | null
           document_bi_url?: string | null
+          document_license_url?: string | null
+          document_nif_url?: string | null
           document_other_url?: string | null
           email?: string | null
           farmer_type?: Database["public"]["Enums"]["farmer_type"]
@@ -1574,6 +1578,8 @@ export type Database = {
           created_by?: string | null
           cultivated_area_ha?: number | null
           document_bi_url?: string | null
+          document_license_url?: string | null
+          document_nif_url?: string | null
           document_other_url?: string | null
           email?: string | null
           farmer_type?: Database["public"]["Enums"]["farmer_type"]

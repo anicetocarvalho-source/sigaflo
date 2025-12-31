@@ -33,7 +33,7 @@ export interface Farmer {
   is_active: boolean;
   created_at: string;
   updated_at: string;
-  // New fields for documents and card
+  // Fields for documents and card
   photo_url?: string;
   fingerprint_data?: string;
   document_bi_url?: string;
@@ -41,6 +41,9 @@ export interface Farmer {
   card_generated_at?: string;
   card_number?: string;
   card_qr_code?: string;
+  // Fields for company documents
+  document_license_url?: string;
+  document_nif_url?: string;
   // Relations
   provinces?: { name: string; code: string };
   municipalities?: { name: string };
