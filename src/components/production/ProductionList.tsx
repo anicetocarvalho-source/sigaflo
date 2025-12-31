@@ -107,12 +107,12 @@ export const ProductionList = () => {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <Select value={yearFilter} onValueChange={setYearFilter}>
+            <Select value={yearFilter || 'all'} onValueChange={(val) => setYearFilter(val === 'all' ? '' : val)}>
               <SelectTrigger>
                 <SelectValue placeholder="Ano" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Todos os anos</SelectItem>
+                <SelectItem value="all">Todos os anos</SelectItem>
                 {years?.map((year) => (
                   <SelectItem key={year} value={year.toString()}>
                     {year}
@@ -121,12 +121,12 @@ export const ProductionList = () => {
               </SelectContent>
             </Select>
 
-            <Select value={cropFilter} onValueChange={setCropFilter}>
+            <Select value={cropFilter || 'all'} onValueChange={(val) => setCropFilter(val === 'all' ? '' : val)}>
               <SelectTrigger>
                 <SelectValue placeholder="Cultura" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Todas as culturas</SelectItem>
+                <SelectItem value="all">Todas as culturas</SelectItem>
                 {crops?.map((crop) => (
                   <SelectItem key={crop} value={crop}>
                     {CROP_LABELS[crop] || crop}
@@ -135,12 +135,12 @@ export const ProductionList = () => {
               </SelectContent>
             </Select>
 
-            <Select value={seasonFilter} onValueChange={setSeasonFilter}>
+            <Select value={seasonFilter || 'all'} onValueChange={(val) => setSeasonFilter(val === 'all' ? '' : val)}>
               <SelectTrigger>
                 <SelectValue placeholder="Campanha" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Todas as campanhas</SelectItem>
+                <SelectItem value="all">Todas as campanhas</SelectItem>
                 <SelectItem value="principal">Principal</SelectItem>
                 <SelectItem value="intermediaria">Intermédia</SelectItem>
                 <SelectItem value="seca">Seca</SelectItem>
