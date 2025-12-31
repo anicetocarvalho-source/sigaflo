@@ -54,7 +54,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 
-// Product types
+// Product types - complete list based on forestry regulations
 const productTypes = [
   {
     id: 'timber_log',
@@ -64,6 +64,15 @@ const productTypes = [
     color: 'text-emerald-600 dark:text-emerald-400',
     bgColor: 'bg-emerald-100 dark:bg-emerald-900/30',
     borderColor: 'border-emerald-500',
+  },
+  {
+    id: 'sawn_timber',
+    label: 'Madeira Serrada',
+    description: 'Transformação e comercialização de madeira serrada',
+    icon: TreePine,
+    color: 'text-teal-600 dark:text-teal-400',
+    bgColor: 'bg-teal-100 dark:bg-teal-900/30',
+    borderColor: 'border-teal-500',
   },
   {
     id: 'firewood',
@@ -84,13 +93,76 @@ const productTypes = [
     borderColor: 'border-gray-500',
   },
   {
-    id: 'non_timber',
-    label: 'Produtos Não Lenhosos',
-    description: 'Mel, resinas, frutos, plantas medicinais, cogumelos, etc.',
+    id: 'poles_stakes',
+    label: 'Estacas e Varas',
+    description: 'Exploração de estacas, varas e postes para construção',
+    icon: TreePine,
+    color: 'text-amber-600 dark:text-amber-400',
+    bgColor: 'bg-amber-100 dark:bg-amber-900/30',
+    borderColor: 'border-amber-500',
+  },
+  {
+    id: 'bamboo',
+    label: 'Bambu',
+    description: 'Exploração e comercialização de bambu',
     icon: Leaf,
-    color: 'text-green-600 dark:text-green-400',
-    bgColor: 'bg-green-100 dark:bg-green-900/30',
-    borderColor: 'border-green-500',
+    color: 'text-lime-600 dark:text-lime-400',
+    bgColor: 'bg-lime-100 dark:bg-lime-900/30',
+    borderColor: 'border-lime-500',
+  },
+  {
+    id: 'medicinal_plants',
+    label: 'Plantas Medicinais',
+    description: 'Colecta de plantas medicinais e aromáticas',
+    icon: Leaf,
+    color: 'text-purple-600 dark:text-purple-400',
+    bgColor: 'bg-purple-100 dark:bg-purple-900/30',
+    borderColor: 'border-purple-500',
+  },
+  {
+    id: 'resins_gums',
+    label: 'Resinas e Gomas',
+    description: 'Extracção de resinas, gomas e látex',
+    icon: Package,
+    color: 'text-yellow-600 dark:text-yellow-400',
+    bgColor: 'bg-yellow-100 dark:bg-yellow-900/30',
+    borderColor: 'border-yellow-500',
+  },
+  {
+    id: 'honey',
+    label: 'Mel e Cera',
+    description: 'Produção apícola e extracção de mel silvestre',
+    icon: Package,
+    color: 'text-amber-500 dark:text-amber-300',
+    bgColor: 'bg-amber-50 dark:bg-amber-900/20',
+    borderColor: 'border-amber-400',
+  },
+  {
+    id: 'fruits_seeds',
+    label: 'Frutos e Sementes',
+    description: 'Colecta de frutos silvestres e sementes florestais',
+    icon: Leaf,
+    color: 'text-rose-600 dark:text-rose-400',
+    bgColor: 'bg-rose-100 dark:bg-rose-900/30',
+    borderColor: 'border-rose-500',
+  },
+  {
+    id: 'mushrooms',
+    label: 'Cogumelos',
+    description: 'Colecta de cogumelos silvestres',
+    icon: Leaf,
+    color: 'text-stone-600 dark:text-stone-400',
+    bgColor: 'bg-stone-100 dark:bg-stone-900/30',
+    borderColor: 'border-stone-500',
+  },
+  {
+    id: 'bark_fibers',
+    label: 'Cascas e Fibras',
+    description: 'Extracção de cascas, fibras e materiais vegetais',
+    icon: Package,
+    color: 'text-orange-700 dark:text-orange-300',
+    bgColor: 'bg-orange-50 dark:bg-orange-900/20',
+    borderColor: 'border-orange-400',
   },
 ];
 
@@ -103,7 +175,7 @@ const workflowSteps = [
 ];
 
 const formSchema = z.object({
-  product_type: z.enum(['timber_log', 'firewood', 'charcoal', 'non_timber']),
+  product_type: z.enum(['timber_log', 'sawn_timber', 'firewood', 'charcoal', 'poles_stakes', 'bamboo', 'medicinal_plants', 'resins_gums', 'honey', 'fruits_seeds', 'mushrooms', 'bark_fibers']),
   operator_id: z.string().min(1, 'Operador é obrigatório'),
   applicant_name: z.string().min(1, 'Nome do requerente é obrigatório'),
   applicant_bi: z.string().optional(),
@@ -200,9 +272,17 @@ export function LicenseRequestForm({ open, onClose, license }: LicenseRequestFor
     // Map product_type to license_type for the database
     const licenseTypeMap: Record<string, 'exploitation' | 'transport' | 'export' | 'sawmill' | 'processing'> = {
       timber_log: 'exploitation',
+      sawn_timber: 'sawmill',
       firewood: 'exploitation',
       charcoal: 'processing',
-      non_timber: 'exploitation',
+      poles_stakes: 'exploitation',
+      bamboo: 'exploitation',
+      medicinal_plants: 'exploitation',
+      resins_gums: 'exploitation',
+      honey: 'exploitation',
+      fruits_seeds: 'exploitation',
+      mushrooms: 'exploitation',
+      bark_fibers: 'exploitation',
     };
 
     const payload = {
@@ -253,7 +333,7 @@ export function LicenseRequestForm({ open, onClose, license }: LicenseRequestFor
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-3">
             <TreePine className="h-6 w-6 text-emerald-600" />
@@ -314,7 +394,9 @@ export function LicenseRequestForm({ open, onClose, license }: LicenseRequestFor
             {step === 1 && (
               <div className="space-y-4">
                 <h3 className="font-semibold text-lg">Seleccione o Tipo de Produto</h3>
-                <div className="grid gap-4 sm:grid-cols-2">
+                <p className="text-sm text-muted-foreground">Escolha o tipo de recurso florestal para o qual pretende obter licença</p>
+                
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                   {productTypes.map((type) => {
                     const Icon = type.icon;
                     const isSelected = selectedProductType === type.id;
@@ -323,28 +405,28 @@ export function LicenseRequestForm({ open, onClose, license }: LicenseRequestFor
                       <Card
                         key={type.id}
                         className={cn(
-                          'cursor-pointer transition-all hover:shadow-md',
-                          isSelected && `ring-2 ${type.borderColor}`
+                          'cursor-pointer transition-all hover:shadow-md hover:scale-[1.02]',
+                          isSelected ? `ring-2 ${type.borderColor} shadow-md` : 'hover:border-muted-foreground/30'
                         )}
                         onClick={() => {
                           setSelectedProductType(type.id);
                           form.setValue('product_type', type.id as any);
                         }}
                       >
-                        <CardContent className="pt-6">
-                          <div className="flex items-start gap-4">
-                            <div className={cn('flex h-12 w-12 items-center justify-center rounded-lg', type.bgColor)}>
-                              <Icon className={cn('h-6 w-6', type.color)} />
+                        <CardContent className="p-4">
+                          <div className="flex items-center gap-3">
+                            <div className={cn('flex h-10 w-10 items-center justify-center rounded-lg shrink-0', type.bgColor)}>
+                              <Icon className={cn('h-5 w-5', type.color)} />
                             </div>
-                            <div className="flex-1">
-                              <h4 className="font-semibold">{type.label}</h4>
-                              <p className="text-sm text-muted-foreground mt-1">{type.description}</p>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2">
+                                <h4 className="font-medium text-sm truncate">{type.label}</h4>
+                                {isSelected && (
+                                  <CheckCircle className="h-4 w-4 text-emerald-600 shrink-0" />
+                                )}
+                              </div>
+                              <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{type.description}</p>
                             </div>
-                            {isSelected && (
-                              <Badge className="bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400">
-                                Seleccionado
-                              </Badge>
-                            )}
                           </div>
                         </CardContent>
                       </Card>
