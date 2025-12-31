@@ -52,6 +52,7 @@ import ProfilePage from "./pages/profile/ProfilePage";
 
 // Infrastructure
 import AgriculturalInfrastructurePage from "./pages/infrastructure/AgriculturalInfrastructurePage";
+import MarketsInfrastructurePage from "./pages/infrastructure/MarketsInfrastructurePage";
 
 // Public Portal
 import VerificationPortal from "./pages/public/VerificationPortal";
@@ -118,8 +119,8 @@ const App = () => (
             <Route path="/ocorrencias/*" element={<ProtectedRoute><OccurrencesPage /></ProtectedRoute>} />
             
             {/* Infrastructure Module */}
-            <Route path="/infraestruturas" element={<ProtectedRoute><AgriculturalInfrastructurePage /></ProtectedRoute>} />
-            <Route path="/infraestruturas/mercados" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+            <Route path="/infraestruturas/agropecuarias" element={<ProtectedRoute><AgriculturalInfrastructurePage /></ProtectedRoute>} />
+            <Route path="/infraestruturas/mercados" element={<ProtectedRoute><MarketsInfrastructurePage /></ProtectedRoute>} />
             
             {/* Forestry Module */}
             <Route path="/florestal" element={<ProtectedRoute><ForestryPage /></ProtectedRoute>} />
