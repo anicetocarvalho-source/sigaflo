@@ -4,7 +4,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import {
   Form,
   FormControl,
@@ -22,10 +21,13 @@ import {
 } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { MapPin, User, Leaf, Building2, Users } from 'lucide-react';
+import { MapPin, User, Leaf, Building2, Users, FileText, Camera } from 'lucide-react';
 import { useProvinces, useMunicipalities, useCommunes, useFarmers } from '@/hooks/useFarmers';
 import type { Farmer, FarmerType } from '@/hooks/useFarmers';
 import { MemberSelector } from './MemberSelector';
+import { PhotoUpload } from './PhotoUpload';
+import { DocumentUpload } from './DocumentUpload';
+import { FingerprintCapture } from './FingerprintCapture';
 
 const farmerSchema = z.object({
   farmer_type: z.enum(['individual', 'family', 'cooperative', 'field_school', 'company']),
@@ -47,6 +49,11 @@ const farmerSchema = z.object({
   irrigation_type: z.string().max(50).optional().nullable(),
   parent_cooperative_id: z.string().uuid().optional().nullable(),
   field_school_id: z.string().uuid().optional().nullable(),
+  // New fields for individual farmers
+  photo_url: z.string().optional().nullable(),
+  fingerprint_data: z.string().optional().nullable(),
+  document_bi_url: z.string().optional().nullable(),
+  document_other_url: z.string().optional().nullable(),
 });
 
 type FarmerFormData = z.infer<typeof farmerSchema>;
@@ -113,6 +120,10 @@ export const FarmerForm = ({ farmer, onSubmit, isLoading }: FarmerFormProps) => 
       irrigation_type: farmer?.irrigation_type || '',
       parent_cooperative_id: farmer?.parent_cooperative_id || undefined,
       field_school_id: farmer?.field_school_id || undefined,
+      photo_url: (farmer as any)?.photo_url || undefined,
+      fingerprint_data: (farmer as any)?.fingerprint_data || undefined,
+      document_bi_url: (farmer as any)?.document_bi_url || undefined,
+      document_other_url: (farmer as any)?.document_other_url || undefined,
     },
   });
 
@@ -142,11 +153,17 @@ export const FarmerForm = ({ farmer, onSubmit, isLoading }: FarmerFormProps) => 
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
         <Tabs defaultValue="basic" className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className={`grid w-full ${(farmerType === 'individual' || farmerType === 'family') ? 'grid-cols-5' : 'grid-cols-4'}`}>
             <TabsTrigger value="basic" className="flex items-center gap-2">
               <User className="h-4 w-4" />
               <span className="hidden sm:inline">Dados Básicos</span>
             </TabsTrigger>
+            {(farmerType === 'individual' || farmerType === 'family') && (
+              <TabsTrigger value="documents" className="flex items-center gap-2">
+                <FileText className="h-4 w-4" />
+                <span className="hidden sm:inline">Documentos</span>
+              </TabsTrigger>
+            )}
             <TabsTrigger value="location" className="flex items-center gap-2">
               <MapPin className="h-4 w-4" />
               <span className="hidden sm:inline">Localização</span>
@@ -282,6 +299,105 @@ export const FarmerForm = ({ farmer, onSubmit, isLoading }: FarmerFormProps) => 
               </CardContent>
             </Card>
           </TabsContent>
+
+          {/* Documents tab - only for individual and family farmers */}
+          {(farmerType === 'individual' || farmerType === 'family') && (
+            <TabsContent value="documents">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Foto, Biometria e Documentos</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="grid gap-6 md:grid-cols-2">
+                    <div>
+                      <FormField
+                        control={form.control}
+                        name="photo_url"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Foto do Agricultor *</FormLabel>
+                            <FormControl>
+                              <PhotoUpload
+                                value={field.value}
+                                onChange={field.onChange}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    <div>
+                      <FormField
+                        control={form.control}
+                        name="fingerprint_data"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <FingerprintCapture
+                                value={field.value}
+                                onChange={field.onChange}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <FormField
+                      control={form.control}
+                      name="document_bi_url"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormControl>
+                            <DocumentUpload
+                              label="Cópia do Bilhete de Identidade"
+                              value={field.value}
+                              onChange={field.onChange}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="document_other_url"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormControl>
+                            <DocumentUpload
+                              label="Outros Documentos (Comprovativo de Residência, etc.)"
+                              value={field.value}
+                              onChange={field.onChange}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <div className="rounded-lg bg-muted/50 p-4">
+                    <h4 className="font-medium text-sm mb-2 flex items-center gap-2">
+                      <Camera className="h-4 w-4" />
+                      Sobre o Cartão do Agricultor
+                    </h4>
+                    <p className="text-sm text-muted-foreground">
+                      Após a validação do registo, será gerado automaticamente o Cartão do Agricultor 
+                      com QR Code para verificação. O cartão inclui a foto, dados de identificação e 
+                      código único de registo.
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          )}
 
           <TabsContent value="location">
             <Card>

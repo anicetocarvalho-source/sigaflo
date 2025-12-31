@@ -20,13 +20,17 @@ import {
   Leaf, 
   FileText,
   Plus,
-  ArrowLeft
+  ArrowLeft,
+  CreditCard,
+  Fingerprint,
+  Eye
 } from 'lucide-react';
 import { useFarmer } from '@/hooks/useFarmers';
 import { useProductionHistory, useCertificates } from '@/hooks/useCertificates';
 import { FarmerTypeIcon, getFarmerTypeLabel, getFarmerTypeColor } from './FarmerTypeIcon';
 import { WorkflowStatusBadge } from './WorkflowStatusBadge';
 import { Skeleton } from '@/components/ui/skeleton';
+import { FarmerCard } from './FarmerCard';
 
 export const FarmerDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -123,6 +127,9 @@ export const FarmerDetail = () => {
       <Tabs defaultValue="info" className="w-full">
         <TabsList>
           <TabsTrigger value="info">Informações</TabsTrigger>
+          {(farmer.farmer_type === 'individual' || farmer.farmer_type === 'family') && (
+            <TabsTrigger value="card">Cartão</TabsTrigger>
+          )}
           <TabsTrigger value="production">Histórico de Produção</TabsTrigger>
           <TabsTrigger value="certificates">Certificados</TabsTrigger>
         </TabsList>
@@ -137,6 +144,16 @@ export const FarmerDetail = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
+                {/* Photo for individual/family farmers */}
+                {(farmer.farmer_type === 'individual' || farmer.farmer_type === 'family') && farmer.photo_url && (
+                  <div className="flex justify-center mb-4">
+                    <img 
+                      src={farmer.photo_url} 
+                      alt="Foto do agricultor"
+                      className="w-24 h-24 rounded-full object-cover border-2 border-primary"
+                    />
+                  </div>
+                )}
                 {farmer.trade_name && (
                   <div>
                     <p className="text-sm text-muted-foreground">Nome Comercial</p>
@@ -159,6 +176,31 @@ export const FarmerDetail = () => {
                   <div className="flex items-center gap-2">
                     <Mail className="h-4 w-4 text-muted-foreground" />
                     <p>{farmer.email}</p>
+                  </div>
+                )}
+
+                {/* Biometrics and documents for individual/family */}
+                {(farmer.farmer_type === 'individual' || farmer.farmer_type === 'family') && (
+                  <div className="pt-4 border-t space-y-3">
+                    {farmer.fingerprint_data && (
+                      <div className="flex items-center gap-2 text-green-600">
+                        <Fingerprint className="h-4 w-4" />
+                        <span className="text-sm">Impressão digital registada</span>
+                      </div>
+                    )}
+                    {farmer.document_bi_url && (
+                      <div className="flex items-center gap-2">
+                        <FileText className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-sm">BI digitalizado</span>
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          onClick={() => window.open(farmer.document_bi_url, '_blank')}
+                        >
+                          <Eye className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 )}
               </CardContent>
@@ -243,6 +285,58 @@ export const FarmerDetail = () => {
             </Card>
           </div>
         </TabsContent>
+
+        {/* Farmer Card Tab - only for individual/family farmers */}
+        {(farmer.farmer_type === 'individual' || farmer.farmer_type === 'family') && (
+          <TabsContent value="card">
+            <div className="grid gap-6 md:grid-cols-2">
+              <div>
+                <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                  <CreditCard className="h-5 w-5" />
+                  Cartão do Agricultor
+                </h3>
+                {farmer.status === 'approved' || farmer.status === 'issued' ? (
+                  <FarmerCard farmer={farmer} />
+                ) : (
+                  <Card className="p-6">
+                    <div className="text-center text-muted-foreground">
+                      <CreditCard className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                      <p className="font-medium">Cartão não disponível</p>
+                      <p className="text-sm mt-2">
+                        O cartão do agricultor será gerado automaticamente após a validação do registo.
+                      </p>
+                      <Badge variant="outline" className="mt-4">
+                        Estado atual: {farmer.status}
+                      </Badge>
+                    </div>
+                  </Card>
+                )}
+              </div>
+              <div className="space-y-4">
+                <h4 className="font-medium">Documentos Anexados</h4>
+                {farmer.document_bi_url ? (
+                  <Card className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <FileText className="h-8 w-8 text-primary" />
+                        <div>
+                          <p className="font-medium">Bilhete de Identidade</p>
+                          <p className="text-xs text-muted-foreground">Documento digitalizado</p>
+                        </div>
+                      </div>
+                      <Button variant="outline" size="sm" onClick={() => window.open(farmer.document_bi_url, '_blank')}>
+                        <Eye className="h-4 w-4 mr-2" />
+                        Ver
+                      </Button>
+                    </div>
+                  </Card>
+                ) : (
+                  <p className="text-sm text-muted-foreground">Nenhum documento anexado</p>
+                )}
+              </div>
+            </div>
+          </TabsContent>
+        )}
 
         <TabsContent value="production">
           <Card>

@@ -1490,13 +1490,19 @@ export type Database = {
         Row: {
           address: string | null
           bi_nif: string | null
+          card_generated_at: string | null
+          card_number: string | null
+          card_qr_code: string | null
           commune_id: string | null
           created_at: string
           created_by: string | null
           cultivated_area_ha: number | null
+          document_bi_url: string | null
+          document_other_url: string | null
           email: string | null
           farmer_type: Database["public"]["Enums"]["farmer_type"]
           field_school_id: string | null
+          fingerprint_data: string | null
           id: string
           irrigation_type: string | null
           is_active: boolean | null
@@ -1507,6 +1513,7 @@ export type Database = {
           name: string
           parent_cooperative_id: string | null
           phone: string | null
+          photo_url: string | null
           province_id: string | null
           registration_date: string | null
           registration_number: string | null
@@ -1521,13 +1528,19 @@ export type Database = {
         Insert: {
           address?: string | null
           bi_nif?: string | null
+          card_generated_at?: string | null
+          card_number?: string | null
+          card_qr_code?: string | null
           commune_id?: string | null
           created_at?: string
           created_by?: string | null
           cultivated_area_ha?: number | null
+          document_bi_url?: string | null
+          document_other_url?: string | null
           email?: string | null
           farmer_type?: Database["public"]["Enums"]["farmer_type"]
           field_school_id?: string | null
+          fingerprint_data?: string | null
           id?: string
           irrigation_type?: string | null
           is_active?: boolean | null
@@ -1538,6 +1551,7 @@ export type Database = {
           name: string
           parent_cooperative_id?: string | null
           phone?: string | null
+          photo_url?: string | null
           province_id?: string | null
           registration_date?: string | null
           registration_number?: string | null
@@ -1552,13 +1566,19 @@ export type Database = {
         Update: {
           address?: string | null
           bi_nif?: string | null
+          card_generated_at?: string | null
+          card_number?: string | null
+          card_qr_code?: string | null
           commune_id?: string | null
           created_at?: string
           created_by?: string | null
           cultivated_area_ha?: number | null
+          document_bi_url?: string | null
+          document_other_url?: string | null
           email?: string | null
           farmer_type?: Database["public"]["Enums"]["farmer_type"]
           field_school_id?: string | null
+          fingerprint_data?: string | null
           id?: string
           irrigation_type?: string | null
           is_active?: boolean | null
@@ -1569,6 +1589,7 @@ export type Database = {
           name?: string
           parent_cooperative_id?: string | null
           phone?: string | null
+          photo_url?: string | null
           province_id?: string | null
           registration_date?: string | null
           registration_number?: string | null
