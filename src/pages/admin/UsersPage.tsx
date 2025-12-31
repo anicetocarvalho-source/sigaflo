@@ -20,6 +20,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Search, Shield, Loader2, UserPlus, X, Pencil } from 'lucide-react';
 import { format } from 'date-fns';
+import { SeedDataPanel } from '@/components/admin/SeedDataPanel';
 
 const ALL_ROLES: UserRole[] = [
   'admin_national',
@@ -338,6 +339,8 @@ const UsersPage = () => {
   return (
     <MainLayout title="Gestão de Utilizadores" subtitle="Administrar utilizadores e papéis do sistema">
       <div className="space-y-6">
+        {/* Seed Data Panel - Admin Tools */}
+        <SeedDataPanel />
         <div className="flex flex-col sm:flex-row justify-between gap-4">
           <div className="relative flex-1 max-w-md">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />

@@ -81,7 +81,7 @@ const navigation: NavItem[] = [
     label: 'Infra-estruturas',
     icon: Building2,
     children: [
-      { label: 'Agropecuárias', href: '/infraestruturas' },
+      { label: 'Agropecuárias', href: '/infraestruturas/agropecuarias' },
       { label: 'Mercados', href: '/infraestruturas/mercados' },
     ],
   },
