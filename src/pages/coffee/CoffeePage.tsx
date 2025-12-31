@@ -1,6 +1,8 @@
+import { useState } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { KPICard } from '@/components/dashboard/KPICard';
+import { CoffeeProductionForm } from '@/components/coffee/CoffeeProductionForm';
 import {
   Coffee,
   Package,
@@ -12,6 +14,7 @@ import {
   Download,
   Eye,
   Truck,
+  Plus,
 } from 'lucide-react';
 
 const coffeeLots = [
@@ -89,6 +92,7 @@ const semaphoreConfig = {
 };
 
 export default function CoffeePage() {
+  const [showProductionForm, setShowProductionForm] = useState(false);
   const greenCount = coffeeLots.filter((l) => l.semaphore === 'green').length;
   const yellowCount = coffeeLots.filter((l) => l.semaphore === 'yellow').length;
   const redCount = coffeeLots.filter((l) => l.semaphore === 'red').length;
@@ -179,6 +183,10 @@ export default function CoffeePage() {
         {/* Actions */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex gap-2">
+            <Button size="sm" onClick={() => setShowProductionForm(true)}>
+              <Plus className="mr-2 h-4 w-4" />
+              Registar Produção
+            </Button>
             <Button variant="outline" size="sm">
               <Search className="mr-2 h-4 w-4" />
               Pesquisar Lote
@@ -193,6 +201,8 @@ export default function CoffeePage() {
             </Button>
           </div>
         </div>
+
+        <CoffeeProductionForm open={showProductionForm} onOpenChange={setShowProductionForm} />
 
         {/* Lots Table */}
         <div className="card-elevated overflow-hidden">
