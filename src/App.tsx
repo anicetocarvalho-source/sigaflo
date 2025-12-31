@@ -27,6 +27,7 @@ import ProductionDetailPage from "./pages/production/ProductionDetailPage";
 import ProductionEditPage from "./pages/production/ProductionEditPage";
 import ForestryPage from "./pages/forestry/ForestryPage";
 import ForestInventoryPage from "./pages/forestry/ForestInventoryPage";
+import ForestryTraceabilityPage from "./pages/forestry/ForestryTraceabilityPage";
 import ConcessionDetailPage from "./pages/forestry/ConcessionDetailPage";
 import CoffeePage from "./pages/coffee/CoffeePage";
 import CoffeeLotsPage from "./pages/coffee/CoffeeLotsPage";
@@ -125,6 +126,8 @@ const App = () => (
             {/* Forestry Module */}
             <Route path="/florestal" element={<ProtectedRoute><ForestryPage /></ProtectedRoute>} />
             <Route path="/florestal/inventario" element={<ProtectedRoute><ForestInventoryPage /></ProtectedRoute>} />
+            <Route path="/florestal/licenciamento" element={<ProtectedRoute><ForestryPage /></ProtectedRoute>} />
+            <Route path="/florestal/rastreabilidade" element={<ProtectedRoute><ForestryTraceabilityPage /></ProtectedRoute>} />
             <Route path="/florestal/concessao/:id" element={<ProtectedRoute><ConcessionDetailPage /></ProtectedRoute>} />
             <Route path="/florestal/*" element={<ProtectedRoute><ForestryPage /></ProtectedRoute>} />
             
