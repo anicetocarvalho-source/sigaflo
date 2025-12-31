@@ -44,6 +44,18 @@ export interface Farmer {
   // Fields for company documents
   document_license_url?: string;
   document_nif_url?: string;
+  // Fields for household/family aggregate
+  household_members_count?: number;
+  dependents_count?: number;
+  spouse_name?: string;
+  spouse_bi_nif?: string;
+  children_count?: number;
+  children_under_5?: number;
+  children_5_to_14?: number;
+  children_15_to_18?: number;
+  family_workers_count?: number;
+  head_of_household?: boolean;
+  household_notes?: string;
   // Relations
   provinces?: { name: string; code: string };
   municipalities?: { name: string };
