@@ -98,7 +98,7 @@ const navigation: NavItem[] = [
     ],
   },
   {
-    label: 'Cadeia do Café (INCA)',
+    label: 'Cadeia do Café',
     icon: Coffee,
     children: [
       { label: 'Lotes de Café', href: '/cafe/lotes' },
