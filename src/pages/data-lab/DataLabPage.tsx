@@ -3,7 +3,7 @@ import { DataLabDashboard } from '@/components/data-lab/DataLabDashboard';
 
 export default function DataLabPage() {
   return (
-    <MainLayout title="Laboratório Nacional de Dados Agro-Florestais">
+    <MainLayout title="Laboratório de Dados">
       <DataLabDashboard />
     </MainLayout>
   );
