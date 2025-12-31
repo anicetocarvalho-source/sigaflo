@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -61,6 +62,7 @@ const statusTypes = {
 };
 
 export default function ClimateOccurrencesPage() {
+  const navigate = useNavigate();
   const [showForm, setShowForm] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [typeFilter, setTypeFilter] = useState('all');
@@ -280,7 +282,12 @@ export default function ClimateOccurrencesPage() {
                             </span>
                           </TableCell>
                           <TableCell>
-                            <Button variant="ghost" size="icon" className="h-8 w-8">
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              className="h-8 w-8"
+                              onClick={() => navigate(`/ocorrencias/climaticas/${occurrence.id}`)}
+                            >
                               <Eye className="h-4 w-4" />
                             </Button>
                           </TableCell>
