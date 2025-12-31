@@ -1939,6 +1939,121 @@ export type Database = {
           },
         ]
       }
+      forest_inventory: {
+        Row: {
+          annual_allowable_cut_m3: number | null
+          boundary_geojson: Json | null
+          concession_name: string
+          created_at: string
+          created_by: string | null
+          dominant_species: string[] | null
+          estimated_standing_volume_m3: number | null
+          exploitation_status: string | null
+          forest_status: string
+          forest_type: string
+          harvestable_volume_m3: number | null
+          harvested_volume_m3: number | null
+          id: string
+          inventory_code: string
+          inventory_notes: string | null
+          last_inventory_date: string | null
+          latitude: number | null
+          license_id: string | null
+          longitude: number | null
+          municipality_id: string | null
+          next_inventory_date: string | null
+          province_id: string | null
+          reposition_rate_pct: number | null
+          total_area_ha: number
+          trees_planted: number | null
+          trees_required: number | null
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          annual_allowable_cut_m3?: number | null
+          boundary_geojson?: Json | null
+          concession_name: string
+          created_at?: string
+          created_by?: string | null
+          dominant_species?: string[] | null
+          estimated_standing_volume_m3?: number | null
+          exploitation_status?: string | null
+          forest_status?: string
+          forest_type: string
+          harvestable_volume_m3?: number | null
+          harvested_volume_m3?: number | null
+          id?: string
+          inventory_code: string
+          inventory_notes?: string | null
+          last_inventory_date?: string | null
+          latitude?: number | null
+          license_id?: string | null
+          longitude?: number | null
+          municipality_id?: string | null
+          next_inventory_date?: string | null
+          province_id?: string | null
+          reposition_rate_pct?: number | null
+          total_area_ha?: number
+          trees_planted?: number | null
+          trees_required?: number | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          annual_allowable_cut_m3?: number | null
+          boundary_geojson?: Json | null
+          concession_name?: string
+          created_at?: string
+          created_by?: string | null
+          dominant_species?: string[] | null
+          estimated_standing_volume_m3?: number | null
+          exploitation_status?: string | null
+          forest_status?: string
+          forest_type?: string
+          harvestable_volume_m3?: number | null
+          harvested_volume_m3?: number | null
+          id?: string
+          inventory_code?: string
+          inventory_notes?: string | null
+          last_inventory_date?: string | null
+          latitude?: number | null
+          license_id?: string | null
+          longitude?: number | null
+          municipality_id?: string | null
+          next_inventory_date?: string | null
+          province_id?: string | null
+          reposition_rate_pct?: number | null
+          total_area_ha?: number
+          trees_planted?: number | null
+          trees_required?: number | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "forest_inventory_license_id_fkey"
+            columns: ["license_id"]
+            isOneToOne: false
+            referencedRelation: "forest_licenses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "forest_inventory_municipality_id_fkey"
+            columns: ["municipality_id"]
+            isOneToOne: false
+            referencedRelation: "municipalities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "forest_inventory_province_id_fkey"
+            columns: ["province_id"]
+            isOneToOne: false
+            referencedRelation: "provinces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       forest_licenses: {
         Row: {
           application_date: string | null

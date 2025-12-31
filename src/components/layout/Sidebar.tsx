@@ -89,6 +89,7 @@ const navigation: NavItem[] = [
     label: 'Gestão Florestal',
     icon: TreePine,
     children: [
+      { label: 'Inventário Florestal', href: '/florestal/inventario' },
       { label: 'Licenciamento', href: '/florestal/licenciamento' },
       { label: 'Rastreabilidade', href: '/florestal/rastreabilidade' },
       { label: 'Fiscalização', href: '/florestal/fiscalizacao' },
