@@ -48,58 +48,117 @@ import {
   Calendar,
   ArrowRight,
   ArrowLeft,
+  Truck,
+  Ship,
+  Factory,
+  Cog,
+  Axe,
 } from 'lucide-react';
 import { useForestOperators, useCreateLicense, type ForestLicense } from '@/hooks/useForestry';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 
-// Product types - complete list based on forestry regulations
-const productTypes = [
+// License categories/types
+const licenseCategories = [
   {
-    id: 'timber_log',
-    label: 'Madeira em Toro',
-    description: 'Exploração e comercialização de madeira em toros',
-    icon: TreePine,
+    id: 'exploitation',
+    label: 'Exploração',
+    description: 'Licença para corte e extracção de recursos florestais',
+    icon: Axe,
     color: 'text-emerald-600 dark:text-emerald-400',
     bgColor: 'bg-emerald-100 dark:bg-emerald-900/30',
     borderColor: 'border-emerald-500',
   },
   {
+    id: 'transport',
+    label: 'Transporte',
+    description: 'Licença para transporte de produtos florestais',
+    icon: Truck,
+    color: 'text-blue-600 dark:text-blue-400',
+    bgColor: 'bg-blue-100 dark:bg-blue-900/30',
+    borderColor: 'border-blue-500',
+  },
+  {
+    id: 'export',
+    label: 'Exportação',
+    description: 'Licença para exportação de produtos florestais',
+    icon: Ship,
+    color: 'text-indigo-600 dark:text-indigo-400',
+    bgColor: 'bg-indigo-100 dark:bg-indigo-900/30',
+    borderColor: 'border-indigo-500',
+  },
+  {
+    id: 'sawmill',
+    label: 'Serraria',
+    description: 'Licença para operação de serraria e transformação primária',
+    icon: Factory,
+    color: 'text-amber-600 dark:text-amber-400',
+    bgColor: 'bg-amber-100 dark:bg-amber-900/30',
+    borderColor: 'border-amber-500',
+  },
+  {
+    id: 'processing',
+    label: 'Transformação',
+    description: 'Licença para transformação secundária de produtos florestais',
+    icon: Cog,
+    color: 'text-purple-600 dark:text-purple-400',
+    bgColor: 'bg-purple-100 dark:bg-purple-900/30',
+    borderColor: 'border-purple-500',
+  },
+];
+
+// Product types - complete list based on forestry regulations
+const productTypes = [
+  {
+    id: 'timber_log',
+    label: 'Madeira em Toro',
+    description: 'Madeira em toros para exploração ou transformação',
+    icon: TreePine,
+    color: 'text-emerald-600 dark:text-emerald-400',
+    bgColor: 'bg-emerald-100 dark:bg-emerald-900/30',
+    borderColor: 'border-emerald-500',
+    categories: ['exploitation', 'transport', 'export', 'sawmill'],
+  },
+  {
     id: 'sawn_timber',
     label: 'Madeira Serrada',
-    description: 'Transformação e comercialização de madeira serrada',
+    description: 'Madeira processada em pranchas e tábuas',
     icon: TreePine,
     color: 'text-teal-600 dark:text-teal-400',
     bgColor: 'bg-teal-100 dark:bg-teal-900/30',
     borderColor: 'border-teal-500',
+    categories: ['transport', 'export', 'processing'],
   },
   {
     id: 'firewood',
     label: 'Lenha',
-    description: 'Colecta e venda de lenha para uso doméstico ou industrial',
+    description: 'Lenha para uso doméstico ou industrial',
     icon: Flame,
     color: 'text-orange-600 dark:text-orange-400',
     bgColor: 'bg-orange-100 dark:bg-orange-900/30',
     borderColor: 'border-orange-500',
+    categories: ['exploitation', 'transport'],
   },
   {
     id: 'charcoal',
     label: 'Carvão Vegetal',
-    description: 'Produção e comercialização de carvão vegetal',
+    description: 'Produção e comercialização de carvão',
     icon: Package,
     color: 'text-gray-600 dark:text-gray-400',
     bgColor: 'bg-gray-100 dark:bg-gray-900/30',
     borderColor: 'border-gray-500',
+    categories: ['exploitation', 'transport', 'processing', 'export'],
   },
   {
     id: 'poles_stakes',
     label: 'Estacas e Varas',
-    description: 'Exploração de estacas, varas e postes para construção',
+    description: 'Estacas, varas e postes para construção',
     icon: TreePine,
     color: 'text-amber-600 dark:text-amber-400',
     bgColor: 'bg-amber-100 dark:bg-amber-900/30',
     borderColor: 'border-amber-500',
+    categories: ['exploitation', 'transport'],
   },
   {
     id: 'bamboo',
@@ -109,15 +168,17 @@ const productTypes = [
     color: 'text-lime-600 dark:text-lime-400',
     bgColor: 'bg-lime-100 dark:bg-lime-900/30',
     borderColor: 'border-lime-500',
+    categories: ['exploitation', 'transport', 'processing', 'export'],
   },
   {
     id: 'medicinal_plants',
     label: 'Plantas Medicinais',
-    description: 'Colecta de plantas medicinais e aromáticas',
+    description: 'Plantas medicinais e aromáticas',
     icon: Leaf,
     color: 'text-purple-600 dark:text-purple-400',
     bgColor: 'bg-purple-100 dark:bg-purple-900/30',
     borderColor: 'border-purple-500',
+    categories: ['exploitation', 'transport', 'processing', 'export'],
   },
   {
     id: 'resins_gums',
@@ -127,42 +188,47 @@ const productTypes = [
     color: 'text-yellow-600 dark:text-yellow-400',
     bgColor: 'bg-yellow-100 dark:bg-yellow-900/30',
     borderColor: 'border-yellow-500',
+    categories: ['exploitation', 'transport', 'processing', 'export'],
   },
   {
     id: 'honey',
     label: 'Mel e Cera',
-    description: 'Produção apícola e extracção de mel silvestre',
+    description: 'Produção apícola e mel silvestre',
     icon: Package,
     color: 'text-amber-500 dark:text-amber-300',
     bgColor: 'bg-amber-50 dark:bg-amber-900/20',
     borderColor: 'border-amber-400',
+    categories: ['exploitation', 'transport', 'processing', 'export'],
   },
   {
     id: 'fruits_seeds',
     label: 'Frutos e Sementes',
-    description: 'Colecta de frutos silvestres e sementes florestais',
+    description: 'Frutos silvestres e sementes florestais',
     icon: Leaf,
     color: 'text-rose-600 dark:text-rose-400',
     bgColor: 'bg-rose-100 dark:bg-rose-900/30',
     borderColor: 'border-rose-500',
+    categories: ['exploitation', 'transport', 'export'],
   },
   {
     id: 'mushrooms',
     label: 'Cogumelos',
-    description: 'Colecta de cogumelos silvestres',
+    description: 'Cogumelos silvestres',
     icon: Leaf,
     color: 'text-stone-600 dark:text-stone-400',
     bgColor: 'bg-stone-100 dark:bg-stone-900/30',
     borderColor: 'border-stone-500',
+    categories: ['exploitation', 'transport', 'export'],
   },
   {
     id: 'bark_fibers',
     label: 'Cascas e Fibras',
-    description: 'Extracção de cascas, fibras e materiais vegetais',
+    description: 'Cascas, fibras e materiais vegetais',
     icon: Package,
     color: 'text-orange-700 dark:text-orange-300',
     bgColor: 'bg-orange-50 dark:bg-orange-900/20',
     borderColor: 'border-orange-400',
+    categories: ['exploitation', 'transport', 'processing'],
   },
 ];
 
@@ -175,6 +241,7 @@ const workflowSteps = [
 ];
 
 const formSchema = z.object({
+  license_category: z.enum(['exploitation', 'transport', 'export', 'sawmill', 'processing']),
   product_type: z.enum(['timber_log', 'sawn_timber', 'firewood', 'charcoal', 'poles_stakes', 'bamboo', 'medicinal_plants', 'resins_gums', 'honey', 'fruits_seeds', 'mushrooms', 'bark_fibers']),
   operator_id: z.string().min(1, 'Operador é obrigatório'),
   applicant_name: z.string().min(1, 'Nome do requerente é obrigatório'),
@@ -206,6 +273,7 @@ interface LicenseRequestFormProps {
 
 export function LicenseRequestForm({ open, onClose, license }: LicenseRequestFormProps) {
   const [step, setStep] = useState(1);
+  const [selectedLicenseCategory, setSelectedLicenseCategory] = useState<string>('exploitation');
   const [selectedProductType, setSelectedProductType] = useState<string>('timber_log');
   
   const { data: operators } = useForestOperators();
@@ -239,6 +307,7 @@ export function LicenseRequestForm({ open, onClose, license }: LicenseRequestFor
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
+      license_category: 'exploitation',
       product_type: 'timber_log',
       operator_id: '',
       applicant_name: '',
@@ -261,6 +330,9 @@ export function LicenseRequestForm({ open, onClose, license }: LicenseRequestFor
     },
   });
 
+  // Filter products based on selected license category
+  const availableProducts = productTypes.filter(p => p.categories.includes(selectedLicenseCategory));
+
   useEffect(() => {
     if (!open) {
       setStep(1);
@@ -269,24 +341,9 @@ export function LicenseRequestForm({ open, onClose, license }: LicenseRequestFor
   }, [open, form]);
 
   const onSubmit = async (data: FormData) => {
-    // Map product_type to license_type for the database
-    const licenseTypeMap: Record<string, 'exploitation' | 'transport' | 'export' | 'sawmill' | 'processing'> = {
-      timber_log: 'exploitation',
-      sawn_timber: 'sawmill',
-      firewood: 'exploitation',
-      charcoal: 'processing',
-      poles_stakes: 'exploitation',
-      bamboo: 'exploitation',
-      medicinal_plants: 'exploitation',
-      resins_gums: 'exploitation',
-      honey: 'exploitation',
-      fruits_seeds: 'exploitation',
-      mushrooms: 'exploitation',
-      bark_fibers: 'exploitation',
-    };
-
+    const licenseCategory = licenseCategories.find(c => c.id === data.license_category);
     const payload = {
-      license_type: licenseTypeMap[data.product_type],
+      license_type: data.license_category as 'exploitation' | 'transport' | 'export' | 'sawmill' | 'processing',
       operator_id: data.operator_id,
       concession_area_name: data.concession_area_name,
       concession_area_ha: data.concession_area_ha,
@@ -298,7 +355,7 @@ export function LicenseRequestForm({ open, onClose, license }: LicenseRequestFor
         ? data.authorized_species.split(',').map((s) => s.trim()).filter(Boolean)
         : [],
       authorized_volume_m3: data.authorized_volume_m3 || null,
-      notes: `Tipo de Produto: ${productTypes.find(p => p.id === data.product_type)?.label}\n\nRequerente: ${data.applicant_name}\nBI/NIF: ${data.applicant_bi || 'N/A'}\nTelefone: ${data.applicant_phone || 'N/A'}\nEmail: ${data.applicant_email || 'N/A'}\n\nPropósito: ${data.purpose}\n\nDuração Solicitada: ${data.requested_duration_months} meses\n\n${data.notes || ''}`,
+      notes: `Categoria: ${licenseCategory?.label}\nTipo de Produto: ${productTypes.find(p => p.id === data.product_type)?.label}\n\nRequerente: ${data.applicant_name}\nBI/NIF: ${data.applicant_bi || 'N/A'}\nTelefone: ${data.applicant_phone || 'N/A'}\nEmail: ${data.applicant_email || 'N/A'}\n\nPropósito: ${data.purpose}\n\nDuração Solicitada: ${data.requested_duration_months} meses\n\n${data.notes || ''}`,
       status: 'submitted' as const,
       license_number: '', // Auto-generated by trigger
     };
@@ -321,7 +378,7 @@ export function LicenseRequestForm({ open, onClose, license }: LicenseRequestFor
   const canProceed = () => {
     switch (step) {
       case 1:
-        return !!selectedProductType;
+        return !!selectedLicenseCategory && !!selectedProductType;
       case 2:
         return form.watch('operator_id') && form.watch('applicant_name');
       case 3:
@@ -330,6 +387,8 @@ export function LicenseRequestForm({ open, onClose, license }: LicenseRequestFor
         return true;
     }
   };
+
+  const licenseCategory = licenseCategories.find(c => c.id === selectedLicenseCategory);
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
@@ -390,48 +449,112 @@ export function LicenseRequestForm({ open, onClose, license }: LicenseRequestFor
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            {/* Step 1: Select Product Type */}
+            {/* Step 1: Select License Category and Product Type */}
             {step === 1 && (
-              <div className="space-y-4">
-                <h3 className="font-semibold text-lg">Seleccione o Tipo de Produto</h3>
-                <p className="text-sm text-muted-foreground">Escolha o tipo de recurso florestal para o qual pretende obter licença</p>
-                
-                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                  {productTypes.map((type) => {
-                    const Icon = type.icon;
-                    const isSelected = selectedProductType === type.id;
-                    
-                    return (
-                      <Card
-                        key={type.id}
-                        className={cn(
-                          'cursor-pointer transition-all hover:shadow-md hover:scale-[1.02]',
-                          isSelected ? `ring-2 ${type.borderColor} shadow-md` : 'hover:border-muted-foreground/30'
-                        )}
-                        onClick={() => {
-                          setSelectedProductType(type.id);
-                          form.setValue('product_type', type.id as any);
-                        }}
-                      >
-                        <CardContent className="p-4">
-                          <div className="flex items-center gap-3">
-                            <div className={cn('flex h-10 w-10 items-center justify-center rounded-lg shrink-0', type.bgColor)}>
-                              <Icon className={cn('h-5 w-5', type.color)} />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-2">
-                                <h4 className="font-medium text-sm truncate">{type.label}</h4>
+              <div className="space-y-6">
+                {/* License Category Selection */}
+                <div className="space-y-3">
+                  <h3 className="font-semibold text-lg">1. Tipo de Licença</h3>
+                  <p className="text-sm text-muted-foreground">Seleccione a categoria de licença pretendida</p>
+                  
+                  <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+                    {licenseCategories.map((cat) => {
+                      const Icon = cat.icon;
+                      const isSelected = selectedLicenseCategory === cat.id;
+                      
+                      return (
+                        <Card
+                          key={cat.id}
+                          className={cn(
+                            'cursor-pointer transition-all hover:shadow-md',
+                            isSelected ? `ring-2 ${cat.borderColor} shadow-md` : 'hover:border-muted-foreground/30'
+                          )}
+                          onClick={() => {
+                            setSelectedLicenseCategory(cat.id);
+                            form.setValue('license_category', cat.id as any);
+                            // Reset product type if not available in new category
+                            const currentProduct = productTypes.find(p => p.id === selectedProductType);
+                            if (!currentProduct?.categories.includes(cat.id)) {
+                              const firstAvailable = productTypes.find(p => p.categories.includes(cat.id));
+                              if (firstAvailable) {
+                                setSelectedProductType(firstAvailable.id);
+                                form.setValue('product_type', firstAvailable.id as any);
+                              }
+                            }
+                          }}
+                        >
+                          <CardContent className="p-3">
+                            <div className="flex flex-col items-center gap-2 text-center">
+                              <div className={cn('flex h-10 w-10 items-center justify-center rounded-lg', cat.bgColor)}>
+                                <Icon className={cn('h-5 w-5', cat.color)} />
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <h4 className="font-medium text-sm">{cat.label}</h4>
                                 {isSelected && (
-                                  <CheckCircle className="h-4 w-4 text-emerald-600 shrink-0" />
+                                  <CheckCircle className="h-3.5 w-3.5 text-emerald-600" />
                                 )}
                               </div>
-                              <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{type.description}</p>
                             </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    );
-                  })}
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <Separator />
+
+                {/* Product Type Selection */}
+                <div className="space-y-3">
+                  <h3 className="font-semibold text-lg">2. Tipo de Produto</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Escolha o tipo de recurso florestal para {licenseCategory?.label.toLowerCase() || 'a licença'}
+                  </p>
+                  
+                  <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                    {availableProducts.map((type) => {
+                      const Icon = type.icon;
+                      const isSelected = selectedProductType === type.id;
+                      
+                      return (
+                        <Card
+                          key={type.id}
+                          className={cn(
+                            'cursor-pointer transition-all hover:shadow-md hover:scale-[1.02]',
+                            isSelected ? `ring-2 ${type.borderColor} shadow-md` : 'hover:border-muted-foreground/30'
+                          )}
+                          onClick={() => {
+                            setSelectedProductType(type.id);
+                            form.setValue('product_type', type.id as any);
+                          }}
+                        >
+                          <CardContent className="p-4">
+                            <div className="flex items-center gap-3">
+                              <div className={cn('flex h-10 w-10 items-center justify-center rounded-lg shrink-0', type.bgColor)}>
+                                <Icon className={cn('h-5 w-5', type.color)} />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2">
+                                  <h4 className="font-medium text-sm truncate">{type.label}</h4>
+                                  {isSelected && (
+                                    <CheckCircle className="h-4 w-4 text-emerald-600 shrink-0" />
+                                  )}
+                                </div>
+                                <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{type.description}</p>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
+                  </div>
+                  
+                  {availableProducts.length === 0 && (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <Package className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                      <p>Nenhum produto disponível para esta categoria de licença</p>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -440,12 +563,14 @@ export function LicenseRequestForm({ open, onClose, license }: LicenseRequestFor
             {step === 2 && (
               <div className="space-y-6">
                 <div className="flex items-center gap-3">
-                  <div className={cn('flex h-10 w-10 items-center justify-center rounded-lg', productType?.bgColor)}>
-                    {productType && <productType.icon className={cn('h-5 w-5', productType.color)} />}
+                  <div className={cn('flex h-10 w-10 items-center justify-center rounded-lg', licenseCategory?.bgColor)}>
+                    {licenseCategory && <licenseCategory.icon className={cn('h-5 w-5', licenseCategory.color)} />}
                   </div>
                   <div>
                     <h3 className="font-semibold text-lg">Informação do Requerente</h3>
-                    <p className="text-sm text-muted-foreground">Dados do operador e contacto</p>
+                    <p className="text-sm text-muted-foreground">
+                      {licenseCategory?.label} de {productType?.label}
+                    </p>
                   </div>
                 </div>
 
