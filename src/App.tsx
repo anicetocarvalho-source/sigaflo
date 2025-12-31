@@ -27,6 +27,7 @@ import OccurrencesPage from "./pages/occurrences/OccurrencesPage";
 import ONAFPage from "./pages/onaf/ONAFPage";
 import IPNPage from "./pages/ipn/IPNPage";
 import IncentivesPage from "./pages/incentives/IncentivesPage";
+import ClimateRiskPage from "./pages/climate-risk/ClimateRiskPage";
 
 // Auth Pages
 import AuthPage from "./pages/auth/AuthPage";
@@ -111,6 +112,9 @@ const App = () => (
             
             {/* Incentives Module */}
             <Route path="/incentivos/*" element={<ProtectedRoute><IncentivesPage /></ProtectedRoute>} />
+            
+            {/* Climate Risk Module */}
+            <Route path="/risco-climatico/*" element={<ProtectedRoute><ClimateRiskPage /></ProtectedRoute>} />
             
             {/* Secondary Navigation */}
             <Route path="/relatorios" element={<ProtectedRoute><Index /></ProtectedRoute>} />

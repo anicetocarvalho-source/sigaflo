@@ -27,6 +27,7 @@ import {
   Fingerprint,
   Eye,
   Gift,
+  Umbrella,
 } from 'lucide-react';
 
 interface NavItem {
@@ -128,6 +129,11 @@ const navigation: NavItem[] = [
     label: 'Gestão de Incentivos',
     href: '/incentivos',
     icon: Gift,
+  },
+  {
+    label: 'Risco Climático',
+    href: '/risco-climatico',
+    icon: Umbrella,
   },
   {
     label: 'Gestão de Utilizadores',
