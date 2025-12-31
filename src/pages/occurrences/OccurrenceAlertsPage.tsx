@@ -184,17 +184,8 @@ export default function OccurrenceAlertsPage() {
   return (
     <MainLayout title="Gestão de Alertas" subtitle="Sistema de alertas SMS para ocorrências">
       <div className="space-y-6">
-        {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-bold flex items-center gap-2">
-              <Bell className="h-8 w-8 text-primary" />
-              Gestão de Alertas
-            </h1>
-            <p className="text-muted-foreground">
-              Envie alertas SMS para agricultores sobre ocorrências
-            </p>
-          </div>
+        {/* Action Button */}
+        <div className="flex justify-end">
           <Button onClick={() => setActiveTab('send')}>
             <Send className="h-4 w-4 mr-2" />
             Novo Alerta

@@ -18,17 +18,8 @@ export default function OccurrencesPage() {
   return (
     <MainLayout title="Gestão de Ocorrências" subtitle="Monitorização de eventos climáticos e fitossanitários">
       <div className="space-y-6">
-        {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-bold flex items-center gap-2">
-              <AlertTriangle className="h-8 w-8 text-destructive" />
-              Gestão de Ocorrências
-            </h1>
-            <p className="text-muted-foreground">
-              Ocorrências climáticas e fitossanitárias com classificação automática
-            </p>
-          </div>
+        {/* Action Button */}
+        <div className="flex justify-end">
           <Button onClick={() => setShowForm(true)}>
             <Plus className="h-4 w-4 mr-2" />
             Nova Ocorrência

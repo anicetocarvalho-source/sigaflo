@@ -147,17 +147,8 @@ export default function PhytosanitaryOccurrencesPage() {
   return (
     <MainLayout title="Ocorrências Fitossanitárias" subtitle="Monitoramento de pragas e doenças">
       <div className="space-y-6">
-        {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-bold flex items-center gap-2">
-              <Bug className="h-8 w-8 text-destructive" />
-              Ocorrências Fitossanitárias
-            </h1>
-            <p className="text-muted-foreground">
-              Monitoramento e gestão de pragas e doenças agrícolas
-            </p>
-          </div>
+        {/* Action Button */}
+        <div className="flex justify-end">
           <Button onClick={() => setShowForm(true)}>
             <Plus className="h-4 w-4 mr-2" />
             Nova Ocorrência

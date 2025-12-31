@@ -168,17 +168,8 @@ export default function ClimateOccurrencesPage() {
   return (
     <MainLayout title="Ocorrências Climáticas" subtitle="Monitoramento de eventos climáticos">
       <div className="space-y-6">
-        {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-bold flex items-center gap-2">
-              <CloudRain className="h-8 w-8 text-primary" />
-              Ocorrências Climáticas
-            </h1>
-            <p className="text-muted-foreground">
-              Monitoramento de secas, inundações, geadas e outros eventos climáticos
-            </p>
-          </div>
+        {/* Action Button */}
+        <div className="flex justify-end">
           <Button onClick={() => setShowForm(true)}>
             <Plus className="h-4 w-4 mr-2" />
             Nova Ocorrência
