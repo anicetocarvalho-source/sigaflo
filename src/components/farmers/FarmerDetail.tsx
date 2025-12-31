@@ -23,7 +23,9 @@ import {
   ArrowLeft,
   CreditCard,
   Fingerprint,
-  Eye
+  Eye,
+  Award,
+  Building2
 } from 'lucide-react';
 import { useFarmer } from '@/hooks/useFarmers';
 import { useProductionHistory, useCertificates } from '@/hooks/useCertificates';
@@ -31,6 +33,7 @@ import { FarmerTypeIcon, getFarmerTypeLabel, getFarmerTypeColor } from './Farmer
 import { WorkflowStatusBadge } from './WorkflowStatusBadge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { FarmerCard } from './FarmerCard';
+import { ProducerCertificate } from './ProducerCertificate';
 
 export const FarmerDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -129,6 +132,9 @@ export const FarmerDetail = () => {
           <TabsTrigger value="info">Informações</TabsTrigger>
           {(farmer.farmer_type === 'individual' || farmer.farmer_type === 'family') && (
             <TabsTrigger value="card">Cartão</TabsTrigger>
+          )}
+          {farmer.farmer_type === 'company' && (
+            <TabsTrigger value="certificate">Certificado</TabsTrigger>
           )}
           <TabsTrigger value="production">Histórico de Produção</TabsTrigger>
           <TabsTrigger value="certificates">Certificados</TabsTrigger>
@@ -333,6 +339,95 @@ export const FarmerDetail = () => {
                 ) : (
                   <p className="text-sm text-muted-foreground">Nenhum documento anexado</p>
                 )}
+              </div>
+            </div>
+          </TabsContent>
+        )}
+
+        {/* Producer Certificate Tab - only for companies */}
+        {farmer.farmer_type === 'company' && (
+          <TabsContent value="certificate">
+            <div className="grid gap-6 md:grid-cols-2">
+              <div>
+                <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                  <Award className="h-5 w-5" />
+                  Certificado de Produtor Registado
+                </h3>
+                {farmer.status === 'approved' || farmer.status === 'issued' ? (
+                  <ProducerCertificate farmer={farmer} />
+                ) : (
+                  <Card className="p-6">
+                    <div className="text-center text-muted-foreground">
+                      <Award className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                      <p className="font-medium">Certificado não disponível</p>
+                      <p className="text-sm mt-2">
+                        O certificado de produtor será emitido automaticamente após a validação do registo.
+                      </p>
+                      <Badge variant="outline" className="mt-4">
+                        Estado actual: {farmer.status}
+                      </Badge>
+                    </div>
+                  </Card>
+                )}
+              </div>
+              <div className="space-y-4">
+                <h4 className="font-medium">Documentos da Empresa</h4>
+                <div className="space-y-3">
+                  {(farmer as any).document_license_url && (
+                    <Card className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <FileText className="h-8 w-8 text-blue-600" />
+                          <div>
+                            <p className="font-medium">Alvará / Licença Comercial</p>
+                            <p className="text-xs text-muted-foreground">Documento digitalizado</p>
+                          </div>
+                        </div>
+                        <Button variant="outline" size="sm" onClick={() => window.open((farmer as any).document_license_url, '_blank')}>
+                          <Eye className="h-4 w-4 mr-2" />
+                          Ver
+                        </Button>
+                      </div>
+                    </Card>
+                  )}
+                  {(farmer as any).document_nif_url && (
+                    <Card className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <Building2 className="h-8 w-8 text-blue-600" />
+                          <div>
+                            <p className="font-medium">Certificado de NIF</p>
+                            <p className="text-xs text-muted-foreground">Documento digitalizado</p>
+                          </div>
+                        </div>
+                        <Button variant="outline" size="sm" onClick={() => window.open((farmer as any).document_nif_url, '_blank')}>
+                          <Eye className="h-4 w-4 mr-2" />
+                          Ver
+                        </Button>
+                      </div>
+                    </Card>
+                  )}
+                  {farmer.document_bi_url && (
+                    <Card className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <FileText className="h-8 w-8 text-blue-600" />
+                          <div>
+                            <p className="font-medium">Estatutos / Contrato Social</p>
+                            <p className="text-xs text-muted-foreground">Documento digitalizado</p>
+                          </div>
+                        </div>
+                        <Button variant="outline" size="sm" onClick={() => window.open(farmer.document_bi_url, '_blank')}>
+                          <Eye className="h-4 w-4 mr-2" />
+                          Ver
+                        </Button>
+                      </div>
+                    </Card>
+                  )}
+                  {!(farmer as any).document_license_url && !(farmer as any).document_nif_url && !farmer.document_bi_url && (
+                    <p className="text-sm text-muted-foreground">Nenhum documento anexado</p>
+                  )}
+                </div>
               </div>
             </div>
           </TabsContent>
