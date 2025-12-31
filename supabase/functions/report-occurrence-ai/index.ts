@@ -7,11 +7,19 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    // Create Supabase client with service role for internal operations
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    
+    // Verify the request has authorization (optional - just log it)
+    const authHeader = req.headers.get('Authorization');
+    console.log('Auth header present:', !!authHeader);
     const { action, description, occurrence_type, severity, province_id, title } = await req.json();
     
     console.log(`Processing action: ${action}`);
