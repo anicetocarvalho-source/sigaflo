@@ -11,6 +11,7 @@ import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import RiceDashboard from "./pages/rice/RiceDashboard";
+import RiceProductionPage from "./pages/rice/RiceProductionPage";
 import FarmersListPage from "./pages/farmers/FarmersListPage";
 import FarmerNewPage from "./pages/farmers/FarmerNewPage";
 import FarmerDetailPage from "./pages/farmers/FarmerDetailPage";
@@ -148,6 +149,8 @@ const App = () => (
             <Route path="/cafe/*" element={<ProtectedRoute><CoffeePage /></ProtectedRoute>} />
             
             {/* Rice Strategic Module */}
+            <Route path="/arroz" element={<ProtectedRoute><RiceDashboard /></ProtectedRoute>} />
+            <Route path="/arroz/producao" element={<ProtectedRoute><RiceProductionPage /></ProtectedRoute>} />
             <Route path="/arroz/*" element={<ProtectedRoute><RiceDashboard /></ProtectedRoute>} />
             
             {/* ONAF Module */}
