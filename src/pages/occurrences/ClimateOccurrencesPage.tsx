@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
 import { KPICard } from '@/components/dashboard/KPICard';
-import { OccurrenceForm } from '@/components/occurrences/OccurrenceForm';
+import { ReportOccurrenceForm } from '@/components/occurrences/ReportOccurrenceForm';
 import { 
   AlertTriangle, 
   Search, 
@@ -325,7 +325,7 @@ export default function ClimateOccurrencesPage() {
         </Card>
 
         {/* Form Dialog */}
-        <OccurrenceForm open={showForm} onOpenChange={setShowForm} />
+        <ReportOccurrenceForm open={showForm} onOpenChange={setShowForm} />
       </div>
     </MainLayout>
   );
