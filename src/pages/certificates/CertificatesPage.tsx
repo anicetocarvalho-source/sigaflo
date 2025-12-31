@@ -96,6 +96,14 @@ const CertificatesPage = () => {
         </TabsList>
 
         <TabsContent value="dashboard" className="mt-6 space-y-6">
+          <div className="flex justify-end mb-4">
+            <Link to="/certificados/novo">
+              <Button>
+                <Plus className="mr-2 h-4 w-4" />
+                Novo Certificado
+              </Button>
+            </Link>
+          </div>
           <div className="grid gap-4 md:grid-cols-4">
             <Card>
               <CardHeader className="pb-2">
