@@ -160,7 +160,18 @@ const secondaryNavigation = [
 export function Sidebar() {
   const location = useLocation();
   const { profile, roles, signOut, isAdmin } = useAuth();
-  const [expandedItems, setExpandedItems] = useState<string[]>(['Produção de Arroz']);
+  
+  // Find which menu should be expanded based on current route
+  const getInitialExpanded = () => {
+    for (const item of navigation) {
+      if (item.children?.some(child => location.pathname.startsWith(child.href))) {
+        return [item.label];
+      }
+    }
+    return [];
+  };
+  
+  const [expandedItems, setExpandedItems] = useState<string[]>(getInitialExpanded);
 
   const toggleExpand = (label: string) => {
     setExpandedItems(prev =>
@@ -170,8 +181,7 @@ export function Sidebar() {
 
   const isActive = (href: string) => location.pathname === href;
   const isChildActive = (children?: { href: string }[]) =>
-    children?.some(child => location.pathname === child.href);
-
+    children?.some(child => location.pathname.startsWith(child.href));
   // Filter navigation items based on admin status
   const visibleNavigation = navigation.filter(item => !item.adminOnly || isAdmin);
 
