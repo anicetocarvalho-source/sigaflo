@@ -50,6 +50,9 @@ import NoPermissionPage from "./pages/auth/NoPermissionPage";
 import UsersPage from "./pages/admin/UsersPage";
 import ProfilePage from "./pages/profile/ProfilePage";
 
+// Infrastructure
+import AgriculturalInfrastructurePage from "./pages/infrastructure/AgriculturalInfrastructurePage";
+
 // Public Portal
 import VerificationPortal from "./pages/public/VerificationPortal";
 import QRScanner from "./pages/public/QRScanner";
@@ -114,8 +117,9 @@ const App = () => (
             <Route path="/ocorrencias/alertas" element={<ProtectedRoute><OccurrenceAlertsPage /></ProtectedRoute>} />
             <Route path="/ocorrencias/*" element={<ProtectedRoute><OccurrencesPage /></ProtectedRoute>} />
             
-            {/* Infrastructure */}
-            <Route path="/infraestruturas/*" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+            {/* Infrastructure Module */}
+            <Route path="/infraestruturas" element={<ProtectedRoute><AgriculturalInfrastructurePage /></ProtectedRoute>} />
+            <Route path="/infraestruturas/mercados" element={<ProtectedRoute><Index /></ProtectedRoute>} />
             
             {/* Forestry Module */}
             <Route path="/florestal" element={<ProtectedRoute><ForestryPage /></ProtectedRoute>} />
