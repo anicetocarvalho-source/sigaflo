@@ -164,13 +164,34 @@ export const useCreateFarmer = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async (farmer: Omit<Partial<Farmer>, 'id' | 'created_at' | 'updated_at' | 'registration_number' | 'provinces' | 'municipalities' | 'communes'>) => {
+    mutationFn: async (farmer: Omit<Partial<Farmer>, 'id' | 'created_at' | 'updated_at' | 'registration_number' | 'provinces' | 'municipalities' | 'communes'> & { memberIds?: string[] }) => {
+      const { memberIds, ...farmerData } = farmer;
+      
+      // Create the farmer/cooperative/school
       const { data, error } = await supabase
         .from('farmers')
-        .insert(farmer as any)
+        .insert(farmerData as any)
         .select()
         .single();
       if (error) throw error;
+      
+      // If memberIds provided, update those farmers to link to this organization
+      if (memberIds && memberIds.length > 0 && data) {
+        const field = farmerData.farmer_type === 'cooperative' 
+          ? 'parent_cooperative_id' 
+          : 'field_school_id';
+        
+        const { error: updateError } = await supabase
+          .from('farmers')
+          .update({ [field]: data.id })
+          .in('id', memberIds);
+        
+        if (updateError) {
+          console.error('Error linking members:', updateError);
+          // Don't throw - the main record was created successfully
+        }
+      }
+      
       return data;
     },
     onSuccess: () => {
@@ -187,7 +208,7 @@ export const useUpdateFarmer = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async ({ id, ...farmer }: Partial<Farmer> & { id: string }) => {
+    mutationFn: async ({ id, memberIds, ...farmer }: Partial<Farmer> & { id: string; memberIds?: string[] }) => {
       const { data, error } = await supabase
         .from('farmers')
         .update(farmer)
@@ -195,6 +216,23 @@ export const useUpdateFarmer = () => {
         .select()
         .single();
       if (error) throw error;
+      
+      // If memberIds provided, update those farmers to link to this organization
+      if (memberIds && memberIds.length > 0 && data) {
+        const field = farmer.farmer_type === 'cooperative' 
+          ? 'parent_cooperative_id' 
+          : 'field_school_id';
+        
+        const { error: updateError } = await supabase
+          .from('farmers')
+          .update({ [field]: id })
+          .in('id', memberIds);
+        
+        if (updateError) {
+          console.error('Error linking members:', updateError);
+        }
+      }
+      
       return data;
     },
     onSuccess: (_, variables) => {
