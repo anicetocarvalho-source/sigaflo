@@ -1,7 +1,6 @@
 import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import {
   Select,
   SelectContent,
@@ -10,11 +9,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { 
-  CloudRain, 
   Filter,
   FileDown,
-  Shield,
-  Building2
 } from 'lucide-react';
 import { 
   useClimateRiskKPIs,
@@ -58,32 +54,9 @@ export function ClimateRiskAnalyticsDashboard() {
 
   return (
     <div className="space-y-6">
-      {/* Header with Filters */}
+      {/* Filters */}
       <Card>
-        <CardHeader>
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div>
-              <CardTitle className="flex items-center gap-2">
-                <CloudRain className="h-5 w-5" />
-                Risco Climático e Seguro Agrícola
-              </CardTitle>
-              <p className="text-sm text-muted-foreground mt-1">
-                Antecipação de riscos e suporte a decisões de mitigação
-              </p>
-            </div>
-            <div className="flex items-center gap-2">
-              <Badge variant="outline" className="gap-1">
-                <Building2 className="h-3 w-3" />
-                Agricultura / Protecção Civil / Finanças
-              </Badge>
-              <Badge variant="outline" className="gap-1 bg-amber-50">
-                <Shield className="h-3 w-3" />
-                Seguradoras
-              </Badge>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
+        <CardContent className="pt-6">
           <div className="flex flex-col md:flex-row gap-4 items-end">
             <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
