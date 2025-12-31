@@ -26,6 +26,7 @@ import CoffeePage from "./pages/coffee/CoffeePage";
 import OccurrencesPage from "./pages/occurrences/OccurrencesPage";
 import ONAFPage from "./pages/onaf/ONAFPage";
 import IPNPage from "./pages/ipn/IPNPage";
+import IncentivesPage from "./pages/incentives/IncentivesPage";
 
 // Auth Pages
 import AuthPage from "./pages/auth/AuthPage";
@@ -107,6 +108,9 @@ const App = () => (
             
             {/* IPN Module */}
             <Route path="/ipn/*" element={<ProtectedRoute><IPNPage /></ProtectedRoute>} />
+            
+            {/* Incentives Module */}
+            <Route path="/incentivos/*" element={<ProtectedRoute><IncentivesPage /></ProtectedRoute>} />
             
             {/* Secondary Navigation */}
             <Route path="/relatorios" element={<ProtectedRoute><Index /></ProtectedRoute>} />
