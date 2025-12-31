@@ -27,6 +27,7 @@ import OccurrencesPage from "./pages/occurrences/OccurrencesPage";
 import ONAFPage from "./pages/onaf/ONAFPage";
 import IPNPage from "./pages/ipn/IPNPage";
 import IncentivesPage from "./pages/incentives/IncentivesPage";
+import IncentivesAnalyticsPage from "./pages/incentives-analytics/IncentivesAnalyticsPage";
 import ClimateRiskPage from "./pages/climate-risk/ClimateRiskPage";
 import DataLabPage from "./pages/data-lab/DataLabPage";
 
@@ -113,6 +114,10 @@ const App = () => (
             
             {/* Incentives Module */}
             <Route path="/incentivos/*" element={<ProtectedRoute><IncentivesPage /></ProtectedRoute>} />
+            
+            {/* Incentives Analytics Module */}
+            <Route path="/incentivos-analytics/*" element={<ProtectedRoute><IncentivesAnalyticsPage /></ProtectedRoute>} />
+            
             
             {/* Climate Risk Module */}
             <Route path="/risco-climatico/*" element={<ProtectedRoute><ClimateRiskPage /></ProtectedRoute>} />
