@@ -24,6 +24,8 @@ import {
   ExternalLink,
   TrendingUp,
   UserCog,
+  Fingerprint,
+  Eye,
 } from 'lucide-react';
 
 interface NavItem {
@@ -110,6 +112,16 @@ const navigation: NavItem[] = [
       { label: 'Consumo', href: '/arroz/consumo' },
       { label: 'Políticas', href: '/arroz/politicas' },
     ],
+  },
+  {
+    label: 'Observatório (ONAF)',
+    href: '/onaf',
+    icon: Eye,
+  },
+  {
+    label: 'Identidade Produtiva',
+    href: '/ipn',
+    icon: Fingerprint,
   },
   {
     label: 'Gestão de Utilizadores',
