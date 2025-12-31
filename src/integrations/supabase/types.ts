@@ -128,6 +128,74 @@ export type Database = {
           },
         ]
       }
+      alternative_guarantees: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string
+          document_reference: string | null
+          document_url: string | null
+          estimated_value_aoa: number | null
+          farmer_id: string
+          guarantee_type: string
+          id: string
+          is_active: boolean | null
+          score_impact_points: number | null
+          updated_at: string
+          valid_from: string | null
+          valid_until: string | null
+          verification_status: string | null
+          verified_at: string | null
+          verified_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description: string
+          document_reference?: string | null
+          document_url?: string | null
+          estimated_value_aoa?: number | null
+          farmer_id: string
+          guarantee_type: string
+          id?: string
+          is_active?: boolean | null
+          score_impact_points?: number | null
+          updated_at?: string
+          valid_from?: string | null
+          valid_until?: string | null
+          verification_status?: string | null
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string
+          document_reference?: string | null
+          document_url?: string | null
+          estimated_value_aoa?: number | null
+          farmer_id?: string
+          guarantee_type?: string
+          id?: string
+          is_active?: boolean | null
+          score_impact_points?: number | null
+          updated_at?: string
+          valid_from?: string | null
+          valid_until?: string | null
+          verification_status?: string | null
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "alternative_guarantees_farmer_id_fkey"
+            columns: ["farmer_id"]
+            isOneToOne: false
+            referencedRelation: "farmers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       audit_log: {
         Row: {
           action: string
@@ -301,6 +369,274 @@ export type Database = {
             columns: ["municipality_id"]
             isOneToOne: false
             referencedRelation: "municipalities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      credit_dossiers: {
+        Row: {
+          attached_documents: Json | null
+          certificate_id: string | null
+          created_at: string
+          created_by: string | null
+          credit_score: number | null
+          dossier_number: string
+          expires_at: string | null
+          farmer_id: string
+          financial_profile_id: string | null
+          georeferenced_maps: Json | null
+          id: string
+          insurance_score_id: string | null
+          pdf_url: string | null
+          qr_code_data: string | null
+          recommended_credit_aoa: number | null
+          risk_classification: string | null
+          simulation_id: string | null
+          status: string | null
+          submission_response: Json | null
+          submitted_at: string | null
+          submitted_to: string | null
+          updated_at: string
+          updated_by: string | null
+          verification_url: string | null
+        }
+        Insert: {
+          attached_documents?: Json | null
+          certificate_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          credit_score?: number | null
+          dossier_number: string
+          expires_at?: string | null
+          farmer_id: string
+          financial_profile_id?: string | null
+          georeferenced_maps?: Json | null
+          id?: string
+          insurance_score_id?: string | null
+          pdf_url?: string | null
+          qr_code_data?: string | null
+          recommended_credit_aoa?: number | null
+          risk_classification?: string | null
+          simulation_id?: string | null
+          status?: string | null
+          submission_response?: Json | null
+          submitted_at?: string | null
+          submitted_to?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          verification_url?: string | null
+        }
+        Update: {
+          attached_documents?: Json | null
+          certificate_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          credit_score?: number | null
+          dossier_number?: string
+          expires_at?: string | null
+          farmer_id?: string
+          financial_profile_id?: string | null
+          georeferenced_maps?: Json | null
+          id?: string
+          insurance_score_id?: string | null
+          pdf_url?: string | null
+          qr_code_data?: string | null
+          recommended_credit_aoa?: number | null
+          risk_classification?: string | null
+          simulation_id?: string | null
+          status?: string | null
+          submission_response?: Json | null
+          submitted_at?: string | null
+          submitted_to?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          verification_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "credit_dossiers_certificate_id_fkey"
+            columns: ["certificate_id"]
+            isOneToOne: false
+            referencedRelation: "production_history_certificates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "credit_dossiers_farmer_id_fkey"
+            columns: ["farmer_id"]
+            isOneToOne: false
+            referencedRelation: "farmers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "credit_dossiers_financial_profile_id_fkey"
+            columns: ["financial_profile_id"]
+            isOneToOne: false
+            referencedRelation: "farmer_financial_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "credit_dossiers_insurance_score_id_fkey"
+            columns: ["insurance_score_id"]
+            isOneToOne: false
+            referencedRelation: "insurance_risk_scores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "credit_dossiers_simulation_id_fkey"
+            columns: ["simulation_id"]
+            isOneToOne: false
+            referencedRelation: "credit_simulations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      credit_insurance_alerts: {
+        Row: {
+          acknowledged_at: string | null
+          alert_type: string
+          app_sent_at: string | null
+          created_at: string
+          email_sent_at: string | null
+          expires_at: string | null
+          farmer_id: string
+          id: string
+          message: string
+          priority: string | null
+          read_at: string | null
+          send_app: boolean | null
+          send_email: boolean | null
+          send_sms: boolean | null
+          sms_sent_at: string | null
+          target_extensionist: boolean | null
+          target_farmer: boolean | null
+          target_institution: string | null
+          title: string
+        }
+        Insert: {
+          acknowledged_at?: string | null
+          alert_type: string
+          app_sent_at?: string | null
+          created_at?: string
+          email_sent_at?: string | null
+          expires_at?: string | null
+          farmer_id: string
+          id?: string
+          message: string
+          priority?: string | null
+          read_at?: string | null
+          send_app?: boolean | null
+          send_email?: boolean | null
+          send_sms?: boolean | null
+          sms_sent_at?: string | null
+          target_extensionist?: boolean | null
+          target_farmer?: boolean | null
+          target_institution?: string | null
+          title: string
+        }
+        Update: {
+          acknowledged_at?: string | null
+          alert_type?: string
+          app_sent_at?: string | null
+          created_at?: string
+          email_sent_at?: string | null
+          expires_at?: string | null
+          farmer_id?: string
+          id?: string
+          message?: string
+          priority?: string | null
+          read_at?: string | null
+          send_app?: boolean | null
+          send_email?: boolean | null
+          send_sms?: boolean | null
+          sms_sent_at?: string | null
+          target_extensionist?: boolean | null
+          target_farmer?: boolean | null
+          target_institution?: string | null
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "credit_insurance_alerts_farmer_id_fkey"
+            columns: ["farmer_id"]
+            isOneToOne: false
+            referencedRelation: "farmers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      credit_simulations: {
+        Row: {
+          average_production_costs_aoa: number
+          created_at: string
+          created_by: string | null
+          estimated_interest_rate: number | null
+          estimated_net_margin_aoa: number
+          expected_annual_revenue_aoa: number
+          farmer_id: string
+          id: string
+          margin_percentage: number | null
+          max_credit_amount_aoa: number | null
+          max_monthly_payment_aoa: number | null
+          qr_code_data: string | null
+          recommended_credit_amount_aoa: number | null
+          recommended_term_months: number | null
+          report_generated: boolean | null
+          report_url: string | null
+          scenario_type: string
+          simulation_date: string
+          simulation_params: Json | null
+          verification_url: string | null
+        }
+        Insert: {
+          average_production_costs_aoa?: number
+          created_at?: string
+          created_by?: string | null
+          estimated_interest_rate?: number | null
+          estimated_net_margin_aoa?: number
+          expected_annual_revenue_aoa?: number
+          farmer_id: string
+          id?: string
+          margin_percentage?: number | null
+          max_credit_amount_aoa?: number | null
+          max_monthly_payment_aoa?: number | null
+          qr_code_data?: string | null
+          recommended_credit_amount_aoa?: number | null
+          recommended_term_months?: number | null
+          report_generated?: boolean | null
+          report_url?: string | null
+          scenario_type?: string
+          simulation_date?: string
+          simulation_params?: Json | null
+          verification_url?: string | null
+        }
+        Update: {
+          average_production_costs_aoa?: number
+          created_at?: string
+          created_by?: string | null
+          estimated_interest_rate?: number | null
+          estimated_net_margin_aoa?: number
+          expected_annual_revenue_aoa?: number
+          farmer_id?: string
+          id?: string
+          margin_percentage?: number | null
+          max_credit_amount_aoa?: number | null
+          max_monthly_payment_aoa?: number | null
+          qr_code_data?: string | null
+          recommended_credit_amount_aoa?: number | null
+          recommended_term_months?: number | null
+          report_generated?: boolean | null
+          report_url?: string | null
+          scenario_type?: string
+          simulation_date?: string
+          simulation_params?: Json | null
+          verification_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "credit_simulations_farmer_id_fkey"
+            columns: ["farmer_id"]
+            isOneToOne: false
+            referencedRelation: "farmers"
             referencedColumns: ["id"]
           },
         ]
@@ -879,6 +1215,148 @@ export type Database = {
             columns: ["program_id"]
             isOneToOne: false
             referencedRelation: "incentive_programs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      farmer_data_consents: {
+        Row: {
+          consent_given_at: string
+          consent_scope: string[]
+          created_at: string
+          farmer_id: string
+          id: string
+          institution_code: string | null
+          institution_name: string | null
+          institution_type: string
+          is_active: boolean | null
+          revocation_reason: string | null
+          revoked_at: string | null
+          valid_until: string | null
+        }
+        Insert: {
+          consent_given_at?: string
+          consent_scope?: string[]
+          created_at?: string
+          farmer_id: string
+          id?: string
+          institution_code?: string | null
+          institution_name?: string | null
+          institution_type: string
+          is_active?: boolean | null
+          revocation_reason?: string | null
+          revoked_at?: string | null
+          valid_until?: string | null
+        }
+        Update: {
+          consent_given_at?: string
+          consent_scope?: string[]
+          created_at?: string
+          farmer_id?: string
+          id?: string
+          institution_code?: string | null
+          institution_name?: string | null
+          institution_type?: string
+          is_active?: boolean | null
+          revocation_reason?: string | null
+          revoked_at?: string | null
+          valid_until?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "farmer_data_consents_farmer_id_fkey"
+            columns: ["farmer_id"]
+            isOneToOne: false
+            referencedRelation: "farmers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      farmer_financial_profiles: {
+        Row: {
+          average_annual_production_kg: number | null
+          climate_events_count: number | null
+          climate_losses_aoa: number | null
+          created_at: string
+          credit_score: number | null
+          credit_score_factors: Json | null
+          eligibility_notes: string | null
+          farmer_id: string
+          id: string
+          incentives_count: number | null
+          is_credit_eligible: boolean | null
+          is_insurance_eligible: boolean | null
+          last_calculated_at: string | null
+          last_climate_event_date: string | null
+          last_incentive_date: string | null
+          main_crops: string[] | null
+          production_stability_pct: number | null
+          production_years: number | null
+          productive_area_ha: number | null
+          risk_classification: string | null
+          territorial_risk_factors: Json | null
+          territorial_risk_level: string | null
+          total_incentives_received_aoa: number | null
+          updated_at: string
+        }
+        Insert: {
+          average_annual_production_kg?: number | null
+          climate_events_count?: number | null
+          climate_losses_aoa?: number | null
+          created_at?: string
+          credit_score?: number | null
+          credit_score_factors?: Json | null
+          eligibility_notes?: string | null
+          farmer_id: string
+          id?: string
+          incentives_count?: number | null
+          is_credit_eligible?: boolean | null
+          is_insurance_eligible?: boolean | null
+          last_calculated_at?: string | null
+          last_climate_event_date?: string | null
+          last_incentive_date?: string | null
+          main_crops?: string[] | null
+          production_stability_pct?: number | null
+          production_years?: number | null
+          productive_area_ha?: number | null
+          risk_classification?: string | null
+          territorial_risk_factors?: Json | null
+          territorial_risk_level?: string | null
+          total_incentives_received_aoa?: number | null
+          updated_at?: string
+        }
+        Update: {
+          average_annual_production_kg?: number | null
+          climate_events_count?: number | null
+          climate_losses_aoa?: number | null
+          created_at?: string
+          credit_score?: number | null
+          credit_score_factors?: Json | null
+          eligibility_notes?: string | null
+          farmer_id?: string
+          id?: string
+          incentives_count?: number | null
+          is_credit_eligible?: boolean | null
+          is_insurance_eligible?: boolean | null
+          last_calculated_at?: string | null
+          last_climate_event_date?: string | null
+          last_incentive_date?: string | null
+          main_crops?: string[] | null
+          production_stability_pct?: number | null
+          production_years?: number | null
+          productive_area_ha?: number | null
+          risk_classification?: string | null
+          territorial_risk_factors?: Json | null
+          territorial_risk_level?: string | null
+          total_incentives_received_aoa?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "farmer_financial_profiles_farmer_id_fkey"
+            columns: ["farmer_id"]
+            isOneToOne: false
+            referencedRelation: "farmers"
             referencedColumns: ["id"]
           },
         ]
@@ -2639,6 +3117,148 @@ export type Database = {
         }
         Relationships: []
       }
+      institutional_access_logs: {
+        Row: {
+          access_result: string | null
+          access_type: string
+          accessed_by: string | null
+          consent_given_at: string | null
+          created_at: string
+          data_accessed: Json | null
+          error_message: string | null
+          farmer_consent_id: string | null
+          farmer_id: string | null
+          id: string
+          institution_code: string | null
+          institution_name: string
+          institution_type: string
+          ip_address: string | null
+          resource_id: string | null
+          resource_type: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          access_result?: string | null
+          access_type: string
+          accessed_by?: string | null
+          consent_given_at?: string | null
+          created_at?: string
+          data_accessed?: Json | null
+          error_message?: string | null
+          farmer_consent_id?: string | null
+          farmer_id?: string | null
+          id?: string
+          institution_code?: string | null
+          institution_name: string
+          institution_type: string
+          ip_address?: string | null
+          resource_id?: string | null
+          resource_type?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          access_result?: string | null
+          access_type?: string
+          accessed_by?: string | null
+          consent_given_at?: string | null
+          created_at?: string
+          data_accessed?: Json | null
+          error_message?: string | null
+          farmer_consent_id?: string | null
+          farmer_id?: string | null
+          id?: string
+          institution_code?: string | null
+          institution_name?: string
+          institution_type?: string
+          ip_address?: string | null
+          resource_id?: string | null
+          resource_type?: string | null
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "institutional_access_logs_farmer_id_fkey"
+            columns: ["farmer_id"]
+            isOneToOne: false
+            referencedRelation: "farmers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      insurance_risk_scores: {
+        Row: {
+          calculated_at: string
+          climate_history_score: number | null
+          coverage_recommendations: Json | null
+          created_at: string
+          crop_risk_score: number | null
+          extreme_events_score: number | null
+          farmer_id: string
+          id: string
+          insurable_risk_class: string | null
+          overall_risk_score: number | null
+          pest_frequency_score: number | null
+          practices_score: number | null
+          risk_factors_detail: Json | null
+          risk_mitigation_suggestions: string[] | null
+          suggested_coverage_types: string[] | null
+          suggested_deductible_pct: number | null
+          suggested_premium_multiplier: number | null
+          updated_at: string
+          valid_until: string | null
+        }
+        Insert: {
+          calculated_at?: string
+          climate_history_score?: number | null
+          coverage_recommendations?: Json | null
+          created_at?: string
+          crop_risk_score?: number | null
+          extreme_events_score?: number | null
+          farmer_id: string
+          id?: string
+          insurable_risk_class?: string | null
+          overall_risk_score?: number | null
+          pest_frequency_score?: number | null
+          practices_score?: number | null
+          risk_factors_detail?: Json | null
+          risk_mitigation_suggestions?: string[] | null
+          suggested_coverage_types?: string[] | null
+          suggested_deductible_pct?: number | null
+          suggested_premium_multiplier?: number | null
+          updated_at?: string
+          valid_until?: string | null
+        }
+        Update: {
+          calculated_at?: string
+          climate_history_score?: number | null
+          coverage_recommendations?: Json | null
+          created_at?: string
+          crop_risk_score?: number | null
+          extreme_events_score?: number | null
+          farmer_id?: string
+          id?: string
+          insurable_risk_class?: string | null
+          overall_risk_score?: number | null
+          pest_frequency_score?: number | null
+          practices_score?: number | null
+          risk_factors_detail?: Json | null
+          risk_mitigation_suggestions?: string[] | null
+          suggested_coverage_types?: string[] | null
+          suggested_deductible_pct?: number | null
+          suggested_premium_multiplier?: number | null
+          updated_at?: string
+          valid_until?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "insurance_risk_scores_farmer_id_fkey"
+            columns: ["farmer_id"]
+            isOneToOne: false
+            referencedRelation: "farmers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       municipalities: {
         Row: {
           code: string | null
@@ -2840,6 +3460,89 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "production_history_farmer_id_fkey"
+            columns: ["farmer_id"]
+            isOneToOne: false
+            referencedRelation: "farmers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      production_history_certificates: {
+        Row: {
+          agricultural_practices: string[] | null
+          average_productivity: number | null
+          certificate_number: string
+          certified_productions: Json
+          created_at: string
+          digital_signature: string | null
+          farmer_id: string
+          id: string
+          is_valid: boolean | null
+          issued_by: string | null
+          period_end_year: number
+          period_start_year: number
+          productive_area_ha: number | null
+          qr_code_data: string | null
+          revocation_reason: string | null
+          signed_at: string | null
+          signed_by: string | null
+          status: string | null
+          total_production_kg: number | null
+          updated_at: string
+          validity_expiry: string | null
+          verification_url: string | null
+        }
+        Insert: {
+          agricultural_practices?: string[] | null
+          average_productivity?: number | null
+          certificate_number: string
+          certified_productions?: Json
+          created_at?: string
+          digital_signature?: string | null
+          farmer_id: string
+          id?: string
+          is_valid?: boolean | null
+          issued_by?: string | null
+          period_end_year: number
+          period_start_year: number
+          productive_area_ha?: number | null
+          qr_code_data?: string | null
+          revocation_reason?: string | null
+          signed_at?: string | null
+          signed_by?: string | null
+          status?: string | null
+          total_production_kg?: number | null
+          updated_at?: string
+          validity_expiry?: string | null
+          verification_url?: string | null
+        }
+        Update: {
+          agricultural_practices?: string[] | null
+          average_productivity?: number | null
+          certificate_number?: string
+          certified_productions?: Json
+          created_at?: string
+          digital_signature?: string | null
+          farmer_id?: string
+          id?: string
+          is_valid?: boolean | null
+          issued_by?: string | null
+          period_end_year?: number
+          period_start_year?: number
+          productive_area_ha?: number | null
+          qr_code_data?: string | null
+          revocation_reason?: string | null
+          signed_at?: string | null
+          signed_by?: string | null
+          status?: string | null
+          total_production_kg?: number | null
+          updated_at?: string
+          validity_expiry?: string | null
+          verification_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "production_history_certificates_farmer_id_fkey"
             columns: ["farmer_id"]
             isOneToOne: false
             referencedRelation: "farmers"
