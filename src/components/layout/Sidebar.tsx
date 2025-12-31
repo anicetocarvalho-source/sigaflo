@@ -26,6 +26,7 @@ import {
   UserCog,
   Fingerprint,
   Eye,
+  Gift,
 } from 'lucide-react';
 
 interface NavItem {
@@ -122,6 +123,11 @@ const navigation: NavItem[] = [
     label: 'Identidade Produtiva',
     href: '/ipn',
     icon: Fingerprint,
+  },
+  {
+    label: 'Gestão de Incentivos',
+    href: '/incentivos',
+    icon: Gift,
   },
   {
     label: 'Gestão de Utilizadores',
