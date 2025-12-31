@@ -103,13 +103,15 @@ export const ProductionForm = ({ initialData, onSubmit, onCancel, isLoading }: P
                     </FormControl>
                     <SelectContent>
                       {loadingFarmers ? (
-                        <SelectItem value="" disabled>Carregando...</SelectItem>
-                      ) : (
-                        farmers?.map((farmer) => (
+                        <SelectItem value="loading" disabled>Carregando...</SelectItem>
+                      ) : farmers && farmers.length > 0 ? (
+                        farmers.map((farmer) => (
                           <SelectItem key={farmer.id} value={farmer.id}>
                             {farmer.name} ({farmer.registration_number})
                           </SelectItem>
                         ))
+                      ) : (
+                        <SelectItem value="empty" disabled>Nenhum agricultor encontrado</SelectItem>
                       )}
                     </SelectContent>
                   </Select>
@@ -288,14 +290,17 @@ export const ProductionForm = ({ initialData, onSubmit, onCancel, isLoading }: P
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Grau de Qualidade</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value || ''}>
+                  <Select 
+                    onValueChange={(val) => field.onChange(val === 'none' ? null : val)} 
+                    value={field.value || 'none'}
+                  >
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Selecione o grau" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="">Não avaliado</SelectItem>
+                      <SelectItem value="none">Não avaliado</SelectItem>
                       {QUALITY_GRADES.map((grade) => (
                         <SelectItem key={grade} value={grade}>
                           Grau {grade}
