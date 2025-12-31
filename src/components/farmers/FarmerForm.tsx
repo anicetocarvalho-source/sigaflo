@@ -21,7 +21,7 @@ import {
 } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { MapPin, User, Leaf, Building2, Users, FileText, Camera } from 'lucide-react';
+import { MapPin, User, Leaf, Building2, Users, FileText, Camera, Award } from 'lucide-react';
 import { useProvinces, useMunicipalities, useCommunes, useFarmers } from '@/hooks/useFarmers';
 import type { Farmer, FarmerType } from '@/hooks/useFarmers';
 import { MemberSelector } from './MemberSelector';
@@ -49,11 +49,14 @@ const farmerSchema = z.object({
   irrigation_type: z.string().max(50).optional().nullable(),
   parent_cooperative_id: z.string().uuid().optional().nullable(),
   field_school_id: z.string().uuid().optional().nullable(),
-  // New fields for individual farmers
+  // Fields for individual/family farmers
   photo_url: z.string().optional().nullable(),
   fingerprint_data: z.string().optional().nullable(),
   document_bi_url: z.string().optional().nullable(),
   document_other_url: z.string().optional().nullable(),
+  // Fields for company documents
+  document_license_url: z.string().optional().nullable(),
+  document_nif_url: z.string().optional().nullable(),
 });
 
 type FarmerFormData = z.infer<typeof farmerSchema>;
@@ -124,6 +127,8 @@ export const FarmerForm = ({ farmer, onSubmit, isLoading }: FarmerFormProps) => 
       fingerprint_data: (farmer as any)?.fingerprint_data || undefined,
       document_bi_url: (farmer as any)?.document_bi_url || undefined,
       document_other_url: (farmer as any)?.document_other_url || undefined,
+      document_license_url: (farmer as any)?.document_license_url || undefined,
+      document_nif_url: (farmer as any)?.document_nif_url || undefined,
     },
   });
 
@@ -153,12 +158,12 @@ export const FarmerForm = ({ farmer, onSubmit, isLoading }: FarmerFormProps) => 
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
         <Tabs defaultValue="basic" className="w-full">
-          <TabsList className={`grid w-full ${(farmerType === 'individual' || farmerType === 'family') ? 'grid-cols-5' : 'grid-cols-4'}`}>
+          <TabsList className={`grid w-full ${(farmerType === 'individual' || farmerType === 'family' || farmerType === 'company') ? 'grid-cols-5' : 'grid-cols-4'}`}>
             <TabsTrigger value="basic" className="flex items-center gap-2">
               <User className="h-4 w-4" />
               <span className="hidden sm:inline">Dados Básicos</span>
             </TabsTrigger>
-            {(farmerType === 'individual' || farmerType === 'family') && (
+            {(farmerType === 'individual' || farmerType === 'family' || farmerType === 'company') && (
               <TabsTrigger value="documents" className="flex items-center gap-2">
                 <FileText className="h-4 w-4" />
                 <span className="hidden sm:inline">Documentos</span>
@@ -300,7 +305,7 @@ export const FarmerForm = ({ farmer, onSubmit, isLoading }: FarmerFormProps) => 
             </Card>
           </TabsContent>
 
-          {/* Documents tab - only for individual and family farmers */}
+          {/* Documents tab - for individual, family, and company */}
           {(farmerType === 'individual' || farmerType === 'family') && (
             <TabsContent value="documents">
               <Card>
@@ -392,6 +397,100 @@ export const FarmerForm = ({ farmer, onSubmit, isLoading }: FarmerFormProps) => 
                       Após a validação do registo, será gerado automaticamente o Cartão do Agricultor 
                       com QR Code para verificação. O cartão inclui a foto, dados de identificação e 
                       código único de registo.
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          )}
+
+          {/* Documents tab - for company/large producers */}
+          {farmerType === 'company' && (
+            <TabsContent value="documents">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Documentos da Empresa</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <FormField
+                      control={form.control}
+                      name="document_license_url"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormControl>
+                            <DocumentUpload
+                              label="Alvará / Licença Comercial"
+                              value={field.value}
+                              onChange={field.onChange}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="document_nif_url"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormControl>
+                            <DocumentUpload
+                              label="Certificado de NIF"
+                              value={field.value}
+                              onChange={field.onChange}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="document_bi_url"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormControl>
+                            <DocumentUpload
+                              label="Estatutos / Contrato Social"
+                              value={field.value}
+                              onChange={field.onChange}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="document_other_url"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormControl>
+                            <DocumentUpload
+                              label="Outros Documentos (Registo Comercial, etc.)"
+                              value={field.value}
+                              onChange={field.onChange}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <div className="rounded-lg bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900 p-4">
+                    <h4 className="font-medium text-sm mb-2 flex items-center gap-2 text-blue-800 dark:text-blue-200">
+                      <Award className="h-4 w-4" />
+                      Sobre o Certificado de Produtor
+                    </h4>
+                    <p className="text-sm text-blue-700 dark:text-blue-300">
+                      Após a validação do registo, será emitido o Certificado de Produtor Registado 
+                      pelo Ministério da Agricultura e Pescas. O certificado inclui QR Code para 
+                      verificação de autenticidade e poderá ser utilizado para fins comerciais e legais.
                     </p>
                   </div>
                 </CardContent>
