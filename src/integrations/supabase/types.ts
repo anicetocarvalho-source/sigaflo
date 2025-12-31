@@ -305,6 +305,540 @@ export type Database = {
           },
         ]
       }
+      data_lab_access_requests: {
+        Row: {
+          approved_until: string | null
+          created_at: string
+          dataset_ids: string[]
+          expected_duration_days: number | null
+          geographic_scope: string[] | null
+          id: string
+          organization_id: string | null
+          output_format: string | null
+          purpose: string
+          request_number: string
+          requested_fields: string[] | null
+          research_description: string | null
+          researcher_id: string | null
+          review_notes: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          temporal_scope_end: string | null
+          temporal_scope_start: string | null
+          updated_at: string
+        }
+        Insert: {
+          approved_until?: string | null
+          created_at?: string
+          dataset_ids: string[]
+          expected_duration_days?: number | null
+          geographic_scope?: string[] | null
+          id?: string
+          organization_id?: string | null
+          output_format?: string | null
+          purpose: string
+          request_number: string
+          requested_fields?: string[] | null
+          research_description?: string | null
+          researcher_id?: string | null
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          temporal_scope_end?: string | null
+          temporal_scope_start?: string | null
+          updated_at?: string
+        }
+        Update: {
+          approved_until?: string | null
+          created_at?: string
+          dataset_ids?: string[]
+          expected_duration_days?: number | null
+          geographic_scope?: string[] | null
+          id?: string
+          organization_id?: string | null
+          output_format?: string | null
+          purpose?: string
+          request_number?: string
+          requested_fields?: string[] | null
+          research_description?: string | null
+          researcher_id?: string | null
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          temporal_scope_end?: string | null
+          temporal_scope_start?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "data_lab_access_requests_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "data_lab_organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "data_lab_access_requests_researcher_id_fkey"
+            columns: ["researcher_id"]
+            isOneToOne: false
+            referencedRelation: "data_lab_researchers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      data_lab_audit_log: {
+        Row: {
+          action: string
+          created_at: string
+          details: Json | null
+          id: string
+          ip_address: string | null
+          organization_id: string | null
+          researcher_id: string | null
+          resource_id: string | null
+          resource_type: string | null
+          session_id: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          details?: Json | null
+          id?: string
+          ip_address?: string | null
+          organization_id?: string | null
+          researcher_id?: string | null
+          resource_id?: string | null
+          resource_type?: string | null
+          session_id?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          details?: Json | null
+          id?: string
+          ip_address?: string | null
+          organization_id?: string | null
+          researcher_id?: string | null
+          resource_id?: string | null
+          resource_type?: string | null
+          session_id?: string | null
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "data_lab_audit_log_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "data_lab_organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "data_lab_audit_log_researcher_id_fkey"
+            columns: ["researcher_id"]
+            isOneToOne: false
+            referencedRelation: "data_lab_researchers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      data_lab_datasets: {
+        Row: {
+          aggregation_required: boolean | null
+          available_fields: string[] | null
+          code: string
+          created_at: string
+          data_category: string
+          description: string | null
+          id: string
+          is_active: boolean | null
+          min_aggregation_level: string | null
+          name: string
+          restricted_fields: string[] | null
+          row_filter: string | null
+          sensitivity_level: string
+          source_table: string
+          updated_at: string
+        }
+        Insert: {
+          aggregation_required?: boolean | null
+          available_fields?: string[] | null
+          code: string
+          created_at?: string
+          data_category?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          min_aggregation_level?: string | null
+          name: string
+          restricted_fields?: string[] | null
+          row_filter?: string | null
+          sensitivity_level?: string
+          source_table: string
+          updated_at?: string
+        }
+        Update: {
+          aggregation_required?: boolean | null
+          available_fields?: string[] | null
+          code?: string
+          created_at?: string
+          data_category?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          min_aggregation_level?: string | null
+          name?: string
+          restricted_fields?: string[] | null
+          row_filter?: string | null
+          sensitivity_level?: string
+          source_table?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      data_lab_exports: {
+        Row: {
+          created_at: string
+          dataset_ids: string[] | null
+          download_token: string | null
+          downloaded_at: string | null
+          expires_at: string | null
+          export_format: string
+          file_size_bytes: number | null
+          filters_applied: Json | null
+          geographic_scope: string[] | null
+          id: string
+          ip_address: string | null
+          purpose: string | null
+          query_history_id: string | null
+          researcher_id: string | null
+          row_count: number | null
+          temporal_scope_end: string | null
+          temporal_scope_start: string | null
+        }
+        Insert: {
+          created_at?: string
+          dataset_ids?: string[] | null
+          download_token?: string | null
+          downloaded_at?: string | null
+          expires_at?: string | null
+          export_format: string
+          file_size_bytes?: number | null
+          filters_applied?: Json | null
+          geographic_scope?: string[] | null
+          id?: string
+          ip_address?: string | null
+          purpose?: string | null
+          query_history_id?: string | null
+          researcher_id?: string | null
+          row_count?: number | null
+          temporal_scope_end?: string | null
+          temporal_scope_start?: string | null
+        }
+        Update: {
+          created_at?: string
+          dataset_ids?: string[] | null
+          download_token?: string | null
+          downloaded_at?: string | null
+          expires_at?: string | null
+          export_format?: string
+          file_size_bytes?: number | null
+          filters_applied?: Json | null
+          geographic_scope?: string[] | null
+          id?: string
+          ip_address?: string | null
+          purpose?: string | null
+          query_history_id?: string | null
+          researcher_id?: string | null
+          row_count?: number | null
+          temporal_scope_end?: string | null
+          temporal_scope_start?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "data_lab_exports_query_history_id_fkey"
+            columns: ["query_history_id"]
+            isOneToOne: false
+            referencedRelation: "data_lab_query_history"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "data_lab_exports_researcher_id_fkey"
+            columns: ["researcher_id"]
+            isOneToOne: false
+            referencedRelation: "data_lab_researchers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      data_lab_organizations: {
+        Row: {
+          agreement_end_date: string | null
+          agreement_reference: string | null
+          agreement_start_date: string | null
+          allowed_datasets: string[] | null
+          code: string
+          contact_email: string | null
+          contact_name: string | null
+          contact_phone: string | null
+          country: string | null
+          created_at: string
+          id: string
+          is_active: boolean | null
+          max_concurrent_users: number | null
+          name: string
+          notes: string | null
+          organization_type: string
+          updated_at: string
+        }
+        Insert: {
+          agreement_end_date?: string | null
+          agreement_reference?: string | null
+          agreement_start_date?: string | null
+          allowed_datasets?: string[] | null
+          code: string
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          country?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          max_concurrent_users?: number | null
+          name: string
+          notes?: string | null
+          organization_type?: string
+          updated_at?: string
+        }
+        Update: {
+          agreement_end_date?: string | null
+          agreement_reference?: string | null
+          agreement_start_date?: string | null
+          allowed_datasets?: string[] | null
+          code?: string
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          country?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          max_concurrent_users?: number | null
+          name?: string
+          notes?: string | null
+          organization_type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      data_lab_query_history: {
+        Row: {
+          dataset_id: string | null
+          executed_at: string
+          execution_time_ms: number | null
+          export_format: string | null
+          id: string
+          ip_address: string | null
+          query_config: Json
+          researcher_id: string | null
+          rows_returned: number | null
+          saved_query_id: string | null
+          user_agent: string | null
+          was_exported: boolean | null
+        }
+        Insert: {
+          dataset_id?: string | null
+          executed_at?: string
+          execution_time_ms?: number | null
+          export_format?: string | null
+          id?: string
+          ip_address?: string | null
+          query_config: Json
+          researcher_id?: string | null
+          rows_returned?: number | null
+          saved_query_id?: string | null
+          user_agent?: string | null
+          was_exported?: boolean | null
+        }
+        Update: {
+          dataset_id?: string | null
+          executed_at?: string
+          execution_time_ms?: number | null
+          export_format?: string | null
+          id?: string
+          ip_address?: string | null
+          query_config?: Json
+          researcher_id?: string | null
+          rows_returned?: number | null
+          saved_query_id?: string | null
+          user_agent?: string | null
+          was_exported?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "data_lab_query_history_dataset_id_fkey"
+            columns: ["dataset_id"]
+            isOneToOne: false
+            referencedRelation: "data_lab_datasets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "data_lab_query_history_researcher_id_fkey"
+            columns: ["researcher_id"]
+            isOneToOne: false
+            referencedRelation: "data_lab_researchers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "data_lab_query_history_saved_query_id_fkey"
+            columns: ["saved_query_id"]
+            isOneToOne: false
+            referencedRelation: "data_lab_saved_queries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      data_lab_researchers: {
+        Row: {
+          access_level: string
+          allowed_datasets: string[] | null
+          approved_at: string | null
+          approved_by: string | null
+          created_at: string
+          email: string
+          expires_at: string | null
+          exports_this_month: number | null
+          full_name: string
+          id: string
+          is_active: boolean | null
+          last_export_reset: string | null
+          max_exports_per_month: number | null
+          notes: string | null
+          organization_id: string | null
+          phone: string | null
+          position: string | null
+          research_area: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          access_level?: string
+          allowed_datasets?: string[] | null
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          email: string
+          expires_at?: string | null
+          exports_this_month?: number | null
+          full_name: string
+          id?: string
+          is_active?: boolean | null
+          last_export_reset?: string | null
+          max_exports_per_month?: number | null
+          notes?: string | null
+          organization_id?: string | null
+          phone?: string | null
+          position?: string | null
+          research_area?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          access_level?: string
+          allowed_datasets?: string[] | null
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          email?: string
+          expires_at?: string | null
+          exports_this_month?: number | null
+          full_name?: string
+          id?: string
+          is_active?: boolean | null
+          last_export_reset?: string | null
+          max_exports_per_month?: number | null
+          notes?: string | null
+          organization_id?: string | null
+          phone?: string | null
+          position?: string | null
+          research_area?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "data_lab_researchers_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "data_lab_organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      data_lab_saved_queries: {
+        Row: {
+          created_at: string
+          dataset_id: string | null
+          description: string | null
+          execution_count: number | null
+          id: string
+          is_public: boolean | null
+          is_template: boolean | null
+          last_executed_at: string | null
+          name: string
+          query_config: Json
+          researcher_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          dataset_id?: string | null
+          description?: string | null
+          execution_count?: number | null
+          id?: string
+          is_public?: boolean | null
+          is_template?: boolean | null
+          last_executed_at?: string | null
+          name: string
+          query_config: Json
+          researcher_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          dataset_id?: string | null
+          description?: string | null
+          execution_count?: number | null
+          id?: string
+          is_public?: boolean | null
+          is_template?: boolean | null
+          last_executed_at?: string | null
+          name?: string
+          query_config?: Json
+          researcher_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "data_lab_saved_queries_dataset_id_fkey"
+            columns: ["dataset_id"]
+            isOneToOne: false
+            referencedRelation: "data_lab_datasets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "data_lab_saved_queries_researcher_id_fkey"
+            columns: ["researcher_id"]
+            isOneToOne: false
+            referencedRelation: "data_lab_researchers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       eligibility_rules: {
         Row: {
           created_at: string
