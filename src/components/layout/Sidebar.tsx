@@ -128,13 +128,19 @@ const navigation: NavItem[] = [
   },
   {
     label: 'Gestão de Incentivos',
-    href: '/incentivos',
     icon: Gift,
+    children: [
+      { label: 'Programas e Alocações', href: '/incentivos' },
+      { label: 'Analytics e Impacto', href: '/incentivos-analytics' },
+    ],
   },
   {
     label: 'Risco Climático',
-    href: '/risco-climatico',
     icon: Umbrella,
+    children: [
+      { label: 'Ocorrências e Gestão', href: '/risco-climatico' },
+      { label: 'Analytics e Seguro', href: '/risco-climatico-analytics' },
+    ],
   },
   {
     label: 'Laboratório de Dados',
