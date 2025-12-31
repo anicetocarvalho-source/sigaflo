@@ -12,24 +12,26 @@ serve(async (req) => {
   }
 
   try {
+    // This is a public token, no authentication required
     const token = Deno.env.get("MAPBOX_PUBLIC_TOKEN");
     
     if (!token) {
+      // Return a graceful response without error - map just won't show
       return new Response(
-        JSON.stringify({ error: "Mapbox token not configured" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        JSON.stringify({ token: null, message: "Mapbox token not configured" }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
     return new Response(
       JSON.stringify({ token }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Unknown error';
     return new Response(
-      JSON.stringify({ error: message }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      JSON.stringify({ token: null, error: message }),
+      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
 });
