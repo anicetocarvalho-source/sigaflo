@@ -31,6 +31,7 @@ import IncentivesAnalyticsPage from "./pages/incentives-analytics/IncentivesAnal
 import ClimateRiskPage from "./pages/climate-risk/ClimateRiskPage";
 import ClimateRiskAnalyticsPage from "./pages/climate-risk-analytics/ClimateRiskAnalyticsPage";
 import DataLabPage from "./pages/data-lab/DataLabPage";
+import CreditInsurancePage from "./pages/credit-insurance/CreditInsurancePage";
 
 // Auth Pages
 import AuthPage from "./pages/auth/AuthPage";
@@ -125,6 +126,9 @@ const App = () => (
             
             {/* Climate Risk Analytics Module */}
             <Route path="/risco-climatico-analytics/*" element={<ProtectedRoute><ClimateRiskAnalyticsPage /></ProtectedRoute>} />
+            
+            {/* Credit & Insurance Module */}
+            <Route path="/credito-seguro/*" element={<ProtectedRoute><CreditInsurancePage /></ProtectedRoute>} />
             
             {/* Data Lab Module */}
             <Route 
