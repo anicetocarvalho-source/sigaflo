@@ -28,6 +28,7 @@ import ConcessionDetailPage from "./pages/forestry/ConcessionDetailPage";
 import CoffeePage from "./pages/coffee/CoffeePage";
 import CoffeeLotsPage from "./pages/coffee/CoffeeLotsPage";
 import OccurrencesPage from "./pages/occurrences/OccurrencesPage";
+import ClimateOccurrencesPage from "./pages/occurrences/ClimateOccurrencesPage";
 import ONAFPage from "./pages/onaf/ONAFPage";
 import IPNPage from "./pages/ipn/IPNPage";
 import IncentivesPage from "./pages/incentives/IncentivesPage";
@@ -98,6 +99,7 @@ const App = () => (
             <Route path="/perfil" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
             
             {/* Occurrences */}
+            <Route path="/ocorrencias/climaticas" element={<ProtectedRoute><ClimateOccurrencesPage /></ProtectedRoute>} />
             <Route path="/ocorrencias/*" element={<ProtectedRoute><OccurrencesPage /></ProtectedRoute>} />
             
             {/* Infrastructure */}
