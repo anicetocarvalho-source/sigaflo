@@ -19,6 +19,17 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { 
   Search, 
   Trees, 
@@ -30,15 +41,22 @@ import {
   TreePine,
   Shield,
   Axe,
-  Sprout
+  Sprout,
+  Plus,
+  Eye,
+  AlertTriangle,
+  TrendingDown,
+  BarChart3,
+  X
 } from 'lucide-react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useProvinces } from '@/hooks/useFarmers';
+import { useProvinces, useMunicipalities } from '@/hooks/useFarmers';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
+import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend } from 'recharts';
 
 interface ForestInventory {
   id: string;
@@ -62,6 +80,7 @@ interface ForestInventory {
   longitude: number | null;
   last_inventory_date: string | null;
   provinces?: { name: string } | null;
+  municipalities?: { name: string } | null;
 }
 
 const forestTypeLabels: Record<string, string> = {
@@ -81,6 +100,8 @@ const forestTypeColors: Record<string, string> = {
   'plantation': 'bg-lime-600',
   'gallery': 'bg-teal-600',
 };
+
+const chartColors = ['#16a34a', '#d97706', '#059669', '#0891b2', '#65a30d', '#0d9488'];
 
 const forestStatusLabels: Record<string, string> = {
   'exploitation': 'Exploração',
@@ -109,7 +130,7 @@ function useForestInventory(provinceId?: string, forestStatus?: string) {
     queryFn: async () => {
       let query = supabase
         .from('forest_inventory')
-        .select('*, provinces(name)')
+        .select('*, provinces(name), municipalities(name)')
         .order('concession_name');
 
       if (provinceId) {
@@ -126,6 +147,42 @@ function useForestInventory(provinceId?: string, forestStatus?: string) {
   });
 }
 
+function useCreateInventory() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: {
+      inventory_code: string;
+      concession_name: string;
+      province_id?: string | null;
+      municipality_id?: string | null;
+      total_area_ha: number;
+      forest_type: string;
+      forest_status: string;
+      exploitation_status: string;
+      dominant_species?: string[];
+      estimated_standing_volume_m3?: number | null;
+      reposition_rate_pct?: number | null;
+      latitude?: number | null;
+      longitude?: number | null;
+    }) => {
+      const { data: result, error } = await supabase
+        .from('forest_inventory')
+        .insert([data])
+        .select()
+        .single();
+      if (error) throw error;
+      return result;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['forest-inventory'] });
+      toast.success('Inventário criado com sucesso');
+    },
+    onError: (error) => {
+      toast.error('Erro ao criar inventário: ' + error.message);
+    },
+  });
+}
+
 export function ForestInventoryDashboard() {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
@@ -136,12 +193,32 @@ export function ForestInventoryDashboard() {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [mapboxToken, setMapboxToken] = useState<string | null>(null);
+  const [showAddDialog, setShowAddDialog] = useState(false);
+  const [selectedInventory, setSelectedInventory] = useState<ForestInventory | null>(null);
+  const [formProvinceId, setFormProvinceId] = useState<string>('');
 
   const { data: provinces } = useProvinces();
+  const { data: municipalities } = useMunicipalities(formProvinceId);
   const { data: inventory, isLoading } = useForestInventory(
     provinceFilter === 'all' ? undefined : provinceFilter,
     statusFilter === 'all' ? undefined : statusFilter
   );
+  const createInventory = useCreateInventory();
+
+  // Form state
+  const [formData, setFormData] = useState({
+    concession_name: '',
+    province_id: '',
+    municipality_id: '',
+    total_area_ha: '',
+    forest_type: 'tropical_humid',
+    forest_status: 'exploitation',
+    dominant_species: '',
+    estimated_standing_volume_m3: '',
+    reposition_rate_pct: '',
+    latitude: '',
+    longitude: '',
+  });
 
   // Filter inventory
   const filteredInventory = useMemo(() => {
@@ -181,6 +258,43 @@ export function ForestInventoryDashboard() {
     const totalVolume = filteredInventory.reduce((sum, i) => sum + (i.estimated_standing_volume_m3 || 0), 0);
 
     return { totalArea, exploitationArea, conservationArea, avgRepositionRate, totalVolume };
+  }, [filteredInventory]);
+
+  // Chart data
+  const chartData = useMemo(() => {
+    if (!filteredInventory.length) return { byType: [], byStatus: [] };
+
+    // By type
+    const typeGroups = filteredInventory.reduce((acc, item) => {
+      const type = item.forest_type;
+      if (!acc[type]) acc[type] = { name: forestTypeLabels[type] || type, value: 0, area: 0 };
+      acc[type].value += 1;
+      acc[type].area += item.total_area_ha || 0;
+      return acc;
+    }, {} as Record<string, { name: string; value: number; area: number }>);
+
+    // By status
+    const statusGroups = filteredInventory.reduce((acc, item) => {
+      const status = item.forest_status;
+      if (!acc[status]) acc[status] = { name: forestStatusLabels[status] || status, count: 0, area: 0 };
+      acc[status].count += 1;
+      acc[status].area += item.total_area_ha || 0;
+      return acc;
+    }, {} as Record<string, { name: string; count: number; area: number }>);
+
+    return {
+      byType: Object.values(typeGroups),
+      byStatus: Object.values(statusGroups),
+    };
+  }, [filteredInventory]);
+
+  // Critical alerts (low reposition rate < 50%)
+  const criticalAlerts = useMemo(() => {
+    if (!filteredInventory.length) return [];
+    return filteredInventory
+      .filter(item => item.reposition_rate_pct !== null && item.reposition_rate_pct < 50)
+      .sort((a, b) => (a.reposition_rate_pct || 0) - (b.reposition_rate_pct || 0))
+      .slice(0, 5);
   }, [filteredInventory]);
 
   // Fetch mapbox token
@@ -296,6 +410,44 @@ export function ForestInventoryDashboard() {
     toast.success('Inventário exportado com sucesso');
   };
 
+  // Handle form submit
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    const code = `INV-${Date.now().toString(36).toUpperCase()}`;
+    
+    createInventory.mutate({
+      inventory_code: code,
+      concession_name: formData.concession_name,
+      province_id: formData.province_id || null,
+      municipality_id: formData.municipality_id || null,
+      total_area_ha: parseFloat(formData.total_area_ha) || 0,
+      forest_type: formData.forest_type,
+      forest_status: formData.forest_status,
+      dominant_species: formData.dominant_species.split(',').map(s => s.trim()).filter(Boolean),
+      estimated_standing_volume_m3: parseFloat(formData.estimated_standing_volume_m3) || null,
+      reposition_rate_pct: parseFloat(formData.reposition_rate_pct) || null,
+      latitude: parseFloat(formData.latitude) || null,
+      longitude: parseFloat(formData.longitude) || null,
+      exploitation_status: 'active',
+    });
+    
+    setShowAddDialog(false);
+    setFormData({
+      concession_name: '',
+      province_id: '',
+      municipality_id: '',
+      total_area_ha: '',
+      forest_type: 'tropical_humid',
+      forest_status: 'exploitation',
+      dominant_species: '',
+      estimated_standing_volume_m3: '',
+      reposition_rate_pct: '',
+      latitude: '',
+      longitude: '',
+    });
+  };
+
   return (
     <div className="space-y-6">
       {/* KPI Cards */}
@@ -371,6 +523,106 @@ export function ForestInventoryDashboard() {
         </Card>
       </div>
 
+      {/* Alerts Section */}
+      {criticalAlerts.length > 0 && (
+        <Card className="border-destructive/50 bg-destructive/5">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-destructive">
+              <AlertTriangle className="h-5 w-5" />
+              Alertas de Reposição Baixa
+            </CardTitle>
+            <CardDescription>
+              Concessões com taxa de reposição inferior a 50%
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-5">
+              {criticalAlerts.map((item) => (
+                <div 
+                  key={item.id} 
+                  className="flex items-center gap-3 p-3 bg-background rounded-lg border cursor-pointer hover:shadow-md transition-shadow"
+                  onClick={() => setSelectedInventory(item)}
+                >
+                  <div className="p-2 bg-destructive/10 rounded-lg">
+                    <TrendingDown className="h-4 w-4 text-destructive" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium truncate text-sm">{item.concession_name}</p>
+                    <div className="flex items-center gap-2">
+                      <span className="text-destructive font-bold text-lg">
+                        {item.reposition_rate_pct?.toFixed(0)}%
+                      </span>
+                      <Progress 
+                        value={item.reposition_rate_pct || 0} 
+                        className="h-2 flex-1"
+                      />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Charts Section */}
+      <div className="grid gap-6 md:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <BarChart3 className="h-5 w-5" />
+              Distribuição por Tipo de Floresta
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="h-[250px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={chartData.byType}
+                    dataKey="value"
+                    nameKey="name"
+                    cx="50%"
+                    cy="50%"
+                    outerRadius={80}
+                    label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
+                    labelLine={false}
+                  >
+                    {chartData.byType.map((_, index) => (
+                      <Cell key={`cell-${index}`} fill={chartColors[index % chartColors.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip formatter={(value: number) => [`${value} concessões`, 'Quantidade']} />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <BarChart3 className="h-5 w-5" />
+              Área por Estado
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="h-[250px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={chartData.byStatus} layout="vertical">
+                  <XAxis type="number" tickFormatter={(v) => `${(v/1000).toFixed(0)}k`} />
+                  <YAxis type="category" dataKey="name" width={100} />
+                  <Tooltip 
+                    formatter={(value: number) => [`${value.toLocaleString()} ha`, 'Área']}
+                  />
+                  <Bar dataKey="area" fill="#16a34a" radius={[0, 4, 4, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
       {/* Map */}
       <Card>
         <CardHeader>
@@ -424,10 +676,188 @@ export function ForestInventoryDashboard() {
                 {filteredInventory.length} concessões registadas
               </CardDescription>
             </div>
-            <Button variant="outline" onClick={handleExport}>
-              <FileSpreadsheet className="mr-2 h-4 w-4" />
-              Exportar
-            </Button>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={handleExport}>
+                <FileSpreadsheet className="mr-2 h-4 w-4" />
+                Exportar
+              </Button>
+              <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
+                <DialogTrigger asChild>
+                  <Button>
+                    <Plus className="mr-2 h-4 w-4" />
+                    Novo Inventário
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                  <DialogHeader>
+                    <DialogTitle>Novo Inventário Florestal</DialogTitle>
+                    <DialogDescription>
+                      Adicione uma nova concessão ao inventário florestal
+                    </DialogDescription>
+                  </DialogHeader>
+                  <form onSubmit={handleSubmit} className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="col-span-2">
+                        <Label htmlFor="concession_name">Nome da Concessão *</Label>
+                        <Input
+                          id="concession_name"
+                          value={formData.concession_name}
+                          onChange={(e) => setFormData({ ...formData, concession_name: e.target.value })}
+                          required
+                        />
+                      </div>
+                      
+                      <div>
+                        <Label htmlFor="province">Província</Label>
+                        <Select 
+                          value={formData.province_id} 
+                          onValueChange={(v) => {
+                            setFormData({ ...formData, province_id: v, municipality_id: '' });
+                            setFormProvinceId(v);
+                          }}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Seleccione" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {provinces?.map((p) => (
+                              <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      
+                      <div>
+                        <Label htmlFor="municipality">Município</Label>
+                        <Select 
+                          value={formData.municipality_id} 
+                          onValueChange={(v) => setFormData({ ...formData, municipality_id: v })}
+                          disabled={!formData.province_id}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Seleccione" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {municipalities?.map((m) => (
+                              <SelectItem key={m.id} value={m.id}>{m.name}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      
+                      <div>
+                        <Label htmlFor="total_area">Área Total (ha) *</Label>
+                        <Input
+                          id="total_area"
+                          type="number"
+                          value={formData.total_area_ha}
+                          onChange={(e) => setFormData({ ...formData, total_area_ha: e.target.value })}
+                          required
+                        />
+                      </div>
+                      
+                      <div>
+                        <Label htmlFor="forest_type">Tipo de Floresta</Label>
+                        <Select 
+                          value={formData.forest_type} 
+                          onValueChange={(v) => setFormData({ ...formData, forest_type: v })}
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {Object.entries(forestTypeLabels).map(([key, label]) => (
+                              <SelectItem key={key} value={key}>{label}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      
+                      <div>
+                        <Label htmlFor="forest_status">Estado</Label>
+                        <Select 
+                          value={formData.forest_status} 
+                          onValueChange={(v) => setFormData({ ...formData, forest_status: v })}
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {Object.entries(forestStatusLabels).map(([key, label]) => (
+                              <SelectItem key={key} value={key}>{label}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      
+                      <div>
+                        <Label htmlFor="volume">Volume Estimado (m³)</Label>
+                        <Input
+                          id="volume"
+                          type="number"
+                          value={formData.estimated_standing_volume_m3}
+                          onChange={(e) => setFormData({ ...formData, estimated_standing_volume_m3: e.target.value })}
+                        />
+                      </div>
+                      
+                      <div className="col-span-2">
+                        <Label htmlFor="species">Espécies Dominantes (separadas por vírgula)</Label>
+                        <Input
+                          id="species"
+                          value={formData.dominant_species}
+                          onChange={(e) => setFormData({ ...formData, dominant_species: e.target.value })}
+                          placeholder="ex: Girassol, Eucalipto, Pinheiro"
+                        />
+                      </div>
+                      
+                      <div>
+                        <Label htmlFor="reposition">Taxa de Reposição (%)</Label>
+                        <Input
+                          id="reposition"
+                          type="number"
+                          min="0"
+                          max="100"
+                          value={formData.reposition_rate_pct}
+                          onChange={(e) => setFormData({ ...formData, reposition_rate_pct: e.target.value })}
+                        />
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-2">
+                        <div>
+                          <Label htmlFor="latitude">Latitude</Label>
+                          <Input
+                            id="latitude"
+                            type="number"
+                            step="any"
+                            value={formData.latitude}
+                            onChange={(e) => setFormData({ ...formData, latitude: e.target.value })}
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="longitude">Longitude</Label>
+                          <Input
+                            id="longitude"
+                            type="number"
+                            step="any"
+                            value={formData.longitude}
+                            onChange={(e) => setFormData({ ...formData, longitude: e.target.value })}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <DialogFooter>
+                      <Button type="button" variant="outline" onClick={() => setShowAddDialog(false)}>
+                        Cancelar
+                      </Button>
+                      <Button type="submit" disabled={createInventory.isPending}>
+                        {createInventory.isPending ? 'A criar...' : 'Criar Inventário'}
+                      </Button>
+                    </DialogFooter>
+                  </form>
+                </DialogContent>
+              </Dialog>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
@@ -505,18 +935,23 @@ export function ForestInventoryDashboard() {
                     <TableHead>Tipo de Floresta</TableHead>
                     <TableHead>Estado</TableHead>
                     <TableHead className="text-right">Taxa Reposição</TableHead>
+                    <TableHead className="text-center">Acções</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filteredInventory.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                      <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
                         Nenhuma concessão encontrada
                       </TableCell>
                     </TableRow>
                   ) : (
                     filteredInventory.map((item) => (
-                      <TableRow key={item.id}>
+                      <TableRow 
+                        key={item.id} 
+                        className="cursor-pointer hover:bg-muted/50"
+                        onClick={() => setSelectedInventory(item)}
+                      >
                         <TableCell className="font-mono text-sm">
                           {item.inventory_code}
                         </TableCell>
@@ -553,13 +988,27 @@ export function ForestInventoryDashboard() {
                         <TableCell className="text-right">
                           {item.reposition_rate_pct !== null ? (
                             <div className="flex flex-col items-end gap-1">
-                              <span className="font-medium">{item.reposition_rate_pct.toFixed(1)}%</span>
+                              <span className={`font-medium ${item.reposition_rate_pct < 50 ? 'text-destructive' : ''}`}>
+                                {item.reposition_rate_pct.toFixed(1)}%
+                              </span>
                               <Progress 
                                 value={Math.min(100, item.reposition_rate_pct)} 
-                                className="h-1.5 w-16"
+                                className={`h-1.5 w-16 ${item.reposition_rate_pct < 50 ? '[&>div]:bg-destructive' : ''}`}
                               />
                             </div>
                           ) : '—'}
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedInventory(item);
+                            }}
+                          >
+                            <Eye className="h-4 w-4" />
+                          </Button>
                         </TableCell>
                       </TableRow>
                     ))
@@ -570,6 +1019,123 @@ export function ForestInventoryDashboard() {
           )}
         </CardContent>
       </Card>
+
+      {/* Detail Dialog */}
+      <Dialog open={!!selectedInventory} onOpenChange={() => setSelectedInventory(null)}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Trees className="h-5 w-5" />
+              {selectedInventory?.concession_name}
+            </DialogTitle>
+            <DialogDescription>
+              {selectedInventory?.inventory_code}
+            </DialogDescription>
+          </DialogHeader>
+          
+          {selectedInventory && (
+            <div className="space-y-6">
+              {/* Location & Type */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-muted-foreground">Província</Label>
+                  <p className="font-medium">{selectedInventory.provinces?.name || '—'}</p>
+                </div>
+                <div>
+                  <Label className="text-muted-foreground">Município</Label>
+                  <p className="font-medium">{selectedInventory.municipalities?.name || '—'}</p>
+                </div>
+                <div>
+                  <Label className="text-muted-foreground">Tipo de Floresta</Label>
+                  <Badge className={`${forestTypeColors[selectedInventory.forest_type]} text-white mt-1`}>
+                    {forestTypeLabels[selectedInventory.forest_type] || selectedInventory.forest_type}
+                  </Badge>
+                </div>
+                <div>
+                  <Label className="text-muted-foreground">Estado</Label>
+                  <Badge className={`${forestStatusColors[selectedInventory.forest_status]} mt-1`}>
+                    <span className="flex items-center gap-1">
+                      {forestStatusIcons[selectedInventory.forest_status]}
+                      {forestStatusLabels[selectedInventory.forest_status] || selectedInventory.forest_status}
+                    </span>
+                  </Badge>
+                </div>
+              </div>
+
+              {/* Area & Volume */}
+              <div className="grid grid-cols-3 gap-4 p-4 bg-muted/50 rounded-lg">
+                <div className="text-center">
+                  <p className="text-2xl font-bold">{selectedInventory.total_area_ha?.toLocaleString()}</p>
+                  <p className="text-sm text-muted-foreground">Área Total (ha)</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-2xl font-bold">
+                    {selectedInventory.estimated_standing_volume_m3?.toLocaleString() || '—'}
+                  </p>
+                  <p className="text-sm text-muted-foreground">Volume Estimado (m³)</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-2xl font-bold">
+                    {selectedInventory.harvestable_volume_m3?.toLocaleString() || '—'}
+                  </p>
+                  <p className="text-sm text-muted-foreground">Volume Explorável (m³)</p>
+                </div>
+              </div>
+
+              {/* Reposition Rate */}
+              <div>
+                <Label className="text-muted-foreground">Taxa de Reposição</Label>
+                <div className="mt-2 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className={`text-2xl font-bold ${
+                      (selectedInventory.reposition_rate_pct || 0) < 50 ? 'text-destructive' : 'text-green-600'
+                    }`}>
+                      {selectedInventory.reposition_rate_pct?.toFixed(1) || 0}%
+                    </span>
+                    {(selectedInventory.reposition_rate_pct || 0) < 50 && (
+                      <Badge variant="destructive" className="flex items-center gap-1">
+                        <AlertTriangle className="h-3 w-3" />
+                        Atenção Necessária
+                      </Badge>
+                    )}
+                  </div>
+                  <Progress 
+                    value={selectedInventory.reposition_rate_pct || 0} 
+                    className={`h-3 ${(selectedInventory.reposition_rate_pct || 0) < 50 ? '[&>div]:bg-destructive' : '[&>div]:bg-green-600'}`}
+                  />
+                  <div className="flex justify-between text-sm text-muted-foreground">
+                    <span>Árvores Plantadas: {selectedInventory.trees_planted?.toLocaleString() || '—'}</span>
+                    <span>Árvores Requeridas: {selectedInventory.trees_required?.toLocaleString() || '—'}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Species */}
+              {selectedInventory.dominant_species && selectedInventory.dominant_species.length > 0 && (
+                <div>
+                  <Label className="text-muted-foreground">Espécies Dominantes</Label>
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {selectedInventory.dominant_species.map((species, idx) => (
+                      <Badge key={idx} variant="outline">
+                        <Leaf className="h-3 w-3 mr-1" />
+                        {species}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Coordinates */}
+              {selectedInventory.latitude && selectedInventory.longitude && (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <MapPin className="h-4 w-4" />
+                  {selectedInventory.latitude.toFixed(6)}, {selectedInventory.longitude.toFixed(6)}
+                </div>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
