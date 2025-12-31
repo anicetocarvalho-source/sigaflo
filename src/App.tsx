@@ -34,6 +34,7 @@ import ForestryComplaintsPage from "./pages/forestry/ForestryComplaintsPage";
 import ConcessionDetailPage from "./pages/forestry/ConcessionDetailPage";
 import CoffeePage from "./pages/coffee/CoffeePage";
 import CoffeeLotsPage from "./pages/coffee/CoffeeLotsPage";
+import CoffeeSemaphorePage from "./pages/coffee/CoffeeSemaphorePage";
 import OccurrencesPage from "./pages/occurrences/OccurrencesPage";
 import ClimateOccurrencesPage from "./pages/occurrences/ClimateOccurrencesPage";
 import PhytosanitaryOccurrencesPage from "./pages/occurrences/PhytosanitaryOccurrencesPage";
@@ -140,6 +141,7 @@ const App = () => (
             {/* Coffee Module */}
             <Route path="/cafe" element={<ProtectedRoute><CoffeePage /></ProtectedRoute>} />
             <Route path="/cafe/lotes" element={<ProtectedRoute><CoffeeLotsPage /></ProtectedRoute>} />
+            <Route path="/cafe/semaforizacao" element={<ProtectedRoute><CoffeeSemaphorePage /></ProtectedRoute>} />
             <Route path="/cafe/rastreio" element={<ProtectedRoute><CoffeeTraceabilityPage /></ProtectedRoute>} />
             <Route path="/cafe/*" element={<ProtectedRoute><CoffeePage /></ProtectedRoute>} />
             
