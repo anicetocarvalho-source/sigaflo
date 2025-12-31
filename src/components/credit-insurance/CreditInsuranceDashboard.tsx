@@ -10,10 +10,12 @@ import {
   AlertTriangle,
   Building2,
   Landmark,
-  FileCheck
+  FileCheck,
+  List
 } from 'lucide-react';
 import { useCreditInsuranceStats } from '@/hooks/useCreditInsurance';
 import { FinancialProfilesList } from './FinancialProfilesList';
+import { FarmersListEnhanced } from './FarmersListEnhanced';
 import { CreditSimulator } from './CreditSimulator';
 import { ProductionCertificates } from './ProductionCertificates';
 import { InsuranceRiskScores } from './InsuranceRiskScores';
@@ -101,7 +103,11 @@ export function CreditInsuranceDashboard() {
 
       {/* Main Content Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="grid grid-cols-4 lg:grid-cols-8 gap-2">
+        <TabsList className="grid grid-cols-5 lg:grid-cols-9 gap-2">
+          <TabsTrigger value="farmers" className="gap-1">
+            <List className="h-4 w-4" />
+            <span className="hidden sm:inline">Agricultores</span>
+          </TabsTrigger>
           <TabsTrigger value="overview" className="gap-1">
             <Users className="h-4 w-4" />
             <span className="hidden sm:inline">Perfis</span>
@@ -135,6 +141,10 @@ export function CreditInsuranceDashboard() {
             <span className="hidden sm:inline">Alertas</span>
           </TabsTrigger>
         </TabsList>
+
+        <TabsContent value="farmers">
+          <FarmersListEnhanced />
+        </TabsContent>
 
         <TabsContent value="overview">
           <FinancialProfilesList />
