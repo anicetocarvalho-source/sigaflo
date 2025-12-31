@@ -28,6 +28,7 @@ import ONAFPage from "./pages/onaf/ONAFPage";
 import IPNPage from "./pages/ipn/IPNPage";
 import IncentivesPage from "./pages/incentives/IncentivesPage";
 import ClimateRiskPage from "./pages/climate-risk/ClimateRiskPage";
+import DataLabPage from "./pages/data-lab/DataLabPage";
 
 // Auth Pages
 import AuthPage from "./pages/auth/AuthPage";
@@ -115,6 +116,16 @@ const App = () => (
             
             {/* Climate Risk Module */}
             <Route path="/risco-climatico/*" element={<ProtectedRoute><ClimateRiskPage /></ProtectedRoute>} />
+            
+            {/* Data Lab Module */}
+            <Route 
+              path="/laboratorio-dados/*" 
+              element={
+                <ProtectedRoute requiredRoles={['admin_national', 'admin_provincial', 'technician_national']}>
+                  <DataLabPage />
+                </ProtectedRoute>
+              } 
+            />
             
             {/* Secondary Navigation */}
             <Route path="/relatorios" element={<ProtectedRoute><Index /></ProtectedRoute>} />

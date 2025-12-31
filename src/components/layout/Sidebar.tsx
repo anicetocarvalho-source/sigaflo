@@ -28,6 +28,7 @@ import {
   Eye,
   Gift,
   Umbrella,
+  FlaskConical,
 } from 'lucide-react';
 
 interface NavItem {
@@ -134,6 +135,12 @@ const navigation: NavItem[] = [
     label: 'Risco Climático',
     href: '/risco-climatico',
     icon: Umbrella,
+  },
+  {
+    label: 'Laboratório de Dados',
+    href: '/laboratorio-dados',
+    icon: FlaskConical,
+    adminOnly: true,
   },
   {
     label: 'Gestão de Utilizadores',
