@@ -32,6 +32,7 @@ import CoffeePage from "./pages/coffee/CoffeePage";
 import CoffeeLotsPage from "./pages/coffee/CoffeeLotsPage";
 import OccurrencesPage from "./pages/occurrences/OccurrencesPage";
 import ClimateOccurrencesPage from "./pages/occurrences/ClimateOccurrencesPage";
+import PhytosanitaryOccurrencesPage from "./pages/occurrences/PhytosanitaryOccurrencesPage";
 import OccurrenceDetailPage from "./pages/occurrences/OccurrenceDetailPage";
 import ONAFPage from "./pages/onaf/ONAFPage";
 import IPNPage from "./pages/ipn/IPNPage";
@@ -108,6 +109,8 @@ const App = () => (
             {/* Occurrences */}
             <Route path="/ocorrencias/climaticas" element={<ProtectedRoute><ClimateOccurrencesPage /></ProtectedRoute>} />
             <Route path="/ocorrencias/climaticas/:id" element={<ProtectedRoute><OccurrenceDetailPage /></ProtectedRoute>} />
+            <Route path="/ocorrencias/fitossanitarias" element={<ProtectedRoute><PhytosanitaryOccurrencesPage /></ProtectedRoute>} />
+            <Route path="/ocorrencias/alertas" element={<ProtectedRoute><OccurrencesPage /></ProtectedRoute>} />
             <Route path="/ocorrencias/*" element={<ProtectedRoute><OccurrencesPage /></ProtectedRoute>} />
             
             {/* Infrastructure */}
