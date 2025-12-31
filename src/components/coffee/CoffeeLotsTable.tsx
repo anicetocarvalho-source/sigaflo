@@ -194,13 +194,13 @@ export function CoffeeLotsTable() {
                 className="pl-9"
               />
             </div>
-            <Select value={provinceFilter} onValueChange={setProvinceFilter}>
+            <Select value={provinceFilter || "all"} onValueChange={(v) => setProvinceFilter(v === "all" ? "" : v)}>
               <SelectTrigger className="w-full sm:w-[180px]">
                 <MapPin className="mr-2 h-4 w-4" />
                 <SelectValue placeholder="Província" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Todas</SelectItem>
+                <SelectItem value="all">Todas</SelectItem>
                 {provinces?.map((prov) => (
                   <SelectItem key={prov.id} value={prov.id}>
                     {prov.name}
@@ -208,13 +208,13 @@ export function CoffeeLotsTable() {
                 ))}
               </SelectContent>
             </Select>
-            <Select value={exporterFilter} onValueChange={setExporterFilter}>
+            <Select value={exporterFilter || "all"} onValueChange={(v) => setExporterFilter(v === "all" ? "" : v)}>
               <SelectTrigger className="w-full sm:w-[200px]">
                 <Ship className="mr-2 h-4 w-4" />
                 <SelectValue placeholder="Exportador" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Todos</SelectItem>
+                <SelectItem value="all">Todos</SelectItem>
                 {exporters?.map((exp) => (
                   <SelectItem key={exp} value={exp}>
                     {exp}
@@ -222,13 +222,13 @@ export function CoffeeLotsTable() {
                 ))}
               </SelectContent>
             </Select>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <Select value={statusFilter || "all"} onValueChange={(v) => setStatusFilter(v === "all" ? "" : v)}>
               <SelectTrigger className="w-full sm:w-[160px]">
                 <Filter className="mr-2 h-4 w-4" />
                 <SelectValue placeholder="Estado" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Todos</SelectItem>
+                <SelectItem value="all">Todos</SelectItem>
                 <SelectItem value="registered">Registado</SelectItem>
                 <SelectItem value="in_processing">Em Processamento</SelectItem>
                 <SelectItem value="in_transit">Em Trânsito</SelectItem>
