@@ -24,6 +24,7 @@ import {
   FileText,
   Eye
 } from 'lucide-react';
+import { OccurrencesMapView } from '@/components/occurrences/OccurrencesMapView';
 import { useOccurrences } from '@/hooks/useOccurrences';
 import { PhytosanitaryOccurrenceForm } from '@/components/occurrences/PhytosanitaryOccurrenceForm';
 import { format } from 'date-fns';
@@ -504,25 +505,15 @@ export default function PhytosanitaryOccurrencesPage() {
 
           {/* Map Tab */}
           <TabsContent value="map" className="mt-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Mapa de Ocorrências Fitossanitárias</CardTitle>
-                <CardDescription>Visualização geográfica de pragas e doenças</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="h-[500px] bg-muted rounded-lg flex items-center justify-center">
-                  <div className="text-center space-y-4">
-                    <MapIcon className="h-16 w-16 mx-auto text-muted-foreground/50" />
-                    <p className="text-muted-foreground">
-                      Mapa de ocorrências fitossanitárias
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      {occurrences.filter(o => o.latitude && o.longitude).length} ocorrências com coordenadas
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <OccurrencesMapView
+              occurrences={filteredOccurrences}
+              title="Mapa de Ocorrências Fitossanitárias"
+              description="Visualização geográfica de pragas e doenças"
+              typeConfig={{
+                pest: { label: 'Praga', color: 'hsl(var(--destructive))' },
+                disease: { label: 'Doença', color: 'hsl(var(--warning))' },
+              }}
+            />
           </TabsContent>
 
           {/* Reports Tab */}
