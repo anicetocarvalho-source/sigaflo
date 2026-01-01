@@ -31,6 +31,7 @@ import {
   Target,
   TrendingUp,
 } from 'lucide-react';
+import { OccurrencesMapView } from '@/components/occurrences/OccurrencesMapView';
 import { useOccurrences } from '@/hooks/useOccurrences';
 import { format } from 'date-fns';
 import { pt } from 'date-fns/locale';
@@ -621,25 +622,20 @@ export default function ClimateOccurrencesPage() {
 
           {/* Map Tab */}
           <TabsContent value="map" className="mt-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Mapa de Ocorrências Climáticas</CardTitle>
-                <CardDescription>Visualização geográfica de eventos climáticos</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="h-[500px] bg-muted rounded-lg flex items-center justify-center">
-                  <div className="text-center space-y-4">
-                    <MapIcon className="h-16 w-16 mx-auto text-muted-foreground/50" />
-                    <p className="text-muted-foreground">
-                      Mapa de ocorrências climáticas
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      {occurrences.filter(o => o.latitude && o.longitude).length} ocorrências com coordenadas
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <OccurrencesMapView
+              occurrences={filteredOccurrences}
+              title="Mapa de Ocorrências Climáticas"
+              description="Visualização geográfica de eventos climáticos"
+              typeConfig={{
+                drought: { label: 'Seca', color: '#f59e0b' },
+                flood: { label: 'Inundação', color: '#3b82f6' },
+                frost: { label: 'Geada', color: '#06b6d4' },
+                hail: { label: 'Granizo', color: '#64748b' },
+                fire: { label: 'Incêndio', color: '#f97316' },
+                storm: { label: 'Tempestade', color: '#8b5cf6' },
+                other: { label: 'Outro', color: '#6b7280' },
+              }}
+            />
           </TabsContent>
 
           {/* Reports Tab */}
