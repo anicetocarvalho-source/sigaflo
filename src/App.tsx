@@ -74,6 +74,7 @@ import VerifyLicense from "./pages/public/VerifyLicense";
 import VerifyCoffee from "./pages/public/VerifyCoffee";
 import ReportsPage from "./pages/reports/ReportsPage";
 import MapsPage from "./pages/maps/MapsPage";
+import DocumentationPage from "./pages/docs/DocumentationPage";
 
 const queryClient = new QueryClient();
 
@@ -200,7 +201,7 @@ const App = () => (
             {/* Secondary Navigation */}
             <Route path="/relatorios" element={<ProtectedRoute><ReportsPage /></ProtectedRoute>} />
             <Route path="/mapas" element={<ProtectedRoute><MapsPage /></ProtectedRoute>} />
-            <Route path="/documentacao" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+            <Route path="/documentacao" element={<ProtectedRoute><DocumentationPage /></ProtectedRoute>} />
             <Route path="/notificacoes" element={<ProtectedRoute><Index /></ProtectedRoute>} />
             <Route path="/configuracoes" element={<ProtectedRoute><Index /></ProtectedRoute>} />
             
