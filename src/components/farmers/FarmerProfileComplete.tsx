@@ -34,8 +34,16 @@ import {
   BarChart3,
   Shield,
   Building2,
-  Minus
+  Minus,
+  Home,
+  Users,
+  CreditCard,
+  Fingerprint,
+  Download,
+  ExternalLink,
+  QrCode
 } from 'lucide-react';
+import { QRCodeSVG } from 'qrcode.react';
 import { useFarmer } from '@/hooks/useFarmers';
 import { useProductionHistory, useCertificates } from '@/hooks/useCertificates';
 import { useFinancialProfile, useCreditSimulations, useProductionCertificates, useCreditDossiers, useInsuranceRiskScores } from '@/hooks/useCreditInsurance';
@@ -302,10 +310,24 @@ export const FarmerProfileComplete = () => {
 
       {/* Main Content Tabs */}
       <Tabs defaultValue="identification" className="w-full">
-        <TabsList className="grid w-full grid-cols-3 lg:grid-cols-6">
+        <TabsList className="flex flex-wrap w-full gap-1">
           <TabsTrigger value="identification" className="flex items-center gap-1">
             <User className="h-4 w-4" />
             <span className="hidden sm:inline">Identificação</span>
+          </TabsTrigger>
+          {(farmer.farmer_type === 'individual') && (
+            <TabsTrigger value="household" className="flex items-center gap-1">
+              <Home className="h-4 w-4" />
+              <span className="hidden sm:inline">Agregado</span>
+            </TabsTrigger>
+          )}
+          <TabsTrigger value="documents" className="flex items-center gap-1">
+            <FileText className="h-4 w-4" />
+            <span className="hidden sm:inline">Documentos</span>
+          </TabsTrigger>
+          <TabsTrigger value="card" className="flex items-center gap-1">
+            <CreditCard className="h-4 w-4" />
+            <span className="hidden sm:inline">Cartão</span>
           </TabsTrigger>
           <TabsTrigger value="production" className="flex items-center gap-1">
             <Calendar className="h-4 w-4" />
@@ -502,6 +524,462 @@ export const FarmerProfileComplete = () => {
                   </div>
                 </div>
               )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Tab: Household (only for individual farmers) */}
+        {farmer.farmer_type === 'individual' && (
+          <TabsContent value="household" className="space-y-6">
+            <div className="grid gap-6 lg:grid-cols-2">
+              {/* Household Members Card */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Home className="h-5 w-5" />
+                    Composição do Agregado
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="p-4 bg-muted/50 rounded-lg">
+                      <p className="text-sm text-muted-foreground">Total de Membros</p>
+                      <p className="text-2xl font-bold">{(farmer as any).household_members_count || '—'}</p>
+                    </div>
+                    <div className="p-4 bg-muted/50 rounded-lg">
+                      <p className="text-sm text-muted-foreground">Dependentes</p>
+                      <p className="text-2xl font-bold">{(farmer as any).dependents_count || '—'}</p>
+                    </div>
+                    <div className="p-4 bg-muted/50 rounded-lg">
+                      <p className="text-sm text-muted-foreground">Trabalhadores Familiares</p>
+                      <p className="text-2xl font-bold">{(farmer as any).family_workers_count || '—'}</p>
+                    </div>
+                    <div className="p-4 bg-muted/50 rounded-lg">
+                      <p className="text-sm text-muted-foreground">Chefe de Família</p>
+                      <p className="text-2xl font-bold">{(farmer as any).head_of_household ? 'Sim' : 'Não'}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Spouse Info Card */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Users className="h-5 w-5" />
+                    Cônjuge / Companheiro(a)
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {(farmer as any).spouse_name ? (
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <div>
+                        <p className="text-sm text-muted-foreground">Nome do Cônjuge</p>
+                        <p className="font-medium">{(farmer as any).spouse_name}</p>
+                      </div>
+                      {(farmer as any).spouse_bi_nif && (
+                        <div>
+                          <p className="text-sm text-muted-foreground">BI / NIF do Cônjuge</p>
+                          <p className="font-medium font-mono">{(farmer as any).spouse_bi_nif}</p>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="text-center py-6 text-muted-foreground">
+                      <Users className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                      <p>Informação do cônjuge não registada</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Children Info */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Users className="h-5 w-5" />
+                  Filhos por Faixa Etária
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid gap-4 md:grid-cols-4">
+                  <div className="text-center p-4 bg-blue-50 dark:bg-blue-950/30 rounded-lg">
+                    <p className="text-sm text-muted-foreground">Total de Filhos</p>
+                    <p className="text-3xl font-bold text-blue-600">{(farmer as any).children_count || 0}</p>
+                  </div>
+                  <div className="text-center p-4 bg-green-50 dark:bg-green-950/30 rounded-lg">
+                    <p className="text-sm text-muted-foreground">Menores de 5 anos</p>
+                    <p className="text-3xl font-bold text-green-600">{(farmer as any).children_under_5 || 0}</p>
+                  </div>
+                  <div className="text-center p-4 bg-yellow-50 dark:bg-yellow-950/30 rounded-lg">
+                    <p className="text-sm text-muted-foreground">5 a 14 anos</p>
+                    <p className="text-3xl font-bold text-yellow-600">{(farmer as any).children_5_to_14 || 0}</p>
+                  </div>
+                  <div className="text-center p-4 bg-purple-50 dark:bg-purple-950/30 rounded-lg">
+                    <p className="text-sm text-muted-foreground">15 a 18 anos</p>
+                    <p className="text-3xl font-bold text-purple-600">{(farmer as any).children_15_to_18 || 0}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Household Notes */}
+            {(farmer as any).household_notes && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Observações sobre o Agregado</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground whitespace-pre-wrap">{(farmer as any).household_notes}</p>
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
+        )}
+
+        {/* Tab: Documents */}
+        <TabsContent value="documents" className="space-y-6">
+          <div className="grid gap-6 lg:grid-cols-2">
+            {/* Photo Card */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <User className="h-5 w-5" />
+                  Foto do Agricultor
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {farmer.photo_url ? (
+                  <div className="flex flex-col items-center">
+                    <img 
+                      src={farmer.photo_url} 
+                      alt={farmer.name}
+                      className="w-48 h-48 object-cover rounded-lg border-2 border-primary/20"
+                    />
+                    <Button variant="outline" size="sm" className="mt-4" asChild>
+                      <a href={farmer.photo_url} target="_blank" rel="noopener noreferrer">
+                        <ExternalLink className="mr-2 h-4 w-4" />
+                        Ver em tamanho real
+                      </a>
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="w-48 h-48 mx-auto rounded-lg border-2 border-dashed flex items-center justify-center bg-muted/50">
+                    <div className="text-center text-muted-foreground">
+                      <User className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                      <p className="text-sm">Foto não registada</p>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Biometry Card */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Fingerprint className="h-5 w-5" />
+                  Dados Biométricos
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-col items-center">
+                  {(farmer as any).fingerprint_data ? (
+                    <>
+                      <div className="w-24 h-24 rounded-full bg-green-100 dark:bg-green-950/50 flex items-center justify-center mb-4">
+                        <Fingerprint className="h-12 w-12 text-green-600" />
+                      </div>
+                      <Badge className="bg-green-100 text-green-700">
+                        Impressão Digital Registada
+                      </Badge>
+                      <p className="text-xs text-muted-foreground mt-2 font-mono">
+                        ID: {(farmer as any).fingerprint_data.substring(0, 20)}...
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <div className="w-24 h-24 rounded-full bg-muted flex items-center justify-center mb-4">
+                        <Fingerprint className="h-12 w-12 text-muted-foreground" />
+                      </div>
+                      <Badge variant="secondary">Não Registada</Badge>
+                      <p className="text-sm text-muted-foreground mt-2 text-center">
+                        A impressão digital será capturada durante o registo presencial
+                      </p>
+                    </>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Documents List */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <FileText className="h-5 w-5" />
+                Documentos Anexados
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-4 md:grid-cols-2">
+                {/* BI Document */}
+                <div className="p-4 border rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className={`p-2 rounded-lg ${(farmer as any).document_bi_url ? 'bg-green-100 dark:bg-green-950/50' : 'bg-muted'}`}>
+                        <FileText className={`h-5 w-5 ${(farmer as any).document_bi_url ? 'text-green-600' : 'text-muted-foreground'}`} />
+                      </div>
+                      <div>
+                        <p className="font-medium">
+                          {farmer.farmer_type === 'company' ? 'Estatutos / Contrato Social' : 'Bilhete de Identidade'}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          {(farmer as any).document_bi_url ? 'Documento anexado' : 'Não anexado'}
+                        </p>
+                      </div>
+                    </div>
+                    {(farmer as any).document_bi_url && (
+                      <Button variant="ghost" size="icon" asChild>
+                        <a href={(farmer as any).document_bi_url} target="_blank" rel="noopener noreferrer">
+                          <Download className="h-4 w-4" />
+                        </a>
+                      </Button>
+                    )}
+                  </div>
+                </div>
+
+                {/* License Document (for companies) */}
+                {farmer.farmer_type === 'company' && (
+                  <div className="p-4 border rounded-lg">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className={`p-2 rounded-lg ${(farmer as any).document_license_url ? 'bg-green-100 dark:bg-green-950/50' : 'bg-muted'}`}>
+                          <Award className={`h-5 w-5 ${(farmer as any).document_license_url ? 'text-green-600' : 'text-muted-foreground'}`} />
+                        </div>
+                        <div>
+                          <p className="font-medium">Alvará / Licença Comercial</p>
+                          <p className="text-sm text-muted-foreground">
+                            {(farmer as any).document_license_url ? 'Documento anexado' : 'Não anexado'}
+                          </p>
+                        </div>
+                      </div>
+                      {(farmer as any).document_license_url && (
+                        <Button variant="ghost" size="icon" asChild>
+                          <a href={(farmer as any).document_license_url} target="_blank" rel="noopener noreferrer">
+                            <Download className="h-4 w-4" />
+                          </a>
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* NIF Document (for companies) */}
+                {farmer.farmer_type === 'company' && (
+                  <div className="p-4 border rounded-lg">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className={`p-2 rounded-lg ${(farmer as any).document_nif_url ? 'bg-green-100 dark:bg-green-950/50' : 'bg-muted'}`}>
+                          <FileCheck className={`h-5 w-5 ${(farmer as any).document_nif_url ? 'text-green-600' : 'text-muted-foreground'}`} />
+                        </div>
+                        <div>
+                          <p className="font-medium">Certificado de NIF</p>
+                          <p className="text-sm text-muted-foreground">
+                            {(farmer as any).document_nif_url ? 'Documento anexado' : 'Não anexado'}
+                          </p>
+                        </div>
+                      </div>
+                      {(farmer as any).document_nif_url && (
+                        <Button variant="ghost" size="icon" asChild>
+                          <a href={(farmer as any).document_nif_url} target="_blank" rel="noopener noreferrer">
+                            <Download className="h-4 w-4" />
+                          </a>
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Other Documents */}
+                <div className="p-4 border rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className={`p-2 rounded-lg ${(farmer as any).document_other_url ? 'bg-green-100 dark:bg-green-950/50' : 'bg-muted'}`}>
+                        <FileText className={`h-5 w-5 ${(farmer as any).document_other_url ? 'text-green-600' : 'text-muted-foreground'}`} />
+                      </div>
+                      <div>
+                        <p className="font-medium">Outros Documentos</p>
+                        <p className="text-sm text-muted-foreground">
+                          {(farmer as any).document_other_url ? 'Documento anexado' : 'Não anexado'}
+                        </p>
+                      </div>
+                    </div>
+                    {(farmer as any).document_other_url && (
+                      <Button variant="ghost" size="icon" asChild>
+                        <a href={(farmer as any).document_other_url} target="_blank" rel="noopener noreferrer">
+                          <Download className="h-4 w-4" />
+                        </a>
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Tab: Farmer Card */}
+        <TabsContent value="card" className="space-y-6">
+          <div className="grid gap-6 lg:grid-cols-2">
+            {/* Physical Card Preview */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <CreditCard className="h-5 w-5" />
+                  Cartão do Agricultor
+                </CardTitle>
+                <CardDescription>
+                  {farmer.status === 'approved' || farmer.status === 'issued' 
+                    ? 'Cartão emitido e válido' 
+                    : 'O cartão será emitido após validação do registo'}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="relative bg-gradient-to-br from-green-600 to-green-800 rounded-xl p-6 text-white shadow-lg max-w-md mx-auto">
+                  {/* Card Header */}
+                  <div className="flex items-start justify-between mb-6">
+                    <div>
+                      <p className="text-xs opacity-75">República de Angola</p>
+                      <p className="text-sm font-semibold">MINISTÉRIO DA AGRICULTURA E PESCAS</p>
+                      <p className="text-xs opacity-75">Sistema de Registo do Agricultor</p>
+                    </div>
+                    <div className="text-right">
+                      <Leaf className="h-8 w-8" />
+                    </div>
+                  </div>
+
+                  {/* Photo and Info */}
+                  <div className="flex gap-4 mb-4">
+                    <div className="w-20 h-24 bg-white/20 rounded-lg flex items-center justify-center overflow-hidden">
+                      {farmer.photo_url ? (
+                        <img src={farmer.photo_url} alt={farmer.name} className="w-full h-full object-cover" />
+                      ) : (
+                        <User className="h-10 w-10 opacity-50" />
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-lg font-bold">{farmer.name}</p>
+                      <p className="text-sm opacity-75">{farmer.bi_nif || '—'}</p>
+                      <p className="text-xs mt-2">
+                        {farmer.provinces?.name}, {farmer.municipalities?.name}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Card Number */}
+                  <div className="border-t border-white/20 pt-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-xs opacity-75">Nº de Registo</p>
+                        <p className="font-mono text-lg">{farmer.registration_number || (farmer as any).card_number || '—'}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-xs opacity-75">Data de Emissão</p>
+                        <p className="text-sm">
+                          {(farmer as any).card_generated_at 
+                            ? new Date((farmer as any).card_generated_at).toLocaleDateString('pt-AO')
+                            : farmer.registration_date 
+                              ? new Date(farmer.registration_date).toLocaleDateString('pt-AO')
+                              : '—'}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Status Badge */}
+                  {farmer.status !== 'approved' && farmer.status !== 'issued' && (
+                    <div className="absolute inset-0 bg-black/50 rounded-xl flex items-center justify-center">
+                      <Badge variant="secondary" className="text-lg px-4 py-2">
+                        Aguardando Validação
+                      </Badge>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* QR Code */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <QrCode className="h-5 w-5" />
+                  Código QR de Verificação
+                </CardTitle>
+                <CardDescription>
+                  Escaneie este código para verificar a autenticidade do registo
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-col items-center">
+                  <div className="p-4 bg-white rounded-lg shadow-sm border">
+                    <QRCodeSVG 
+                      value={`${window.location.origin}/verificar/agricultor/${farmer.id}`}
+                      size={200}
+                      level="H"
+                      includeMargin
+                    />
+                  </div>
+                  <p className="text-sm text-muted-foreground mt-4 text-center">
+                    URL de Verificação:
+                  </p>
+                  <code className="text-xs bg-muted px-2 py-1 rounded mt-1 break-all">
+                    {window.location.origin}/verificar/agricultor/{farmer.id}
+                  </code>
+
+                  <div className="flex gap-2 mt-6">
+                    <Button variant="outline" size="sm">
+                      <Download className="mr-2 h-4 w-4" />
+                      Baixar Cartão PDF
+                    </Button>
+                    <Button variant="outline" size="sm">
+                      <Download className="mr-2 h-4 w-4" />
+                      Baixar QR Code
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Card Info */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Informações do Cartão</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-4 md:grid-cols-4">
+                <div>
+                  <p className="text-sm text-muted-foreground">Número do Cartão</p>
+                  <p className="font-mono font-bold">{(farmer as any).card_number || farmer.registration_number || '—'}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Status</p>
+                  <WorkflowStatusBadge status={farmer.status} />
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Data de Geração</p>
+                  <p className="font-medium">
+                    {(farmer as any).card_generated_at 
+                      ? new Date((farmer as any).card_generated_at).toLocaleDateString('pt-AO')
+                      : 'Não gerado'}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Verificações</p>
+                  <p className="font-medium">0 verificações</p>
+                </div>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
