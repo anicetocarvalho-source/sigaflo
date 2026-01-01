@@ -1,12 +1,14 @@
-import { useState } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { MainLayout } from '@/components/layout/MainLayout';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
   Form,
   FormControl,
@@ -22,9 +24,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, AlertCircle, Leaf } from 'lucide-react';
 import { useFarmers, useFarmer } from '@/hooks/useFarmers';
 import { useCreateCertificate } from '@/hooks/useCertificates';
+import { getFarmerTypeLabel } from '@/components/farmers/FarmerTypeIcon';
 
 const certificateSchema = z.object({
   farmer_id: z.string().uuid('Selecione um agricultor'),
@@ -37,12 +40,6 @@ const certificateSchema = z.object({
 });
 
 type CertificateFormData = z.infer<typeof certificateSchema>;
-
-const cropOptions = [
-  'Milho', 'Feijão', 'Mandioca', 'Batata-doce', 'Arroz', 
-  'Soja', 'Girassol', 'Amendoim', 'Hortícolas', 'Frutas',
-  'Café', 'Banana', 'Cana-de-açúcar', 'Algodão', 'Outros'
-];
 
 const certificateTypes = [
   { value: 'production', label: 'Certificado de Produção' },
@@ -58,7 +55,6 @@ const CertificateNewPage = () => {
   const preselectedFarmerId = searchParams.get('farmer_id');
   
   const { data: farmers } = useFarmers();
-  const { data: preselectedFarmer } = useFarmer(preselectedFarmerId || '');
   const createCertificate = useCreateCertificate();
   
   const currentYear = new Date().getFullYear();
@@ -75,6 +71,42 @@ const CertificateNewPage = () => {
       total_quantity_kg: undefined,
     },
   });
+
+  // Watch the selected farmer_id to fetch their crops
+  const selectedFarmerId = form.watch('farmer_id');
+  const { data: selectedFarmer } = useFarmer(selectedFarmerId || '');
+
+  // Get available crops from the selected farmer's registration
+  const availableCrops = useMemo(() => {
+    if (!selectedFarmer) return [];
+    
+    const crops: string[] = [];
+    
+    // Add main crops
+    if (selectedFarmer.main_crops && selectedFarmer.main_crops.length > 0) {
+      crops.push(...selectedFarmer.main_crops);
+    }
+    
+    // Add secondary crops
+    if (selectedFarmer.secondary_crops && selectedFarmer.secondary_crops.length > 0) {
+      crops.push(...selectedFarmer.secondary_crops);
+    }
+    
+    // Remove duplicates
+    return [...new Set(crops)];
+  }, [selectedFarmer]);
+
+  // Reset selected crops when farmer changes
+  useEffect(() => {
+    form.setValue('crops', []);
+  }, [selectedFarmerId, form]);
+
+  // Pre-fill area from farmer's registration
+  useEffect(() => {
+    if (selectedFarmer?.cultivated_area_ha && !form.getValues('total_area_ha')) {
+      form.setValue('total_area_ha', selectedFarmer.cultivated_area_ha);
+    }
+  }, [selectedFarmer, form]);
 
   const handleSubmit = async (data: CertificateFormData) => {
     await createCertificate.mutateAsync(data);
@@ -104,14 +136,9 @@ const CertificateNewPage = () => {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {preselectedFarmer && (
-                            <SelectItem value={preselectedFarmer.id}>
-                              {preselectedFarmer.name} ({preselectedFarmer.registration_number})
-                            </SelectItem>
-                          )}
-                          {farmers?.filter(f => f.id !== preselectedFarmerId).map((farmer) => (
+                          {farmers?.map((farmer) => (
                             <SelectItem key={farmer.id} value={farmer.id}>
-                              {farmer.name} ({farmer.registration_number})
+                              {farmer.name} ({farmer.registration_number || getFarmerTypeLabel(farmer.farmer_type)})
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -120,6 +147,21 @@ const CertificateNewPage = () => {
                     </FormItem>
                   )}
                 />
+
+                {/* Show selected farmer info */}
+                {selectedFarmer && (
+                  <div className="p-4 bg-muted/50 rounded-lg">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Leaf className="h-4 w-4 text-primary" />
+                      <span className="font-medium">{selectedFarmer.name}</span>
+                      <Badge variant="outline">{getFarmerTypeLabel(selectedFarmer.farmer_type)}</Badge>
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      {selectedFarmer.provinces?.name && <span>{selectedFarmer.provinces.name}</span>}
+                      {selectedFarmer.cultivated_area_ha && <span> • {selectedFarmer.cultivated_area_ha} ha</span>}
+                    </div>
+                  </div>
+                )}
 
                 <FormField
                   control={form.control}
@@ -205,26 +247,53 @@ const CertificateNewPage = () => {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Culturas *</FormLabel>
-                      <div className="flex flex-wrap gap-2">
-                        {cropOptions.map((crop) => (
-                          <Button
-                            key={crop}
-                            type="button"
-                            variant={field.value?.includes(crop) ? 'default' : 'outline'}
-                            size="sm"
-                            onClick={() => {
-                              const current = field.value || [];
-                              if (current.includes(crop)) {
-                                field.onChange(current.filter((c) => c !== crop));
-                              } else {
-                                field.onChange([...current, crop]);
-                              }
-                            }}
-                          >
-                            {crop}
-                          </Button>
-                        ))}
-                      </div>
+                      {!selectedFarmerId ? (
+                        <Alert>
+                          <AlertCircle className="h-4 w-4" />
+                          <AlertDescription>
+                            Selecione um agricultor para ver as culturas registadas
+                          </AlertDescription>
+                        </Alert>
+                      ) : availableCrops.length === 0 ? (
+                        <Alert variant="destructive">
+                          <AlertCircle className="h-4 w-4" />
+                          <AlertDescription>
+                            Este agricultor não tem culturas definidas no registo. 
+                            Por favor, edite o registo do agricultor para adicionar culturas antes de emitir o certificado.
+                          </AlertDescription>
+                        </Alert>
+                      ) : (
+                        <>
+                          <CardDescription className="text-xs mb-2">
+                            Culturas registadas para este agricultor:
+                          </CardDescription>
+                          <div className="flex flex-wrap gap-2">
+                            {availableCrops.map((crop) => (
+                              <Button
+                                key={crop}
+                                type="button"
+                                variant={field.value?.includes(crop) ? 'default' : 'outline'}
+                                size="sm"
+                                onClick={() => {
+                                  const current = field.value || [];
+                                  if (current.includes(crop)) {
+                                    field.onChange(current.filter((c) => c !== crop));
+                                  } else {
+                                    field.onChange([...current, crop]);
+                                  }
+                                }}
+                              >
+                                {crop}
+                              </Button>
+                            ))}
+                          </div>
+                          {field.value && field.value.length > 0 && (
+                            <p className="text-xs text-muted-foreground mt-2">
+                              {field.value.length} cultura(s) selecionada(s)
+                            </p>
+                          )}
+                        </>
+                      )}
                       <FormMessage />
                     </FormItem>
                   )}
