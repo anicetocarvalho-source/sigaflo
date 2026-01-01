@@ -72,6 +72,7 @@ import QRScanner from "./pages/public/QRScanner";
 import VerifyCertificate from "./pages/public/VerifyCertificate";
 import VerifyLicense from "./pages/public/VerifyLicense";
 import VerifyCoffee from "./pages/public/VerifyCoffee";
+import ReportsPage from "./pages/reports/ReportsPage";
 
 const queryClient = new QueryClient();
 
@@ -196,7 +197,7 @@ const App = () => (
             />
             
             {/* Secondary Navigation */}
-            <Route path="/relatorios" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+            <Route path="/relatorios" element={<ProtectedRoute><ReportsPage /></ProtectedRoute>} />
             <Route path="/mapas" element={<ProtectedRoute><Index /></ProtectedRoute>} />
             <Route path="/documentacao" element={<ProtectedRoute><Index /></ProtectedRoute>} />
             <Route path="/notificacoes" element={<ProtectedRoute><Index /></ProtectedRoute>} />
