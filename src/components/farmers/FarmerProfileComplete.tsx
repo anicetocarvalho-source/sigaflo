@@ -1733,7 +1733,7 @@ export const FarmerProfileComplete = () => {
                     {members.length} {members.length === 1 ? 'membro registado' : 'membros registados'}
                   </CardDescription>
                 </div>
-                <Button onClick={() => navigate(`/agricultores/novo?${farmer.farmer_type === 'cooperative' ? 'cooperative_id' : 'field_school_id'}=${id}`)}>
+                <Button onClick={() => navigate(`/agricultores/${id}/membros`)}>
                   <Plus className="mr-2 h-4 w-4" />
                   Adicionar Membro
                 </Button>
@@ -1836,7 +1836,7 @@ export const FarmerProfileComplete = () => {
                         ? 'Adicione agricultores como membros desta cooperativa' 
                         : 'Adicione agricultores como participantes desta escola de campo'}
                     </p>
-                    <Button onClick={() => navigate(`/agricultores/novo?${farmer.farmer_type === 'cooperative' ? 'cooperative_id' : 'field_school_id'}=${id}`)}>
+                    <Button onClick={() => navigate(`/agricultores/${id}/membros`)}>
                       <Plus className="mr-2 h-4 w-4" />
                       Adicionar Primeiro Membro
                     </Button>

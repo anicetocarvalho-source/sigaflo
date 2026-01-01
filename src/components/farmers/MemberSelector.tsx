@@ -24,15 +24,25 @@ export const MemberSelector = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [showAvailable, setShowAvailable] = useState(true);
 
-  // Get all individual and family farmers
+  // Get all farmers
   const { data: allFarmers, isLoading } = useFarmers();
 
-  // Filter to only show individual and family farmers
+  // Filter based on organization type:
+  // - Field schools: only individual and family farmers (small farmers)
+  // - Cooperatives: all farmer types except cooperatives and field schools
   const eligibleFarmers = useMemo(() => {
-    return allFarmers?.filter(f => 
-      f.farmer_type === 'individual' || f.farmer_type === 'family'
-    ) || [];
-  }, [allFarmers]);
+    if (organizationType === 'field_school') {
+      // Field schools only accept small farmers (individual and family)
+      return allFarmers?.filter(f => 
+        f.farmer_type === 'individual' || f.farmer_type === 'family'
+      ) || [];
+    } else {
+      // Cooperatives accept all types except other cooperatives and field schools
+      return allFarmers?.filter(f => 
+        f.farmer_type !== 'cooperative' && f.farmer_type !== 'field_school'
+      ) || [];
+    }
+  }, [allFarmers, organizationType]);
 
   // Current members (already linked to this organization)
   const currentMembers = useMemo(() => {
@@ -92,6 +102,7 @@ export const MemberSelector = ({
     const labels: Record<string, string> = {
       individual: 'Individual',
       family: 'Familiar',
+      company: 'Empresa',
     };
     return (
       <Badge variant="outline" className="text-xs">
