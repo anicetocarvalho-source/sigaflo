@@ -44,7 +44,7 @@ import {
   QrCode
 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
-import { useFarmer } from '@/hooks/useFarmers';
+import { useFarmer, useFarmers } from '@/hooks/useFarmers';
 import { useProductionHistory, useCertificates } from '@/hooks/useCertificates';
 import { useFinancialProfile, useCreditSimulations, useProductionCertificates, useCreditDossiers, useInsuranceRiskScores } from '@/hooks/useCreditInsurance';
 import { useAllocations } from '@/hooks/useIncentives';
@@ -105,6 +105,13 @@ export const FarmerProfileComplete = () => {
   const { data: insuranceRiskScores } = useInsuranceRiskScores(id);
   const { data: allocations } = useAllocations(undefined, undefined);
   const { data: allOccurrences } = useOccurrences();
+  const { data: allFarmers } = useFarmers();
+
+  // Get members for cooperatives and field schools
+  const members = allFarmers?.filter(f => 
+    (farmer?.farmer_type === 'cooperative' && f.parent_cooperative_id === id) ||
+    (farmer?.farmer_type === 'field_school' && f.field_school_id === id)
+  ) || [];
 
   // Filter allocations and occurrences for this farmer
   const farmerAllocations = allocations?.filter(a => a.farmer_id === id) || [];
@@ -349,6 +356,13 @@ export const FarmerProfileComplete = () => {
             <BarChart3 className="h-4 w-4" />
             <span className="hidden sm:inline">Scores</span>
           </TabsTrigger>
+          {(farmer.farmer_type === 'cooperative' || farmer.farmer_type === 'field_school') && (
+            <TabsTrigger value="members" className="flex items-center gap-1">
+              <Users className="h-4 w-4" />
+              <span className="hidden sm:inline">Membros</span>
+              <Badge variant="secondary" className="ml-1 text-xs">{members.length}</Badge>
+            </TabsTrigger>
+          )}
         </TabsList>
 
         {/* Tab 1: Identification & Location */}
@@ -837,75 +851,189 @@ export const FarmerProfileComplete = () => {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <CreditCard className="h-5 w-5" />
-                  Cartão do Agricultor
+                  {farmer.farmer_type === 'cooperative' && 'Certificado da Cooperativa'}
+                  {farmer.farmer_type === 'field_school' && 'Certificado da Escola de Campo'}
+                  {farmer.farmer_type === 'company' && 'Certificado de Produtor'}
+                  {(farmer.farmer_type === 'individual' || farmer.farmer_type === 'family') && 'Cartão do Agricultor'}
                 </CardTitle>
                 <CardDescription>
                   {farmer.status === 'approved' || farmer.status === 'issued' 
-                    ? 'Cartão emitido e válido' 
-                    : 'O cartão será emitido após validação do registo'}
+                    ? 'Documento emitido e válido' 
+                    : 'O documento será emitido após validação do registo'}
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="relative bg-gradient-to-br from-green-600 to-green-800 rounded-xl p-6 text-white shadow-lg max-w-md mx-auto">
-                  {/* Card Header */}
-                  <div className="flex items-start justify-between mb-6">
-                    <div>
-                      <p className="text-xs opacity-75">República de Angola</p>
-                      <p className="text-sm font-semibold">MINISTÉRIO DA AGRICULTURA E PESCAS</p>
-                      <p className="text-xs opacity-75">Sistema de Registo do Agricultor</p>
-                    </div>
-                    <div className="text-right">
+                {/* Individual/Family Farmer Card - Green */}
+                {(farmer.farmer_type === 'individual' || farmer.farmer_type === 'family') && (
+                  <div className="relative bg-gradient-to-br from-green-600 to-green-800 rounded-xl p-6 text-white shadow-lg max-w-md mx-auto">
+                    <div className="flex items-start justify-between mb-6">
+                      <div>
+                        <p className="text-xs opacity-75">República de Angola</p>
+                        <p className="text-sm font-semibold">MINISTÉRIO DA AGRICULTURA E PESCAS</p>
+                        <p className="text-xs opacity-75">Cartão do Agricultor</p>
+                      </div>
                       <Leaf className="h-8 w-8" />
                     </div>
-                  </div>
-
-                  {/* Photo and Info */}
-                  <div className="flex gap-4 mb-4">
-                    <div className="w-20 h-24 bg-white/20 rounded-lg flex items-center justify-center overflow-hidden">
-                      {farmer.photo_url ? (
-                        <img src={farmer.photo_url} alt={farmer.name} className="w-full h-full object-cover" />
-                      ) : (
-                        <User className="h-10 w-10 opacity-50" />
-                      )}
+                    <div className="flex gap-4 mb-4">
+                      <div className="w-20 h-24 bg-white/20 rounded-lg flex items-center justify-center overflow-hidden">
+                        {farmer.photo_url ? (
+                          <img src={farmer.photo_url} alt={farmer.name} className="w-full h-full object-cover" />
+                        ) : (
+                          <User className="h-10 w-10 opacity-50" />
+                        )}
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-lg font-bold">{farmer.name}</p>
+                        <p className="text-sm opacity-75">{farmer.bi_nif || '—'}</p>
+                        <p className="text-xs mt-2">{farmer.provinces?.name}, {farmer.municipalities?.name}</p>
+                      </div>
                     </div>
-                    <div className="flex-1">
-                      <p className="text-lg font-bold">{farmer.name}</p>
-                      <p className="text-sm opacity-75">{farmer.bi_nif || '—'}</p>
-                      <p className="text-xs mt-2">
-                        {farmer.provinces?.name}, {farmer.municipalities?.name}
-                      </p>
+                    <div className="border-t border-white/20 pt-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-xs opacity-75">Nº de Registo</p>
+                          <p className="font-mono text-lg">{farmer.registration_number || '—'}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-xs opacity-75">Data de Emissão</p>
+                          <p className="text-sm">
+                            {farmer.registration_date ? new Date(farmer.registration_date).toLocaleDateString('pt-AO') : '—'}
+                          </p>
+                        </div>
+                      </div>
                     </div>
+                    {farmer.status !== 'approved' && farmer.status !== 'issued' && (
+                      <div className="absolute inset-0 bg-black/50 rounded-xl flex items-center justify-center">
+                        <Badge variant="secondary" className="text-lg px-4 py-2">Aguardando Validação</Badge>
+                      </div>
+                    )}
                   </div>
+                )}
 
-                  {/* Card Number */}
-                  <div className="border-t border-white/20 pt-4">
-                    <div className="flex items-center justify-between">
+                {/* Cooperative Card - Blue */}
+                {farmer.farmer_type === 'cooperative' && (
+                  <div className="relative bg-gradient-to-br from-blue-600 to-blue-800 rounded-xl p-6 text-white shadow-lg max-w-md mx-auto">
+                    <div className="flex items-start justify-between mb-6">
                       <div>
-                        <p className="text-xs opacity-75">Nº de Registo</p>
-                        <p className="font-mono text-lg">{farmer.registration_number || (farmer as any).card_number || '—'}</p>
+                        <p className="text-xs opacity-75">República de Angola</p>
+                        <p className="text-sm font-semibold">MINISTÉRIO DA AGRICULTURA E PESCAS</p>
+                        <p className="text-xs opacity-75">Certificado de Cooperativa Agrícola</p>
+                      </div>
+                      <Users className="h-8 w-8" />
+                    </div>
+                    <div className="mb-4">
+                      <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mb-3 mx-auto">
+                        <Building2 className="h-8 w-8" />
+                      </div>
+                      <p className="text-xl font-bold text-center">{farmer.name}</p>
+                      {farmer.trade_name && <p className="text-sm opacity-75 text-center">{farmer.trade_name}</p>}
+                      <p className="text-sm text-center mt-2">{farmer.provinces?.name}, {farmer.municipalities?.name}</p>
+                    </div>
+                    <div className="border-t border-white/20 pt-4 grid grid-cols-2 gap-4">
+                      <div>
+                        <p className="text-xs opacity-75">NIF</p>
+                        <p className="font-mono">{farmer.bi_nif || '—'}</p>
                       </div>
                       <div className="text-right">
-                        <p className="text-xs opacity-75">Data de Emissão</p>
-                        <p className="text-sm">
-                          {(farmer as any).card_generated_at 
-                            ? new Date((farmer as any).card_generated_at).toLocaleDateString('pt-AO')
-                            : farmer.registration_date 
-                              ? new Date(farmer.registration_date).toLocaleDateString('pt-AO')
-                              : '—'}
-                        </p>
+                        <p className="text-xs opacity-75">Nº de Registo</p>
+                        <p className="font-mono">{farmer.registration_number || '—'}</p>
                       </div>
                     </div>
-                  </div>
-
-                  {/* Status Badge */}
-                  {farmer.status !== 'approved' && farmer.status !== 'issued' && (
-                    <div className="absolute inset-0 bg-black/50 rounded-xl flex items-center justify-center">
-                      <Badge variant="secondary" className="text-lg px-4 py-2">
-                        Aguardando Validação
-                      </Badge>
+                    <div className="mt-4 text-center">
+                      <p className="text-xs opacity-75">Membros Associados</p>
+                      <p className="text-2xl font-bold">{members?.length || 0}</p>
                     </div>
-                  )}
-                </div>
+                    {farmer.status !== 'approved' && farmer.status !== 'issued' && (
+                      <div className="absolute inset-0 bg-black/50 rounded-xl flex items-center justify-center">
+                        <Badge variant="secondary" className="text-lg px-4 py-2">Aguardando Validação</Badge>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Field School Card - Orange */}
+                {farmer.farmer_type === 'field_school' && (
+                  <div className="relative bg-gradient-to-br from-orange-500 to-orange-700 rounded-xl p-6 text-white shadow-lg max-w-md mx-auto">
+                    <div className="flex items-start justify-between mb-6">
+                      <div>
+                        <p className="text-xs opacity-75">República de Angola</p>
+                        <p className="text-sm font-semibold">MINISTÉRIO DA AGRICULTURA E PESCAS</p>
+                        <p className="text-xs opacity-75">Certificado de Escola de Campo</p>
+                      </div>
+                      <Award className="h-8 w-8" />
+                    </div>
+                    <div className="mb-4">
+                      <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mb-3 mx-auto">
+                        <Leaf className="h-8 w-8" />
+                      </div>
+                      <p className="text-xl font-bold text-center">{farmer.name}</p>
+                      <p className="text-sm text-center mt-2">{farmer.provinces?.name}, {farmer.municipalities?.name}</p>
+                    </div>
+                    <div className="border-t border-white/20 pt-4 grid grid-cols-2 gap-4">
+                      <div>
+                        <p className="text-xs opacity-75">Código</p>
+                        <p className="font-mono">{farmer.registration_number || '—'}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-xs opacity-75">Fundação</p>
+                        <p>{farmer.registration_date ? new Date(farmer.registration_date).toLocaleDateString('pt-AO') : '—'}</p>
+                      </div>
+                    </div>
+                    <div className="mt-4 text-center">
+                      <p className="text-xs opacity-75">Agricultores Participantes</p>
+                      <p className="text-2xl font-bold">{members?.length || 0}</p>
+                    </div>
+                    {farmer.status !== 'approved' && farmer.status !== 'issued' && (
+                      <div className="absolute inset-0 bg-black/50 rounded-xl flex items-center justify-center">
+                        <Badge variant="secondary" className="text-lg px-4 py-2">Aguardando Validação</Badge>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Company Card - Purple */}
+                {farmer.farmer_type === 'company' && (
+                  <div className="relative bg-gradient-to-br from-purple-600 to-purple-800 rounded-xl p-6 text-white shadow-lg max-w-md mx-auto">
+                    <div className="flex items-start justify-between mb-6">
+                      <div>
+                        <p className="text-xs opacity-75">República de Angola</p>
+                        <p className="text-sm font-semibold">MINISTÉRIO DA AGRICULTURA E PESCAS</p>
+                        <p className="text-xs opacity-75">Certificado de Produtor Registado</p>
+                      </div>
+                      <Building2 className="h-8 w-8" />
+                    </div>
+                    <div className="mb-4">
+                      <p className="text-xl font-bold text-center">{farmer.name}</p>
+                      {farmer.trade_name && <p className="text-sm opacity-75 text-center">{farmer.trade_name}</p>}
+                      <p className="text-sm text-center mt-2">{farmer.provinces?.name}, {farmer.municipalities?.name}</p>
+                    </div>
+                    <div className="border-t border-white/20 pt-4 grid grid-cols-2 gap-4">
+                      <div>
+                        <p className="text-xs opacity-75">NIF</p>
+                        <p className="font-mono">{farmer.bi_nif || '—'}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-xs opacity-75">Nº de Registo</p>
+                        <p className="font-mono">{farmer.registration_number || '—'}</p>
+                      </div>
+                    </div>
+                    <div className="mt-4 grid grid-cols-2 gap-4 text-center">
+                      <div>
+                        <p className="text-xs opacity-75">Área Total</p>
+                        <p className="text-lg font-bold">{farmer.total_area_ha?.toFixed(0) || 0} ha</p>
+                      </div>
+                      <div>
+                        <p className="text-xs opacity-75">Área Cultivada</p>
+                        <p className="text-lg font-bold">{farmer.cultivated_area_ha?.toFixed(0) || 0} ha</p>
+                      </div>
+                    </div>
+                    {farmer.status !== 'approved' && farmer.status !== 'issued' && (
+                      <div className="absolute inset-0 bg-black/50 rounded-xl flex items-center justify-center">
+                        <Badge variant="secondary" className="text-lg px-4 py-2">Aguardando Validação</Badge>
+                      </div>
+                    )}
+                  </div>
+                )}
               </CardContent>
             </Card>
 
@@ -940,7 +1068,7 @@ export const FarmerProfileComplete = () => {
                   <div className="flex gap-2 mt-6">
                     <Button variant="outline" size="sm">
                       <Download className="mr-2 h-4 w-4" />
-                      Baixar Cartão PDF
+                      Baixar {farmer.farmer_type === 'individual' || farmer.farmer_type === 'family' ? 'Cartão' : 'Certificado'} PDF
                     </Button>
                     <Button variant="outline" size="sm">
                       <Download className="mr-2 h-4 w-4" />
@@ -955,29 +1083,32 @@ export const FarmerProfileComplete = () => {
           {/* Card Info */}
           <Card>
             <CardHeader>
-              <CardTitle>Informações do Cartão</CardTitle>
+              <CardTitle>Informações do Documento</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid gap-4 md:grid-cols-4">
                 <div>
-                  <p className="text-sm text-muted-foreground">Número do Cartão</p>
-                  <p className="font-mono font-bold">{(farmer as any).card_number || farmer.registration_number || '—'}</p>
+                  <p className="text-sm text-muted-foreground">Número de Registo</p>
+                  <p className="font-mono font-bold">{farmer.registration_number || '—'}</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Status</p>
                   <WorkflowStatusBadge status={farmer.status} />
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Data de Geração</p>
+                  <p className="text-sm text-muted-foreground">Data de Registo</p>
                   <p className="font-medium">
-                    {(farmer as any).card_generated_at 
-                      ? new Date((farmer as any).card_generated_at).toLocaleDateString('pt-AO')
-                      : 'Não gerado'}
+                    {farmer.registration_date 
+                      ? new Date(farmer.registration_date).toLocaleDateString('pt-AO')
+                      : 'Não definida'}
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Verificações</p>
-                  <p className="font-medium">0 verificações</p>
+                  <p className="text-sm text-muted-foreground">Tipo</p>
+                  <Badge className={getFarmerTypeColor(farmer.farmer_type)}>
+                    <FarmerTypeIcon type={farmer.farmer_type} className="mr-1 h-3 w-3" />
+                    {getFarmerTypeLabel(farmer.farmer_type)}
+                  </Badge>
                 </div>
               </div>
             </CardContent>
@@ -1587,6 +1718,134 @@ export const FarmerProfileComplete = () => {
             </CardContent>
           </Card>
         </TabsContent>
+
+        {/* Tab: Members (for cooperatives and field schools) */}
+        {(farmer.farmer_type === 'cooperative' || farmer.farmer_type === 'field_school') && (
+          <TabsContent value="members" className="space-y-6">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle className="flex items-center gap-2">
+                    <Users className="h-5 w-5" />
+                    {farmer.farmer_type === 'cooperative' ? 'Membros da Cooperativa' : 'Agricultores da Escola de Campo'}
+                  </CardTitle>
+                  <CardDescription>
+                    {members.length} {members.length === 1 ? 'membro registado' : 'membros registados'}
+                  </CardDescription>
+                </div>
+                <Button onClick={() => navigate(`/agricultores/novo?${farmer.farmer_type === 'cooperative' ? 'cooperative_id' : 'field_school_id'}=${id}`)}>
+                  <Plus className="mr-2 h-4 w-4" />
+                  Adicionar Membro
+                </Button>
+              </CardHeader>
+              <CardContent>
+                {members.length > 0 ? (
+                  <div className="space-y-4">
+                    {/* Summary Stats */}
+                    <div className="grid gap-4 md:grid-cols-4 mb-6">
+                      <div className="p-4 bg-muted/50 rounded-lg text-center">
+                        <p className="text-2xl font-bold">{members.length}</p>
+                        <p className="text-sm text-muted-foreground">Total de Membros</p>
+                      </div>
+                      <div className="p-4 bg-green-50 dark:bg-green-950/30 rounded-lg text-center">
+                        <p className="text-2xl font-bold text-green-600">
+                          {members.filter(m => m.status === 'approved' || m.status === 'issued').length}
+                        </p>
+                        <p className="text-sm text-muted-foreground">Aprovados</p>
+                      </div>
+                      <div className="p-4 bg-yellow-50 dark:bg-yellow-950/30 rounded-lg text-center">
+                        <p className="text-2xl font-bold text-yellow-600">
+                          {members.filter(m => m.status === 'draft' || m.status === 'submitted' || m.status === 'validated').length}
+                        </p>
+                        <p className="text-sm text-muted-foreground">Pendentes</p>
+                      </div>
+                      <div className="p-4 bg-blue-50 dark:bg-blue-950/30 rounded-lg text-center">
+                        <p className="text-2xl font-bold text-blue-600">
+                          {members.reduce((sum, m) => sum + (m.cultivated_area_ha || 0), 0).toFixed(1)} ha
+                        </p>
+                        <p className="text-sm text-muted-foreground">Área Total</p>
+                      </div>
+                    </div>
+
+                    {/* Members Table */}
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Nome</TableHead>
+                          <TableHead>Nº Registo</TableHead>
+                          <TableHead>Localização</TableHead>
+                          <TableHead>Área (ha)</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead>Acções</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {members.map((member) => (
+                          <TableRow key={member.id}>
+                            <TableCell>
+                              <div className="flex items-center gap-3">
+                                {member.photo_url ? (
+                                  <img 
+                                    src={member.photo_url} 
+                                    alt={member.name} 
+                                    className="w-10 h-10 rounded-full object-cover"
+                                  />
+                                ) : (
+                                  <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
+                                    <User className="h-5 w-5 text-muted-foreground" />
+                                  </div>
+                                )}
+                                <div>
+                                  <p className="font-medium">{member.name}</p>
+                                  <p className="text-sm text-muted-foreground">{member.phone || '—'}</p>
+                                </div>
+                              </div>
+                            </TableCell>
+                            <TableCell className="font-mono text-sm">
+                              {member.registration_number || '—'}
+                            </TableCell>
+                            <TableCell>
+                              {member.communes?.name || member.municipalities?.name || member.provinces?.name || '—'}
+                            </TableCell>
+                            <TableCell>{member.cultivated_area_ha?.toFixed(1) || '—'}</TableCell>
+                            <TableCell>
+                              <WorkflowStatusBadge status={member.status} />
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex gap-2">
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm"
+                                  onClick={() => navigate(`/agricultores/${member.id}`)}
+                                >
+                                  Ver Perfil
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                ) : (
+                  <div className="text-center py-12">
+                    <Users className="h-16 w-16 mx-auto mb-4 text-muted-foreground opacity-50" />
+                    <p className="text-lg font-medium mb-2">Nenhum membro registado</p>
+                    <p className="text-muted-foreground mb-6">
+                      {farmer.farmer_type === 'cooperative' 
+                        ? 'Adicione agricultores como membros desta cooperativa' 
+                        : 'Adicione agricultores como participantes desta escola de campo'}
+                    </p>
+                    <Button onClick={() => navigate(`/agricultores/novo?${farmer.farmer_type === 'cooperative' ? 'cooperative_id' : 'field_school_id'}=${id}`)}>
+                      <Plus className="mr-2 h-4 w-4" />
+                      Adicionar Primeiro Membro
+                    </Button>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+        )}
       </Tabs>
     </div>
   );
