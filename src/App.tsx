@@ -75,6 +75,7 @@ import VerifyCoffee from "./pages/public/VerifyCoffee";
 import ReportsPage from "./pages/reports/ReportsPage";
 import MapsPage from "./pages/maps/MapsPage";
 import DocumentationPage from "./pages/docs/DocumentationPage";
+import NotificationsPage from "./pages/notifications/NotificationsPage";
 
 const queryClient = new QueryClient();
 
@@ -202,7 +203,7 @@ const App = () => (
             <Route path="/relatorios" element={<ProtectedRoute><ReportsPage /></ProtectedRoute>} />
             <Route path="/mapas" element={<ProtectedRoute><MapsPage /></ProtectedRoute>} />
             <Route path="/documentacao" element={<ProtectedRoute><DocumentationPage /></ProtectedRoute>} />
-            <Route path="/notificacoes" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+            <Route path="/notificacoes" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
             <Route path="/configuracoes" element={<ProtectedRoute><Index /></ProtectedRoute>} />
             
             {/* Public Verification Portal (no auth required) */}
