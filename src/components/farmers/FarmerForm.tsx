@@ -81,6 +81,8 @@ interface FarmerFormProps {
   farmer?: Farmer | null;
   onSubmit: (data: FarmerFormSubmitData) => void;
   isLoading?: boolean;
+  defaultCooperativeId?: string;
+  defaultFieldSchoolId?: string;
 }
 
 const farmerTypeOptions: { value: FarmerType; label: string }[] = [
@@ -102,7 +104,7 @@ const irrigationOptions = [
   'Irrigação gota-a-gota', 'Irrigação pivot', 'Misto'
 ];
 
-export const FarmerForm = ({ farmer, onSubmit, isLoading }: FarmerFormProps) => {
+export const FarmerForm = ({ farmer, onSubmit, isLoading, defaultCooperativeId, defaultFieldSchoolId }: FarmerFormProps) => {
   const [selectedProvince, setSelectedProvince] = useState<string | undefined>(farmer?.province_id || undefined);
   const [selectedMunicipality, setSelectedMunicipality] = useState<string | undefined>(farmer?.municipality_id || undefined);
   const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
@@ -113,10 +115,14 @@ export const FarmerForm = ({ farmer, onSubmit, isLoading }: FarmerFormProps) => 
   const { data: cooperatives } = useFarmers({ type: 'cooperative' });
   const { data: fieldSchools } = useFarmers({ type: 'field_school' });
 
+  // Determine if we're adding a member to an organization
+  const isAddingMember = !!defaultCooperativeId || !!defaultFieldSchoolId;
+
   const form = useForm<FarmerFormData>({
     resolver: zodResolver(farmerSchema),
     defaultValues: {
-      farmer_type: farmer?.farmer_type || 'individual',
+      // When adding a member, default to individual farmer type
+      farmer_type: isAddingMember ? 'individual' : (farmer?.farmer_type || 'individual'),
       name: farmer?.name || '',
       trade_name: farmer?.trade_name || '',
       bi_nif: farmer?.bi_nif || '',
@@ -133,8 +139,8 @@ export const FarmerForm = ({ farmer, onSubmit, isLoading }: FarmerFormProps) => 
       cultivated_area_ha: farmer?.cultivated_area_ha || undefined,
       main_crops: farmer?.main_crops || [],
       irrigation_type: farmer?.irrigation_type || '',
-      parent_cooperative_id: farmer?.parent_cooperative_id || undefined,
-      field_school_id: farmer?.field_school_id || undefined,
+      parent_cooperative_id: defaultCooperativeId || farmer?.parent_cooperative_id || undefined,
+      field_school_id: defaultFieldSchoolId || farmer?.field_school_id || undefined,
       photo_url: (farmer as any)?.photo_url || undefined,
       fingerprint_data: (farmer as any)?.fingerprint_data || undefined,
       document_bi_url: (farmer as any)?.document_bi_url || undefined,
