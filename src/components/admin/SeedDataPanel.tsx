@@ -44,6 +44,13 @@ const DATA_ICONS: Record<string, React.ElementType> = {
   financial_profiles: Users,
   data_lab_datasets: Database,
   data_lab_organizations: Users,
+  forest_operators: Users,
+  forest_licenses: FileCheck,
+  forest_trees: Sprout,
+  forest_logs: Sprout,
+  coffee_lots: Sprout,
+  forest_complaints: Bell,
+  forest_infractions: AlertCircle,
 };
 
 const DATA_LABELS: Record<string, string> = {
@@ -61,6 +68,13 @@ const DATA_LABELS: Record<string, string> = {
   financial_profiles: 'Perfis Financeiros',
   data_lab_datasets: 'Datasets Lab',
   data_lab_organizations: 'Organizações Lab',
+  forest_operators: 'Operadores Florestais',
+  forest_licenses: 'Licenças Florestais',
+  forest_trees: 'Árvores Marcadas',
+  forest_logs: 'Toros Registados',
+  coffee_lots: 'Lotes de Café',
+  forest_complaints: 'Denúncias Florestais',
+  forest_infractions: 'Infracções Florestais',
 };
 
 export function SeedDataPanel() {

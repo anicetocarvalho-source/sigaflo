@@ -224,7 +224,7 @@ serve(async (req) => {
     console.log('Seeding certificates...');
     const certificates: any[] = [];
     const certStatuses = ['draft', 'submitted', 'validated', 'approved', 'issued', 'rejected'];
-    const certTypes = ['producer', 'origin', 'organic', 'quality'];
+    const certTypes = ['production', 'origin', 'organic', 'quality', 'good_practices'];
 
     for (const prod of (prodRecords || []).slice(0, 80)) {
       const status = certStatuses[Math.floor(Math.random() * certStatuses.length)];
@@ -619,6 +619,317 @@ serve(async (req) => {
     };
     console.log(`Data lab organizations: ${results.data_lab_organizations?.inserted || 0} inserted`);
 
+    // ========== FOREST OPERATORS ==========
+    console.log('Seeding forest operators...');
+    const operatorTypes = ['concessionaire', 'sawmill', 'exporter', 'transporter', 'processor'];
+    const forestOperators: any[] = [];
+
+    const companyNames = ['Madeiras Angola Lda', 'Floresta Verde SA', 'Cabinda Woods', 'TransLog Florestal', 'SerraMadeira Industrial', 'EcoTora Lda', 'MadeExport Angola', 'Florex Trading', 'Benguela Timber', 'Uíge Forest Products'];
+
+    for (let i = 0; i < 20; i++) {
+      const provinceId = provinceIds[Math.floor(Math.random() * provinceIds.length)];
+      const provinceMuns = municipalitiesByProvince[provinceId] || [];
+      const municipalityId = provinceMuns.length > 0 ? provinceMuns[Math.floor(Math.random() * provinceMuns.length)] : null;
+
+      forestOperators.push({
+        name: companyNames[i % companyNames.length] + (i >= companyNames.length ? ` ${i}` : ''),
+        trade_name: companyNames[i % companyNames.length],
+        nif: `5${String(Math.floor(Math.random() * 1000000000)).padStart(9, '0')}`,
+        operator_type: operatorTypes[Math.floor(Math.random() * operatorTypes.length)],
+        address: `Zona Industrial, Sector ${Math.floor(Math.random() * 10) + 1}`,
+        province_id: provinceId,
+        municipality_id: municipalityId,
+        phone: `+244 2${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10000000).toString().padStart(7, '0')}`,
+        email: `contacto@${companyNames[i % companyNames.length].toLowerCase().replace(/\s+/g, '').substring(0, 10)}.ao`,
+        legal_representative: generateName(),
+        is_active: Math.random() > 0.1,
+      });
+    }
+
+    const { error: opError } = await supabase.from('forest_operators').insert(forestOperators);
+    results.forest_operators = {
+      inserted: opError ? 0 : forestOperators.length,
+      errors: opError ? [opError.message] : []
+    };
+    console.log(`Forest operators: ${results.forest_operators?.inserted || 0} inserted`);
+
+    // Get inserted operators
+    const { data: insertedOperators } = await supabase.from('forest_operators').select('id').order('created_at', { ascending: false }).limit(20);
+    const operatorIds = (insertedOperators || []).map(o => o.id);
+
+    // ========== FOREST LICENSES ==========
+    console.log('Seeding forest licenses...');
+    const licenseTypes = ['exploitation', 'transport', 'export', 'sawmill', 'processing'];
+    // Valid enum values: draft, submitted, under_review, approved, active, suspended, expired, revoked, rejected
+    const licenseStatuses = ['draft', 'submitted', 'under_review', 'approved', 'active', 'suspended', 'expired', 'rejected'];
+    const treeSpecies = ['Pau-preto', 'Tola', 'Umbila', 'Undianuno', 'Girassonde', 'Mutenguengue', 'Nsimba', 'Takula', 'Mussivi', 'Sapele'];
+    const forestLicenses: any[] = [];
+
+    for (let i = 0; i < 40; i++) {
+      const provinceId = provinceIds[Math.floor(Math.random() * provinceIds.length)];
+      const provinceMuns = municipalitiesByProvince[provinceId] || [];
+      const municipalityId = provinceMuns.length > 0 ? provinceMuns[Math.floor(Math.random() * provinceMuns.length)] : null;
+      const coords = generateAngolaCoordinates();
+      const status = licenseStatuses[Math.floor(Math.random() * licenseStatuses.length)];
+      const isActive = status === 'active' || status === 'expired';
+      const issueDate = isActive ? randomDate(new Date(2023, 0, 1), new Date()) : null;
+      const authorizedVolume = Math.floor(Math.random() * 5000) + 500;
+
+      forestLicenses.push({
+        license_type: licenseTypes[Math.floor(Math.random() * licenseTypes.length)],
+        status,
+        operator_id: operatorIds.length > 0 ? operatorIds[Math.floor(Math.random() * operatorIds.length)] : null,
+        concession_area_name: `Concessão Florestal ${String.fromCharCode(65 + Math.floor(Math.random() * 26))}-${Math.floor(Math.random() * 100)}`,
+        concession_area_ha: parseFloat((Math.random() * 10000 + 500).toFixed(2)),
+        province_id: provinceId,
+        municipality_id: municipalityId,
+        latitude: coords.lat,
+        longitude: coords.lng,
+        authorized_species: treeSpecies.sort(() => Math.random() - 0.5).slice(0, Math.floor(Math.random() * 4) + 2),
+        authorized_volume_m3: authorizedVolume,
+        harvested_volume_m3: isActive ? parseFloat((authorizedVolume * Math.random() * 0.7).toFixed(2)) : 0,
+        application_date: randomDate(new Date(2022, 0, 1), new Date()).toISOString(),
+        issue_date: issueDate?.toISOString() || null,
+        start_date: issueDate?.toISOString() || null,
+        expiry_date: issueDate ? new Date(issueDate.getTime() + 365 * 24 * 60 * 60 * 1000).toISOString() : null,
+        license_fee_aoa: parseFloat((Math.random() * 5000000 + 500000).toFixed(2)),
+        fee_paid: isActive,
+      });
+    }
+
+    let licensesInserted = 0;
+    const licenseErrors: string[] = [];
+    for (let batch = 0; batch < forestLicenses.length; batch += 5) {
+      const licenseBatch = forestLicenses.slice(batch, batch + 5);
+      const { error: licBatchErr } = await supabase.from('forest_licenses').insert(licenseBatch);
+      if (licBatchErr) {
+        licenseErrors.push(licBatchErr.message);
+      } else {
+        licensesInserted += licenseBatch.length;
+      }
+    }
+    results.forest_licenses = { inserted: licensesInserted, errors: licenseErrors };
+    console.log(`Forest licenses: ${licensesInserted} inserted`);
+
+    // Get inserted licenses for trees/logs
+    const { data: insertedLicenses } = await supabase.from('forest_licenses').select('id').order('created_at', { ascending: false }).limit(40);
+    const licenseIds = (insertedLicenses || []).map(l => l.id);
+
+    // ========== FOREST TREES ==========
+    console.log('Seeding forest trees...');
+    // Valid tracking_status: at_origin, felled, logged, in_transport, at_checkpoint, at_sawmill, processed, in_storage, exported, at_destination
+    const treeStatuses = ['at_origin', 'felled', 'logged', 'processed'];
+    const healthStatuses = ['healthy', 'good', 'fair', 'poor'];
+    const forestTrees: any[] = [];
+
+    for (let i = 0; i < 100; i++) {
+      const coords = generateAngolaCoordinates();
+      const estimatedVolume = parseFloat((Math.random() * 10 + 1).toFixed(2));
+      const status = treeStatuses[Math.floor(Math.random() * treeStatuses.length)];
+      const treeCode = `ARV-${currentYear}-${String(Date.now()).slice(-6)}${String(i).padStart(3, '0')}`;
+
+      forestTrees.push({
+        tree_code: treeCode,
+        license_id: licenseIds.length > 0 ? licenseIds[Math.floor(Math.random() * licenseIds.length)] : null,
+        species: treeSpecies[Math.floor(Math.random() * treeSpecies.length)],
+        wood_class: ['precious', 'first_class', 'second_class', 'common'][Math.floor(Math.random() * 4)],
+        estimated_volume_m3: estimatedVolume,
+        actual_volume_m3: status === 'felled' || status === 'processed' ? parseFloat((estimatedVolume * (0.8 + Math.random() * 0.3)).toFixed(2)) : null,
+        latitude: coords.lat,
+        longitude: coords.lng,
+        plot_number: `P${String(Math.floor(Math.random() * 50) + 1).padStart(3, '0')}`,
+        status,
+        diameter_cm: parseFloat((Math.random() * 100 + 30).toFixed(1)),
+        height_m: parseFloat((Math.random() * 30 + 10).toFixed(1)),
+        health_status: healthStatuses[Math.floor(Math.random() * healthStatuses.length)],
+        marked_at: randomDate(new Date(2023, 0, 1), new Date()).toISOString(),
+        felled_at: status === 'felled' || status === 'processed' ? randomDate(new Date(2023, 6, 1), new Date()).toISOString() : null,
+      });
+    }
+
+    const { error: treeError } = await supabase.from('forest_trees').insert(forestTrees);
+    results.forest_trees = {
+      inserted: treeError ? 0 : forestTrees.length,
+      errors: treeError ? [treeError.message] : []
+    };
+    console.log(`Forest trees: ${results.forest_trees?.inserted || 0} inserted`);
+
+    // Get trees for logs
+    const { data: insertedTrees } = await supabase.from('forest_trees').select('id').order('created_at', { ascending: false }).limit(100);
+    const treeIds = (insertedTrees || []).map(t => t.id);
+
+    // ========== FOREST LOGS ==========
+    console.log('Seeding forest logs...');
+    const logStatuses = ['at_origin', 'in_transport', 'at_checkpoint', 'at_sawmill', 'processed', 'exported'];
+    const sawmillNames = ['Serraria Industrial Luanda', 'Cabinda Madeiras', 'Benguela Wood Processing'];
+    const forestLogs: any[] = [];
+
+    for (let i = 0; i < 80; i++) {
+      const coords = generateAngolaCoordinates();
+      const volume = parseFloat((Math.random() * 5 + 0.5).toFixed(2));
+      const logCode = `LOG-${currentYear}-${String(Date.now()).slice(-6)}${String(i).padStart(3, '0')}`;
+
+      forestLogs.push({
+        log_code: logCode,
+        tree_id: treeIds.length > 0 ? treeIds[Math.floor(Math.random() * treeIds.length)] : null,
+        license_id: licenseIds.length > 0 ? licenseIds[Math.floor(Math.random() * licenseIds.length)] : null,
+        species: treeSpecies[Math.floor(Math.random() * treeSpecies.length)],
+        wood_class: ['precious', 'first_class', 'second_class', 'common'][Math.floor(Math.random() * 4)],
+        volume_m3: volume,
+        length_m: parseFloat((Math.random() * 4 + 2).toFixed(2)),
+        diameter_cm: parseFloat((Math.random() * 60 + 20).toFixed(1)),
+        status: logStatuses[Math.floor(Math.random() * logStatuses.length)],
+        current_latitude: coords.lat,
+        current_longitude: coords.lng,
+        current_location_name: `Ponto ${Math.floor(Math.random() * 20) + 1}`,
+        destination_name: sawmillNames[Math.floor(Math.random() * sawmillNames.length)],
+        logged_at: randomDate(new Date(2023, 6, 1), new Date()).toISOString(),
+      });
+    }
+
+    const { error: logError } = await supabase.from('forest_logs').insert(forestLogs);
+    results.forest_logs = {
+      inserted: logError ? 0 : forestLogs.length,
+      errors: logError ? [logError.message] : []
+    };
+    console.log(`Forest logs: ${results.forest_logs?.inserted || 0} inserted`);
+
+    // ========== COFFEE LOTS ==========
+    console.log('Seeding coffee lots...');
+    const coffeeVarieties = ['Robusta', 'Arábica Catimor', 'Arábica Bourbon', 'Arábica Typica', 'Conilon'];
+    const processingMethods = ['Natural', 'Lavado', 'Honey', 'Semi-lavado'];
+    const qualityGradesCoffee = ['Specialty', 'Premium', 'Commercial Plus', 'Commercial', 'Standard'];
+    const coffeeStatuses = ['registered', 'processing', 'certified', 'dispatched', 'exported'];
+    const buyerNames = ['Starbucks Reserve', 'Blue Bottle Coffee', 'Counter Culture', 'Intelligentsia', 'Local Roasters Angola'];
+    const destinations = ['USA', 'Germany', 'Italy', 'Japan', 'Portugal', 'France', 'UK', 'Belgium'];
+    const coffeeLots: any[] = [];
+
+    // Get coffee provinces (Cuanza Sul, Uíge, Bengo, Cabinda)
+    const coffeeProvinceNames = ['Cuanza Sul', 'Uíge', 'Bengo', 'Cabinda', 'Huambo', 'Bié'];
+    const coffeeProvinces = provinces.filter(p => coffeeProvinceNames.some(n => p.name.includes(n) || n.includes(p.name)));
+    const coffeeProvinceIds = coffeeProvinces.length > 0 ? coffeeProvinces.map(p => p.id) : provinceIds.slice(0, 4);
+
+    for (let i = 0; i < 60; i++) {
+      const provinceId = coffeeProvinceIds[Math.floor(Math.random() * coffeeProvinceIds.length)];
+      const provinceMuns = municipalitiesByProvince[provinceId] || [];
+      const municipalityId = provinceMuns.length > 0 ? provinceMuns[Math.floor(Math.random() * provinceMuns.length)] : null;
+      const status = coffeeStatuses[Math.floor(Math.random() * coffeeStatuses.length)];
+      const isExported = status === 'exported';
+      const volume = Math.floor(Math.random() * 10000 + 500);
+
+      coffeeLots.push({
+        lot_code: `CAFE-LOT-${currentYear}-${String(Math.floor(Math.random() * 10000)).padStart(4, '0')}`,
+        origin_province_id: provinceId,
+        origin_municipality_id: municipalityId,
+        origin_location: `Fazenda ${String.fromCharCode(65 + Math.floor(Math.random() * 26))}${Math.floor(Math.random() * 100)}`,
+        producers_count: Math.floor(Math.random() * 50) + 5,
+        volume_kg: volume,
+        bags_count: Math.floor(volume / 60),
+        variety: coffeeVarieties[Math.floor(Math.random() * coffeeVarieties.length)],
+        quality_grade: qualityGradesCoffee[Math.floor(Math.random() * qualityGradesCoffee.length)],
+        harvest_year: currentYear - Math.floor(Math.random() * 2),
+        harvest_season: ['Main', 'Fly'][Math.floor(Math.random() * 2)],
+        processing_method: processingMethods[Math.floor(Math.random() * processingMethods.length)],
+        exporter_name: operatorIds.length > 0 ? null : companyNames[Math.floor(Math.random() * companyNames.length)],
+        buyer_name: isExported ? buyerNames[Math.floor(Math.random() * buyerNames.length)] : null,
+        destination_country: isExported ? destinations[Math.floor(Math.random() * destinations.length)] : null,
+        status,
+        registered_at: randomDate(new Date(2023, 0, 1), new Date()).toISOString(),
+        dispatched_at: status === 'dispatched' || isExported ? randomDate(new Date(2023, 6, 1), new Date()).toISOString() : null,
+        exported_at: isExported ? randomDate(new Date(2024, 0, 1), new Date()).toISOString() : null,
+      });
+    }
+
+    const { error: coffeeError } = await supabase.from('coffee_lots').insert(coffeeLots);
+    results.coffee_lots = {
+      inserted: coffeeError ? 0 : coffeeLots.length,
+      errors: coffeeError ? [coffeeError.message] : []
+    };
+    console.log(`Coffee lots: ${results.coffee_lots?.inserted || 0} inserted`);
+
+    // ========== FOREST COMPLAINTS ==========
+    console.log('Seeding forest complaints...');
+    const complaintTypes = ['illegal_logging', 'unauthorized_transport', 'document_fraud', 'environmental_damage', 'license_violation'];
+    const complaintStatuses = ['received', 'under_investigation', 'verified', 'action_taken', 'resolved', 'dismissed'];
+    const forestComplaints: any[] = [];
+
+    for (let i = 0; i < 30; i++) {
+      const provinceId = provinceIds[Math.floor(Math.random() * provinceIds.length)];
+      const provinceMuns = municipalitiesByProvince[provinceId] || [];
+      const municipalityId = provinceMuns.length > 0 ? provinceMuns[Math.floor(Math.random() * provinceMuns.length)] : null;
+      const coords = generateAngolaCoordinates();
+      const isAnonymous = Math.random() > 0.6;
+
+      forestComplaints.push({
+        status: complaintStatuses[Math.floor(Math.random() * complaintStatuses.length)],
+        is_anonymous: isAnonymous,
+        complainant_name: isAnonymous ? null : generateName(),
+        complainant_phone: isAnonymous ? null : `+244 9${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10000000).toString().padStart(7, '0')}`,
+        province_id: provinceId,
+        municipality_id: municipalityId,
+        latitude: coords.lat,
+        longitude: coords.lng,
+        location_description: `Zona florestal próxima à aldeia ${Math.floor(Math.random() * 100)}`,
+        complaint_type: complaintTypes[Math.floor(Math.random() * complaintTypes.length)],
+        description: 'Denúncia gerada automaticamente para demonstração do sistema SIGAFLO.',
+        occurrence_date: randomDate(new Date(2023, 0, 1), new Date()).toISOString(),
+        received_at: randomDate(new Date(2023, 3, 1), new Date()).toISOString(),
+      });
+    }
+
+    let complaintsInserted = 0;
+    for (const complaint of forestComplaints) {
+      const { error } = await supabase.from('forest_complaints').insert(complaint);
+      if (!error) complaintsInserted++;
+    }
+    results.forest_complaints = { inserted: complaintsInserted, errors: [] };
+    console.log(`Forest complaints: ${complaintsInserted} inserted`);
+
+    // ========== FOREST INFRACTIONS ==========
+    console.log('Seeding forest infractions...');
+    // Valid infraction_type: illegal_cutting, transport_without_license, exceeded_quota, protected_species, false_declaration, document_forgery, unauthorized_area, environmental_damage, other
+    const infractionTypes = ['illegal_cutting', 'transport_without_license', 'exceeded_quota', 'protected_species', 'false_declaration', 'document_forgery', 'environmental_damage', 'other'];
+    // Valid infraction_status: reported, investigating, confirmed, contested, sanctioned, appealed, closed, archived
+    const infractionStatuses = ['reported', 'investigating', 'confirmed', 'sanctioned', 'closed', 'archived'];
+    const infractionSeverities = ['minor', 'moderate', 'major', 'critical'];
+    const forestInfractions: any[] = [];
+
+    for (let i = 0; i < 25; i++) {
+      const provinceId = provinceIds[Math.floor(Math.random() * provinceIds.length)];
+      const provinceMuns = municipalitiesByProvince[provinceId] || [];
+      const municipalityId = provinceMuns.length > 0 ? provinceMuns[Math.floor(Math.random() * provinceMuns.length)] : null;
+      const coords = generateAngolaCoordinates();
+      const status = infractionStatuses[Math.floor(Math.random() * infractionStatuses.length)];
+      const fineAmount = parseFloat((Math.random() * 10000000 + 500000).toFixed(2));
+
+      forestInfractions.push({
+        infraction_type: infractionTypes[Math.floor(Math.random() * infractionTypes.length)],
+        status,
+        severity: infractionSeverities[Math.floor(Math.random() * infractionSeverities.length)],
+        operator_id: operatorIds.length > 0 ? operatorIds[Math.floor(Math.random() * operatorIds.length)] : null,
+        infractor_name: companyNames[Math.floor(Math.random() * companyNames.length)],
+        infractor_document: `5${String(Math.floor(Math.random() * 1000000000)).padStart(9, '0')}`,
+        province_id: provinceId,
+        municipality_id: municipalityId,
+        latitude: coords.lat,
+        longitude: coords.lng,
+        location_description: `Área de concessão ${String.fromCharCode(65 + Math.floor(Math.random() * 10))}`,
+        description: 'Auto de infracção gerado automaticamente para demonstração.',
+        occurrence_date: randomDate(new Date(2023, 0, 1), new Date()).toISOString(),
+        fine_amount_aoa: fineAmount,
+        fine_paid: status === 'closed',
+        fine_paid_at: status === 'closed' ? randomDate(new Date(2024, 0, 1), new Date()).toISOString() : null,
+      });
+    }
+
+    let infractionsInserted = 0;
+    for (const infraction of forestInfractions) {
+      const { error } = await supabase.from('forest_infractions').insert(infraction);
+      if (!error) infractionsInserted++;
+    }
+    results.forest_infractions = { inserted: infractionsInserted, errors: [] };
+    console.log(`Forest infractions: ${infractionsInserted} inserted`);
+
     // Summary
     const summary = {
       success: true,
@@ -639,6 +950,13 @@ serve(async (req) => {
         financial_profiles: results.financial_profiles?.inserted || 0,
         data_lab_datasets: results.data_lab_datasets?.inserted || 0,
         data_lab_organizations: results.data_lab_organizations?.inserted || 0,
+        forest_operators: results.forest_operators?.inserted || 0,
+        forest_licenses: results.forest_licenses?.inserted || 0,
+        forest_trees: results.forest_trees?.inserted || 0,
+        forest_logs: results.forest_logs?.inserted || 0,
+        coffee_lots: results.coffee_lots?.inserted || 0,
+        forest_complaints: results.forest_complaints?.inserted || 0,
+        forest_infractions: results.forest_infractions?.inserted || 0,
       }
     };
 
