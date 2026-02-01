@@ -4338,7 +4338,150 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      certificate_verification_public: {
+        Row: {
+          certificate_number: string | null
+          certificate_type:
+            | Database["public"]["Enums"]["certificate_type"]
+            | null
+          expiry_date: string | null
+          issue_date: string | null
+          season: string | null
+          status: Database["public"]["Enums"]["workflow_status"] | null
+          verification_url: string | null
+          year: number | null
+        }
+        Insert: {
+          certificate_number?: string | null
+          certificate_type?:
+            | Database["public"]["Enums"]["certificate_type"]
+            | null
+          expiry_date?: string | null
+          issue_date?: string | null
+          season?: string | null
+          status?: Database["public"]["Enums"]["workflow_status"] | null
+          verification_url?: string | null
+          year?: number | null
+        }
+        Update: {
+          certificate_number?: string | null
+          certificate_type?:
+            | Database["public"]["Enums"]["certificate_type"]
+            | null
+          expiry_date?: string | null
+          issue_date?: string | null
+          season?: string | null
+          status?: Database["public"]["Enums"]["workflow_status"] | null
+          verification_url?: string | null
+          year?: number | null
+        }
+        Relationships: []
+      }
+      coffee_verification_public: {
+        Row: {
+          harvest_season: string | null
+          harvest_year: number | null
+          lot_code: string | null
+          origin_location: string | null
+          processing_method: string | null
+          quality_grade: string | null
+          status: string | null
+          variety: string | null
+        }
+        Insert: {
+          harvest_season?: string | null
+          harvest_year?: number | null
+          lot_code?: string | null
+          origin_location?: string | null
+          processing_method?: string | null
+          quality_grade?: string | null
+          status?: string | null
+          variety?: string | null
+        }
+        Update: {
+          harvest_season?: string | null
+          harvest_year?: number | null
+          lot_code?: string | null
+          origin_location?: string | null
+          processing_method?: string | null
+          quality_grade?: string | null
+          status?: string | null
+          variety?: string | null
+        }
+        Relationships: []
+      }
+      license_verification_public: {
+        Row: {
+          expiry_date: string | null
+          issue_date: string | null
+          license_number: string | null
+          license_type:
+            | Database["public"]["Enums"]["forest_license_type"]
+            | null
+          status: Database["public"]["Enums"]["forest_license_status"] | null
+        }
+        Insert: {
+          expiry_date?: string | null
+          issue_date?: string | null
+          license_number?: string | null
+          license_type?:
+            | Database["public"]["Enums"]["forest_license_type"]
+            | null
+          status?: Database["public"]["Enums"]["forest_license_status"] | null
+        }
+        Update: {
+          expiry_date?: string | null
+          issue_date?: string | null
+          license_number?: string | null
+          license_type?:
+            | Database["public"]["Enums"]["forest_license_type"]
+            | null
+          status?: Database["public"]["Enums"]["forest_license_status"] | null
+        }
+        Relationships: []
+      }
+      log_verification_public: {
+        Row: {
+          log_code: string | null
+          logged_at: string | null
+          species: string | null
+          status: Database["public"]["Enums"]["tracking_status"] | null
+        }
+        Insert: {
+          log_code?: string | null
+          logged_at?: string | null
+          species?: string | null
+          status?: Database["public"]["Enums"]["tracking_status"] | null
+        }
+        Update: {
+          log_code?: string | null
+          logged_at?: string | null
+          species?: string | null
+          status?: Database["public"]["Enums"]["tracking_status"] | null
+        }
+        Relationships: []
+      }
+      permit_verification_public: {
+        Row: {
+          issue_date: string | null
+          permit_number: string | null
+          status: string | null
+          valid_until: string | null
+        }
+        Insert: {
+          issue_date?: string | null
+          permit_number?: string | null
+          status?: string | null
+          valid_until?: string | null
+        }
+        Update: {
+          issue_date?: string | null
+          permit_number?: string | null
+          status?: string | null
+          valid_until?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       calculate_risk_score: {
