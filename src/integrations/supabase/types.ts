@@ -4352,6 +4352,14 @@ export type Database = {
         }
         Returns: number
       }
+      can_access_municipality: {
+        Args: { _municipality_id: string; _user_id: string }
+        Returns: boolean
+      }
+      can_access_province: {
+        Args: { _province_id: string; _user_id: string }
+        Returns: boolean
+      }
       can_manage_user: {
         Args: {
           _manager_id: string
@@ -4370,6 +4378,7 @@ export type Database = {
       }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
       is_national_level: { Args: { _user_id: string }; Returns: boolean }
+      is_technician_or_admin: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
       certificate_type:
