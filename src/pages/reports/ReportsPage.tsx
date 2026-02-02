@@ -48,6 +48,12 @@ import {
 } from 'lucide-react';
 import { useProvinces } from '@/hooks/useFarmers';
 import { toast } from 'sonner';
+import { 
+  fetchAndExport, 
+  REPORT_CONFIGS, 
+  REPORT_COLUMNS, 
+  type ExportFormat 
+} from '@/lib/exportService';
 
 // Report types available
 const reportCategories = [
@@ -174,18 +180,72 @@ const ReportsPage = () => {
   const handleGenerateReport = async (reportId: string, reportName: string) => {
     setIsGenerating(reportId);
     
-    // Simulate report generation
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    toast.success(`Relatório "${reportName}" gerado com sucesso!`, {
-      description: 'O download irá iniciar automaticamente.',
-      action: {
-        label: 'Ver',
-        onClick: () => toast.info('Funcionalidade em desenvolvimento'),
-      },
-    });
-    
-    setIsGenerating(null);
+    try {
+      // Map report IDs to base configs
+      const baseConfigs: Record<string, { tableName: string; select: string; orderBy?: { column: string; ascending: boolean }; defaultFilters?: Record<string, any> }> = {
+        farmers_summary: { ...REPORT_CONFIGS.farmers },
+        farmers_detail: { ...REPORT_CONFIGS.farmers },
+        cooperatives_members: { ...REPORT_CONFIGS.farmers, defaultFilters: { farmer_type: 'cooperative' } },
+        production_summary: { ...REPORT_CONFIGS.production },
+        production_evolution: { ...REPORT_CONFIGS.production },
+        certificates_issued: { ...REPORT_CONFIGS.certificates, defaultFilters: { status: 'issued' } },
+        certificates_pending: { ...REPORT_CONFIGS.certificates, defaultFilters: { status: 'pending' } },
+        coffee_lots: { ...REPORT_CONFIGS.coffee_lots },
+        coffee_exports: { ...REPORT_CONFIGS.coffee_lots, defaultFilters: { status: 'exported' } },
+        occurrences_summary: { ...REPORT_CONFIGS.occurrences },
+      };
+
+      const columnsMap: Record<string, typeof REPORT_COLUMNS[keyof typeof REPORT_COLUMNS]> = {
+        farmers_summary: REPORT_COLUMNS.farmers,
+        farmers_detail: REPORT_COLUMNS.farmers,
+        cooperatives_members: REPORT_COLUMNS.farmers,
+        production_summary: REPORT_COLUMNS.production,
+        production_evolution: REPORT_COLUMNS.production,
+        certificates_issued: REPORT_COLUMNS.certificates,
+        certificates_pending: REPORT_COLUMNS.certificates,
+        coffee_lots: REPORT_COLUMNS.coffee_lots,
+        coffee_exports: REPORT_COLUMNS.coffee_lots,
+        occurrences_summary: REPORT_COLUMNS.occurrences,
+      };
+
+      const baseConfig = baseConfigs[reportId];
+      const columns = columnsMap[reportId];
+      
+      if (baseConfig && columns) {
+        // Combine default filters with province filter
+        const filters: Record<string, any> = {
+          ...(baseConfig.defaultFilters || {}),
+          ...(selectedProvince !== 'all' && { province_id: selectedProvince }),
+        };
+
+        await fetchAndExport(
+          selectedFormat as ExportFormat,
+          { 
+            tableName: baseConfig.tableName, 
+            select: baseConfig.select, 
+            orderBy: baseConfig.orderBy,
+            filters 
+          },
+          {
+            filename: `${reportId}_${new Date().toISOString().split('T')[0]}`,
+            title: reportName,
+            subtitle: `Gerado em ${new Date().toLocaleDateString('pt-AO')}`,
+            columns,
+          }
+        );
+
+        toast.success(`Relatório "${reportName}" gerado com sucesso!`, {
+          description: `Ficheiro ${selectedFormat.toUpperCase()} descarregado.`,
+        });
+      } else {
+        // Fallback for reports not yet mapped
+        toast.info('Configuração de relatório em desenvolvimento');
+      }
+    } catch (error: any) {
+      toast.error('Erro ao gerar relatório: ' + error.message);
+    } finally {
+      setIsGenerating(null);
+    }
   };
 
   const filteredCategories = selectedCategory === 'all' 

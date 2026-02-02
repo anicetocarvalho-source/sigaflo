@@ -76,6 +76,7 @@ import ReportsPage from "./pages/reports/ReportsPage";
 import MapsPage from "./pages/maps/MapsPage";
 import DocumentationPage from "./pages/docs/DocumentationPage";
 import NotificationsPage from "./pages/notifications/NotificationsPage";
+import SettingsPage from "./pages/settings/SettingsPage";
 
 const queryClient = new QueryClient();
 
@@ -204,7 +205,7 @@ const App = () => (
             <Route path="/mapas" element={<ProtectedRoute><MapsPage /></ProtectedRoute>} />
             <Route path="/documentacao" element={<ProtectedRoute><DocumentationPage /></ProtectedRoute>} />
             <Route path="/notificacoes" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
-            <Route path="/configuracoes" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+            <Route path="/configuracoes" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
             
             {/* Public Verification Portal (no auth required) */}
             <Route path="/verificar" element={<VerificationPortal />} />
