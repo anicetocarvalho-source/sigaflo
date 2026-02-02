@@ -128,6 +128,106 @@ export type Database = {
           },
         ]
       }
+      agricultural_infrastructure: {
+        Row: {
+          address: string | null
+          built_year: number | null
+          capacity: number | null
+          capacity_unit: string | null
+          commune_id: string | null
+          condition: string | null
+          created_at: string
+          created_by: string | null
+          current_occupancy: number | null
+          description: string | null
+          id: string
+          infrastructure_type: string
+          last_inspection_date: string | null
+          latitude: number | null
+          longitude: number | null
+          manager_contact: string | null
+          manager_name: string | null
+          municipality_id: string | null
+          name: string
+          province_id: string | null
+          status: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          address?: string | null
+          built_year?: number | null
+          capacity?: number | null
+          capacity_unit?: string | null
+          commune_id?: string | null
+          condition?: string | null
+          created_at?: string
+          created_by?: string | null
+          current_occupancy?: number | null
+          description?: string | null
+          id?: string
+          infrastructure_type: string
+          last_inspection_date?: string | null
+          latitude?: number | null
+          longitude?: number | null
+          manager_contact?: string | null
+          manager_name?: string | null
+          municipality_id?: string | null
+          name: string
+          province_id?: string | null
+          status?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          address?: string | null
+          built_year?: number | null
+          capacity?: number | null
+          capacity_unit?: string | null
+          commune_id?: string | null
+          condition?: string | null
+          created_at?: string
+          created_by?: string | null
+          current_occupancy?: number | null
+          description?: string | null
+          id?: string
+          infrastructure_type?: string
+          last_inspection_date?: string | null
+          latitude?: number | null
+          longitude?: number | null
+          manager_contact?: string | null
+          manager_name?: string | null
+          municipality_id?: string | null
+          name?: string
+          province_id?: string | null
+          status?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agricultural_infrastructure_commune_id_fkey"
+            columns: ["commune_id"]
+            isOneToOne: false
+            referencedRelation: "communes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agricultural_infrastructure_municipality_id_fkey"
+            columns: ["municipality_id"]
+            isOneToOne: false
+            referencedRelation: "municipalities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agricultural_infrastructure_province_id_fkey"
+            columns: ["province_id"]
+            isOneToOne: false
+            referencedRelation: "provinces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       alternative_guarantees: {
         Row: {
           created_at: string
@@ -3559,6 +3659,112 @@ export type Database = {
           },
         ]
       }
+      market_infrastructure: {
+        Row: {
+          address: string | null
+          capacity_sqm: number | null
+          commune_id: string | null
+          condition: string | null
+          created_at: string
+          created_by: string | null
+          current_occupancy: number | null
+          daily_visitors_estimate: number | null
+          description: string | null
+          id: string
+          last_inspection_date: string | null
+          latitude: number | null
+          longitude: number | null
+          manager_contact: string | null
+          manager_name: string | null
+          market_type: string
+          municipality_id: string | null
+          name: string
+          products: string[] | null
+          province_id: string | null
+          stalls_count: number | null
+          status: string
+          updated_at: string
+          updated_by: string | null
+          vendors_count: number | null
+        }
+        Insert: {
+          address?: string | null
+          capacity_sqm?: number | null
+          commune_id?: string | null
+          condition?: string | null
+          created_at?: string
+          created_by?: string | null
+          current_occupancy?: number | null
+          daily_visitors_estimate?: number | null
+          description?: string | null
+          id?: string
+          last_inspection_date?: string | null
+          latitude?: number | null
+          longitude?: number | null
+          manager_contact?: string | null
+          manager_name?: string | null
+          market_type: string
+          municipality_id?: string | null
+          name: string
+          products?: string[] | null
+          province_id?: string | null
+          stalls_count?: number | null
+          status?: string
+          updated_at?: string
+          updated_by?: string | null
+          vendors_count?: number | null
+        }
+        Update: {
+          address?: string | null
+          capacity_sqm?: number | null
+          commune_id?: string | null
+          condition?: string | null
+          created_at?: string
+          created_by?: string | null
+          current_occupancy?: number | null
+          daily_visitors_estimate?: number | null
+          description?: string | null
+          id?: string
+          last_inspection_date?: string | null
+          latitude?: number | null
+          longitude?: number | null
+          manager_contact?: string | null
+          manager_name?: string | null
+          market_type?: string
+          municipality_id?: string | null
+          name?: string
+          products?: string[] | null
+          province_id?: string | null
+          stalls_count?: number | null
+          status?: string
+          updated_at?: string
+          updated_by?: string | null
+          vendors_count?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "market_infrastructure_commune_id_fkey"
+            columns: ["commune_id"]
+            isOneToOne: false
+            referencedRelation: "communes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "market_infrastructure_municipality_id_fkey"
+            columns: ["municipality_id"]
+            isOneToOne: false
+            referencedRelation: "municipalities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "market_infrastructure_province_id_fkey"
+            columns: ["province_id"]
+            isOneToOne: false
+            referencedRelation: "provinces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       municipalities: {
         Row: {
           code: string | null
@@ -4306,6 +4512,140 @@ export type Database = {
           {
             foreignKeyName: "rice_production_province_id_fkey"
             columns: ["province_id"]
+            isOneToOne: false
+            referencedRelation: "provinces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      system_notifications: {
+        Row: {
+          category: string
+          created_at: string
+          expires_at: string | null
+          id: string
+          is_archived: boolean | null
+          is_read: boolean | null
+          is_starred: boolean | null
+          link: string | null
+          message: string
+          notification_type: string
+          read_at: string | null
+          title: string
+          user_id: string | null
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          is_archived?: boolean | null
+          is_read?: boolean | null
+          is_starred?: boolean | null
+          link?: string | null
+          message: string
+          notification_type?: string
+          read_at?: string | null
+          title: string
+          user_id?: string | null
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          is_archived?: boolean | null
+          is_read?: boolean | null
+          is_starred?: boolean | null
+          link?: string | null
+          message?: string
+          notification_type?: string
+          read_at?: string | null
+          title?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      system_settings: {
+        Row: {
+          category: string
+          created_at: string
+          description: string | null
+          id: string
+          is_public: boolean | null
+          setting_key: string
+          setting_value: Json
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_public?: boolean | null
+          setting_key: string
+          setting_value?: Json
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_public?: boolean | null
+          setting_key?: string
+          setting_value?: Json
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
+      user_preferences: {
+        Row: {
+          created_at: string
+          dashboard_layout: Json | null
+          default_province_id: string | null
+          id: string
+          language: string | null
+          notifications_email: boolean | null
+          notifications_push: boolean | null
+          notifications_sms: boolean | null
+          theme: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          dashboard_layout?: Json | null
+          default_province_id?: string | null
+          id?: string
+          language?: string | null
+          notifications_email?: boolean | null
+          notifications_push?: boolean | null
+          notifications_sms?: boolean | null
+          theme?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          dashboard_layout?: Json | null
+          default_province_id?: string | null
+          id?: string
+          language?: string | null
+          notifications_email?: boolean | null
+          notifications_push?: boolean | null
+          notifications_sms?: boolean | null
+          theme?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_preferences_default_province_id_fkey"
+            columns: ["default_province_id"]
             isOneToOne: false
             referencedRelation: "provinces"
             referencedColumns: ["id"]
