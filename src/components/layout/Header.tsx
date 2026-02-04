@@ -1,7 +1,8 @@
-import { Bell, Search, HelpCircle, Globe } from 'lucide-react';
+import { Search, HelpCircle, Globe } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { UserMenu } from '@/components/auth/UserMenu';
+import { NotificationBell } from './NotificationBell';
 
 interface HeaderProps {
   title: string;
@@ -27,13 +28,8 @@ export function Header({ title, subtitle }: HeaderProps) {
           />
         </div>
 
-        {/* Actions */}
-        <Button variant="ghost" size="icon" className="relative">
-          <Bell className="h-5 w-5 text-muted-foreground" />
-          <span className="absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-accent text-[10px] font-bold text-accent-foreground">
-            3
-          </span>
-        </Button>
+        {/* Notifications */}
+        <NotificationBell />
 
         <Button variant="ghost" size="icon">
           <HelpCircle className="h-5 w-5 text-muted-foreground" />

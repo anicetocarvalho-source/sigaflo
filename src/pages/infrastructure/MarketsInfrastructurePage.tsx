@@ -13,13 +13,11 @@ import { Textarea } from '@/components/ui/textarea';
 import { 
   Plus, 
   Search, 
-  Filter, 
   Store,
   ShoppingCart,
   Truck,
   Package,
   MapPin,
-  Calendar,
   Users,
   TrendingUp,
   Building2,
@@ -29,96 +27,19 @@ import {
   BarChart3,
   Clock,
   CheckCircle,
-  AlertTriangle,
   XCircle,
-  Warehouse
+  Warehouse,
+  Loader2,
 } from 'lucide-react';
 import { useLocationCascade } from '@/hooks/useLocationCascade';
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
-
-// Mock data for markets infrastructure
-const mockMarkets = [
-  {
-    id: '1',
-    name: 'Mercado Central de Luanda',
-    type: 'wholesale',
-    province: 'Luanda',
-    municipality: 'Luanda',
-    status: 'operational',
-    condition: 'good',
-    capacity: 5000,
-    currentOccupancy: 4200,
-    vendors: 850,
-    dailyVisitors: 15000,
-    products: ['Hortícolas', 'Frutas', 'Cereais', 'Carnes'],
-    lastInspection: '2024-01-10',
-    coordinates: { lat: -8.8383, lng: 13.2344 }
-  },
-  {
-    id: '2',
-    name: 'Mercado do Peixe - Benguela',
-    type: 'fish_market',
-    province: 'Benguela',
-    municipality: 'Benguela',
-    status: 'operational',
-    condition: 'fair',
-    capacity: 2000,
-    currentOccupancy: 1800,
-    vendors: 320,
-    dailyVisitors: 5000,
-    products: ['Peixe Fresco', 'Mariscos', 'Peixe Seco'],
-    lastInspection: '2024-01-05',
-    coordinates: { lat: -12.5763, lng: 13.4055 }
-  },
-  {
-    id: '3',
-    name: 'Feira Agrícola do Huambo',
-    type: 'agricultural_fair',
-    province: 'Huambo',
-    municipality: 'Huambo',
-    status: 'under_maintenance',
-    condition: 'poor',
-    capacity: 3000,
-    currentOccupancy: 0,
-    vendors: 0,
-    dailyVisitors: 0,
-    products: ['Cereais', 'Leguminosas', 'Tubérculos'],
-    lastInspection: '2023-12-20',
-    coordinates: { lat: -12.7761, lng: 15.7392 }
-  },
-  {
-    id: '4',
-    name: 'Centro de Distribuição - Cabinda',
-    type: 'distribution_center',
-    province: 'Cabinda',
-    municipality: 'Cabinda',
-    status: 'operational',
-    condition: 'excellent',
-    capacity: 8000,
-    currentOccupancy: 6500,
-    vendors: 45,
-    dailyVisitors: 200,
-    products: ['Produtos Importados', 'Cereais', 'Óleos'],
-    lastInspection: '2024-01-12',
-    coordinates: { lat: -5.5500, lng: 12.2000 }
-  },
-  {
-    id: '5',
-    name: 'Mercado Retalhista - Lubango',
-    type: 'retail',
-    province: 'Huíla',
-    municipality: 'Lubango',
-    status: 'operational',
-    condition: 'good',
-    capacity: 1500,
-    currentOccupancy: 1350,
-    vendors: 280,
-    dailyVisitors: 8000,
-    products: ['Hortícolas', 'Frutas', 'Produtos Lácteos'],
-    lastInspection: '2024-01-08',
-    coordinates: { lat: -14.9167, lng: 13.5000 }
-  }
-];
+import { 
+  useMarketInfrastructure, 
+  useMarketInfrastructureStats,
+  useCreateMarketInfrastructure,
+  MarketInfrastructure 
+} from '@/hooks/useInfrastructure';
+import { toast } from 'sonner';
 
 // Labels for market types
 const marketTypeLabels: Record<string, string> = {
@@ -127,7 +48,7 @@ const marketTypeLabels: Record<string, string> = {
   fish_market: 'Mercado de Peixe',
   agricultural_fair: 'Feira Agrícola',
   distribution_center: 'Centro de Distribuição',
-  livestock_market: 'Mercado de Gado'
+  livestock_market: 'Mercado de Gado',
 };
 
 // Labels for status
@@ -135,7 +56,7 @@ const statusLabels: Record<string, string> = {
   operational: 'Operacional',
   under_maintenance: 'Em Manutenção',
   closed: 'Encerrado',
-  under_construction: 'Em Construção'
+  under_construction: 'Em Construção',
 };
 
 // Labels for condition
@@ -143,7 +64,7 @@ const conditionLabels: Record<string, string> = {
   excellent: 'Excelente',
   good: 'Bom',
   fair: 'Razoável',
-  poor: 'Precário'
+  poor: 'Precário',
 };
 
 // Get icon based on market type
@@ -198,22 +119,7 @@ const getConditionBadge = (condition: string) => {
   }
 };
 
-// Chart data
-const typeDistribution = [
-  { name: 'Grossista', value: 25, color: '#3b82f6' },
-  { name: 'Retalhista', value: 45, color: '#22c55e' },
-  { name: 'Mercado de Peixe', value: 12, color: '#06b6d4' },
-  { name: 'Feira Agrícola', value: 10, color: '#f59e0b' },
-  { name: 'Centro de Distribuição', value: 8, color: '#8b5cf6' }
-];
-
-const provinceVisitors = [
-  { province: 'Luanda', visitors: 150000, vendors: 8500 },
-  { province: 'Benguela', visitors: 45000, vendors: 3200 },
-  { province: 'Huambo', visitors: 38000, vendors: 2800 },
-  { province: 'Huíla', visitors: 32000, vendors: 2100 },
-  { province: 'Cabinda', visitors: 18000, vendors: 1200 }
-];
+const CHART_COLORS = ['#3b82f6', '#22c55e', '#06b6d4', '#f59e0b', '#8b5cf6', '#ec4899'];
 
 export default function MarketsInfrastructurePage() {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -222,26 +128,76 @@ export default function MarketsInfrastructurePage() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [showNewDialog, setShowNewDialog] = useState(false);
   
-  const { provinces, municipalities, selectedProvinceId, setSelectedProvinceId } = useLocationCascade();
+  const { 
+    provinces, 
+    municipalities, 
+    selectedProvinceId, 
+    setSelectedProvinceId,
+    selectedMunicipalityId,
+    handleMunicipalityChange,
+  } = useLocationCascade();
 
-  // Filter markets
-  const filteredMarkets = mockMarkets.filter(market => {
-    const matchesSearch = market.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         market.province.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesType = typeFilter === 'all' || market.type === typeFilter;
-    const matchesStatus = statusFilter === 'all' || market.status === statusFilter;
-    const matchesProvince = !selectedProvinceId || market.province === provinces.find(p => p.id === selectedProvinceId)?.name;
-    return matchesSearch && matchesType && matchesStatus && matchesProvince;
+  // Fetch real data
+  const { data: markets, isLoading, error } = useMarketInfrastructure({
+    type: typeFilter !== 'all' ? typeFilter : undefined,
+    status: statusFilter !== 'all' ? statusFilter : undefined,
+    province_id: selectedProvinceId || undefined,
   });
 
-  // Calculate KPIs
-  const totalMarkets = mockMarkets.length;
-  const operationalMarkets = mockMarkets.filter(m => m.status === 'operational').length;
-  const totalVendors = mockMarkets.reduce((sum, m) => sum + m.vendors, 0);
-  const totalDailyVisitors = mockMarkets.reduce((sum, m) => sum + m.dailyVisitors, 0);
-  const totalCapacity = mockMarkets.reduce((sum, m) => sum + m.capacity, 0);
-  const totalOccupancy = mockMarkets.reduce((sum, m) => sum + m.currentOccupancy, 0);
-  const occupancyRate = ((totalOccupancy / totalCapacity) * 100).toFixed(1);
+  const { data: stats } = useMarketInfrastructureStats();
+  const createMarket = useCreateMarketInfrastructure();
+
+  // Form state
+  const [formData, setFormData] = useState({
+    name: '',
+    market_type: 'retail' as const,
+    capacity_sqm: '',
+    stalls_count: '',
+    description: '',
+  });
+
+  // Filter markets
+  const filteredMarkets = markets?.filter(market => {
+    const matchesSearch = market.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      market.provinces?.name?.toLowerCase().includes(searchTerm.toLowerCase());
+    return matchesSearch;
+  }) || [];
+
+  // Chart data from stats
+  const typeDistribution = stats ? Object.entries(stats.byType).map(([name, value], index) => ({
+    name: marketTypeLabels[name] || name,
+    value,
+    color: CHART_COLORS[index % CHART_COLORS.length],
+  })) : [];
+
+  const handleSubmit = () => {
+    if (!formData.name) {
+      toast.error('Nome é obrigatório');
+      return;
+    }
+
+    createMarket.mutate({
+      name: formData.name,
+      market_type: formData.market_type,
+      province_id: selectedProvinceId || undefined,
+      municipality_id: selectedMunicipalityId || undefined,
+      capacity_sqm: formData.capacity_sqm ? parseInt(formData.capacity_sqm) : undefined,
+      stalls_count: formData.stalls_count ? parseInt(formData.stalls_count) : undefined,
+      description: formData.description || undefined,
+      status: 'operational',
+    }, {
+      onSuccess: () => {
+        setShowNewDialog(false);
+        setFormData({
+          name: '',
+          market_type: 'retail',
+          capacity_sqm: '',
+          stalls_count: '',
+          description: '',
+        });
+      },
+    });
+  };
 
   return (
     <MainLayout title="Infra-estruturas de Mercados" subtitle="Gestão de mercados e centros de comercialização">
@@ -265,11 +221,18 @@ export default function MarketsInfrastructurePage() {
               <div className="grid grid-cols-2 gap-4 py-4">
                 <div className="space-y-2">
                   <Label>Nome do Mercado</Label>
-                  <Input placeholder="Nome completo" />
+                  <Input 
+                    placeholder="Nome completo"
+                    value={formData.name}
+                    onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label>Tipo</Label>
-                  <Select>
+                  <Select
+                    value={formData.market_type}
+                    onValueChange={(val) => setFormData(prev => ({ ...prev, market_type: val as any }))}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Seleccione o tipo" />
                     </SelectTrigger>
@@ -285,7 +248,7 @@ export default function MarketsInfrastructurePage() {
                 </div>
                 <div className="space-y-2">
                   <Label>Província</Label>
-                  <Select>
+                  <Select onValueChange={setSelectedProvinceId}>
                     <SelectTrigger>
                       <SelectValue placeholder="Seleccione a província" />
                     </SelectTrigger>
@@ -300,7 +263,7 @@ export default function MarketsInfrastructurePage() {
                 </div>
                 <div className="space-y-2">
                   <Label>Município</Label>
-                  <Select>
+                  <Select onValueChange={handleMunicipalityChange} disabled={!selectedProvinceId}>
                     <SelectTrigger>
                       <SelectValue placeholder="Seleccione o município" />
                     </SelectTrigger>
@@ -315,54 +278,37 @@ export default function MarketsInfrastructurePage() {
                 </div>
                 <div className="space-y-2">
                   <Label>Capacidade (m²)</Label>
-                  <Input type="number" placeholder="Área total" />
+                  <Input 
+                    type="number" 
+                    placeholder="Área total"
+                    value={formData.capacity_sqm}
+                    onChange={(e) => setFormData(prev => ({ ...prev, capacity_sqm: e.target.value }))}
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label>Nº de Bancas</Label>
-                  <Input type="number" placeholder="Número de bancas" />
-                </div>
-                <div className="space-y-2">
-                  <Label>Estado</Label>
-                  <Select>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Seleccione o estado" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="operational">Operacional</SelectItem>
-                      <SelectItem value="under_maintenance">Em Manutenção</SelectItem>
-                      <SelectItem value="closed">Encerrado</SelectItem>
-                      <SelectItem value="under_construction">Em Construção</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label>Condição</Label>
-                  <Select>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Seleccione a condição" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="excellent">Excelente</SelectItem>
-                      <SelectItem value="good">Bom</SelectItem>
-                      <SelectItem value="fair">Razoável</SelectItem>
-                      <SelectItem value="poor">Precário</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="col-span-2 space-y-2">
-                  <Label>Produtos Comercializados</Label>
-                  <Input placeholder="Ex: Hortícolas, Frutas, Cereais" />
+                  <Input 
+                    type="number" 
+                    placeholder="Número de bancas"
+                    value={formData.stalls_count}
+                    onChange={(e) => setFormData(prev => ({ ...prev, stalls_count: e.target.value }))}
+                  />
                 </div>
                 <div className="col-span-2 space-y-2">
                   <Label>Observações</Label>
-                  <Textarea placeholder="Notas adicionais sobre a infra-estrutura" />
+                  <Textarea 
+                    placeholder="Notas adicionais sobre a infra-estrutura"
+                    value={formData.description}
+                    onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                  />
                 </div>
               </div>
               <div className="flex justify-end gap-2">
                 <Button variant="outline" onClick={() => setShowNewDialog(false)}>
                   Cancelar
                 </Button>
-                <Button onClick={() => setShowNewDialog(false)}>
+                <Button onClick={handleSubmit} disabled={createMarket.isPending}>
+                  {createMarket.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                   Registar Mercado
                 </Button>
               </div>
@@ -385,10 +331,6 @@ export default function MarketsInfrastructurePage() {
               <MapPin className="h-4 w-4 mr-2" />
               Mapa
             </TabsTrigger>
-            <TabsTrigger value="reports">
-              <FileText className="h-4 w-4 mr-2" />
-              Relatórios
-            </TabsTrigger>
           </TabsList>
 
           {/* Dashboard Tab */}
@@ -401,9 +343,9 @@ export default function MarketsInfrastructurePage() {
                   <Store className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{totalMarkets}</div>
+                  <div className="text-2xl font-bold">{stats?.total || 0}</div>
                   <p className="text-xs text-muted-foreground">
-                    {operationalMarkets} operacionais
+                    {stats?.operational || 0} operacionais
                   </p>
                 </CardContent>
               </Card>
@@ -414,7 +356,7 @@ export default function MarketsInfrastructurePage() {
                   <Users className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{totalVendors.toLocaleString()}</div>
+                  <div className="text-2xl font-bold">{stats?.totalVendors?.toLocaleString() || 0}</div>
                   <p className="text-xs text-muted-foreground">
                     Em todos os mercados
                   </p>
@@ -427,7 +369,7 @@ export default function MarketsInfrastructurePage() {
                   <TrendingUp className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{totalDailyVisitors.toLocaleString()}</div>
+                  <div className="text-2xl font-bold">{stats?.totalVisitors?.toLocaleString() || 0}</div>
                   <p className="text-xs text-muted-foreground">
                     Média estimada
                   </p>
@@ -436,132 +378,109 @@ export default function MarketsInfrastructurePage() {
 
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Taxa de Ocupação</CardTitle>
+                  <CardTitle className="text-sm font-medium">Taxa Operacional</CardTitle>
                   <Package className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{occupancyRate}%</div>
+                  <div className="text-2xl font-bold">
+                    {stats?.total ? Math.round((stats.operational / stats.total) * 100) : 0}%
+                  </div>
                   <p className="text-xs text-muted-foreground">
-                    {totalOccupancy.toLocaleString()} / {totalCapacity.toLocaleString()} m²
+                    Mercados activos
                   </p>
                 </CardContent>
               </Card>
             </div>
 
             {/* Charts */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid gap-6 md:grid-cols-2">
               <Card>
                 <CardHeader>
                   <CardTitle>Distribuição por Tipo</CardTitle>
-                  <CardDescription>Tipos de mercados no sistema</CardDescription>
+                  <CardDescription>Mercados por categoria</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="h-[300px]">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <PieChart>
-                        <Pie
-                          data={typeDistribution}
-                          cx="50%"
-                          cy="50%"
-                          labelLine={false}
-                          label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
-                          outerRadius={80}
-                          fill="#8884d8"
-                          dataKey="value"
-                        >
-                          {typeDistribution.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={entry.color} />
-                          ))}
-                        </Pie>
-                        <Tooltip />
-                      </PieChart>
-                    </ResponsiveContainer>
+                    {typeDistribution.length > 0 ? (
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Pie
+                            data={typeDistribution}
+                            cx="50%"
+                            cy="50%"
+                            innerRadius={60}
+                            outerRadius={100}
+                            paddingAngle={5}
+                            dataKey="value"
+                          >
+                            {typeDistribution.map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={entry.color} />
+                            ))}
+                          </Pie>
+                          <Tooltip />
+                          <Legend />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    ) : (
+                      <div className="flex items-center justify-center h-full text-muted-foreground">
+                        Sem dados disponíveis
+                      </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>
-
               <Card>
                 <CardHeader>
-                  <CardTitle>Visitantes e Vendedores por Província</CardTitle>
-                  <CardDescription>Comparativo das principais províncias</CardDescription>
+                  <CardTitle>Por Estado</CardTitle>
+                  <CardDescription>Estado operacional dos mercados</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="h-[300px]">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={provinceVisitors}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="province" />
-                        <YAxis yAxisId="left" orientation="left" />
-                        <YAxis yAxisId="right" orientation="right" />
-                        <Tooltip />
-                        <Legend />
-                        <Bar yAxisId="left" dataKey="visitors" name="Visitantes" fill="#3b82f6" />
-                        <Bar yAxisId="right" dataKey="vendors" name="Vendedores" fill="#22c55e" />
-                      </BarChart>
-                    </ResponsiveContainer>
+                    {stats?.byStatus && Object.keys(stats.byStatus).length > 0 ? (
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={Object.entries(stats.byStatus).map(([name, value]) => ({
+                          name: statusLabels[name] || name,
+                          value,
+                        }))}>
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis dataKey="name" />
+                          <YAxis />
+                          <Tooltip />
+                          <Bar dataKey="value" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    ) : (
+                      <div className="flex items-center justify-center h-full text-muted-foreground">
+                        Sem dados disponíveis
+                      </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>
             </div>
-
-            {/* Recent Markets */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Mercados Recentes</CardTitle>
-                <CardDescription>Últimas actualizações no sistema</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {mockMarkets.slice(0, 4).map(market => (
-                    <div key={market.id} className="flex items-center justify-between p-4 border rounded-lg">
-                      <div className="flex items-center gap-4">
-                        <div className="p-2 bg-primary/10 rounded-lg">
-                          {getTypeIcon(market.type)}
-                        </div>
-                        <div>
-                          <h4 className="font-medium">{market.name}</h4>
-                          <p className="text-sm text-muted-foreground">
-                            {marketTypeLabels[market.type]} • {market.province}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-4">
-                        {getStatusBadge(market.status)}
-                        <Button variant="ghost" size="icon">
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
           </TabsContent>
 
           {/* List Tab */}
-          <TabsContent value="list" className="space-y-6">
+          <TabsContent value="list" className="space-y-4">
             {/* Filters */}
             <Card>
               <CardContent className="pt-6">
-                <div className="flex flex-col md:flex-row gap-4">
-                  <div className="flex-1">
-                    <div className="relative">
-                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                      <Input 
-                        placeholder="Pesquisar mercados..." 
-                        className="pl-10"
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                      />
-                    </div>
+                <div className="flex flex-wrap gap-4">
+                  <div className="relative flex-1 min-w-[200px]">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Pesquisar por nome ou localização..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="pl-10"
+                    />
                   </div>
                   <Select value={typeFilter} onValueChange={setTypeFilter}>
                     <SelectTrigger className="w-[180px]">
-                      <Filter className="h-4 w-4 mr-2" />
                       <SelectValue placeholder="Tipo" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">Todos os Tipos</SelectItem>
+                      <SelectItem value="all">Todos os tipos</SelectItem>
                       <SelectItem value="wholesale">Grossista</SelectItem>
                       <SelectItem value="retail">Retalhista</SelectItem>
                       <SelectItem value="fish_market">Mercado de Peixe</SelectItem>
@@ -574,24 +493,11 @@ export default function MarketsInfrastructurePage() {
                       <SelectValue placeholder="Estado" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">Todos os Estados</SelectItem>
+                      <SelectItem value="all">Todos os estados</SelectItem>
                       <SelectItem value="operational">Operacional</SelectItem>
                       <SelectItem value="under_maintenance">Em Manutenção</SelectItem>
                       <SelectItem value="closed">Encerrado</SelectItem>
                       <SelectItem value="under_construction">Em Construção</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <Select value={selectedProvinceId || 'all'} onValueChange={(v) => setSelectedProvinceId(v === 'all' ? '' : v)}>
-                    <SelectTrigger className="w-[180px]">
-                      <SelectValue placeholder="Província" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Todas as Províncias</SelectItem>
-                      {provinces.map(province => (
-                        <SelectItem key={province.id} value={province.id}>
-                          {province.name}
-                        </SelectItem>
-                      ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -600,154 +506,111 @@ export default function MarketsInfrastructurePage() {
 
             {/* Table */}
             <Card>
-              <CardContent className="pt-6">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Mercado</TableHead>
-                      <TableHead>Tipo</TableHead>
-                      <TableHead>Localização</TableHead>
-                      <TableHead>Vendedores</TableHead>
-                      <TableHead>Ocupação</TableHead>
-                      <TableHead>Estado</TableHead>
-                      <TableHead>Condição</TableHead>
-                      <TableHead className="text-right">Acções</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredMarkets.map(market => (
-                      <TableRow key={market.id}>
-                        <TableCell>
-                          <div className="flex items-center gap-3">
-                            <div className="p-2 bg-primary/10 rounded">
-                              {getTypeIcon(market.type)}
-                            </div>
-                            <div>
-                              <p className="font-medium">{market.name}</p>
-                              <p className="text-sm text-muted-foreground">
-                                {market.products.slice(0, 2).join(', ')}
-                              </p>
-                            </div>
-                          </div>
-                        </TableCell>
-                        <TableCell>{marketTypeLabels[market.type]}</TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-1">
-                            <MapPin className="h-3 w-3 text-muted-foreground" />
-                            {market.province}, {market.municipality}
-                          </div>
-                        </TableCell>
-                        <TableCell>{market.vendors.toLocaleString()}</TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            <div className="w-20 h-2 bg-secondary rounded-full overflow-hidden">
-                              <div 
-                                className="h-full bg-primary rounded-full"
-                                style={{ width: `${(market.currentOccupancy / market.capacity) * 100}%` }}
-                              />
-                            </div>
-                            <span className="text-sm">
-                              {((market.currentOccupancy / market.capacity) * 100).toFixed(0)}%
-                            </span>
-                          </div>
-                        </TableCell>
-                        <TableCell>{getStatusBadge(market.status)}</TableCell>
-                        <TableCell>{getConditionBadge(market.condition)}</TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex justify-end gap-2">
-                            <Button variant="ghost" size="icon">
-                              <Eye className="h-4 w-4" />
-                            </Button>
-                            <Button variant="ghost" size="icon">
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            <Button variant="ghost" size="icon">
-                              <Calendar className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+              <CardContent className="p-0">
+                {isLoading ? (
+                  <div className="flex items-center justify-center py-12">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                  </div>
+                ) : error ? (
+                  <div className="text-center py-12 text-destructive">
+                    Erro ao carregar dados
+                  </div>
+                ) : filteredMarkets.length > 0 ? (
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Nome</TableHead>
+                          <TableHead>Tipo</TableHead>
+                          <TableHead>Localização</TableHead>
+                          <TableHead>Bancas</TableHead>
+                          <TableHead>Vendedores</TableHead>
+                          <TableHead>Estado</TableHead>
+                          <TableHead>Condição</TableHead>
+                          <TableHead className="text-right">Acções</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {filteredMarkets.map((market) => (
+                          <TableRow key={market.id}>
+                            <TableCell>
+                              <div className="flex items-center gap-2">
+                                <div className="p-2 rounded-lg bg-primary/10">
+                                  {getTypeIcon(market.market_type)}
+                                </div>
+                                <div>
+                                  <p className="font-medium">{market.name}</p>
+                                  {market.manager_name && (
+                                    <p className="text-xs text-muted-foreground">{market.manager_name}</p>
+                                  )}
+                                </div>
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant="outline">
+                                {marketTypeLabels[market.market_type] || market.market_type}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-1 text-sm">
+                                <MapPin className="h-3.5 w-3.5 text-muted-foreground" />
+                                {market.municipalities?.name && market.provinces?.name 
+                                  ? `${market.municipalities.name}, ${market.provinces.name}`
+                                  : market.provinces?.name || '-'}
+                              </div>
+                            </TableCell>
+                            <TableCell>{market.stalls_count?.toLocaleString() || '-'}</TableCell>
+                            <TableCell>{market.vendors_count?.toLocaleString() || '-'}</TableCell>
+                            <TableCell>{getStatusBadge(market.status)}</TableCell>
+                            <TableCell>{market.condition ? getConditionBadge(market.condition) : '-'}</TableCell>
+                            <TableCell>
+                              <div className="flex justify-end gap-1">
+                                <Button variant="ghost" size="icon">
+                                  <Eye className="h-4 w-4" />
+                                </Button>
+                                <Button variant="ghost" size="icon">
+                                  <Edit className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                ) : (
+                  <div className="text-center py-12 text-muted-foreground">
+                    <Store className="h-12 w-12 mx-auto mb-4 opacity-20" />
+                    <p>Nenhum mercado encontrado</p>
+                    <Button className="mt-4" onClick={() => setShowNewDialog(true)}>
+                      <Plus className="h-4 w-4 mr-2" />
+                      Adicionar Mercado
+                    </Button>
+                  </div>
+                )}
               </CardContent>
             </Card>
+
+            {filteredMarkets.length > 0 && (
+              <p className="text-sm text-muted-foreground text-center">
+                A mostrar {filteredMarkets.length} mercado(s)
+              </p>
+            )}
           </TabsContent>
 
           {/* Map Tab */}
-          <TabsContent value="map">
+          <TabsContent value="map" className="space-y-4">
             <Card>
-              <CardHeader>
-                <CardTitle>Mapa de Mercados</CardTitle>
-                <CardDescription>Visualização geográfica das infra-estruturas de mercados</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="h-[500px] bg-muted/50 rounded-lg flex items-center justify-center">
+              <CardContent className="pt-6">
+                <div className="h-[500px] bg-muted rounded-lg flex items-center justify-center">
                   <div className="text-center text-muted-foreground">
-                    <MapPin className="h-16 w-16 mx-auto mb-4 opacity-50" />
-                    <p className="text-lg font-medium">Mapa Interactivo</p>
-                    <p className="text-sm">Integração com Mapbox em desenvolvimento</p>
+                    <MapPin className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                    <p>Mapa de mercados</p>
+                    <p className="text-sm">Integração com Mapbox pendente</p>
                   </div>
                 </div>
               </CardContent>
             </Card>
-          </TabsContent>
-
-          {/* Reports Tab */}
-          <TabsContent value="reports" className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Relatório de Ocupação</CardTitle>
-                  <CardDescription>Taxa de ocupação por mercado</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Button className="w-full">
-                    <FileText className="h-4 w-4 mr-2" />
-                    Gerar Relatório
-                  </Button>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>Relatório de Vendedores</CardTitle>
-                  <CardDescription>Vendedores registados por mercado</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Button className="w-full">
-                    <Users className="h-4 w-4 mr-2" />
-                    Gerar Relatório
-                  </Button>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>Relatório de Manutenção</CardTitle>
-                  <CardDescription>Estado de conservação das infra-estruturas</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Button className="w-full">
-                    <AlertTriangle className="h-4 w-4 mr-2" />
-                    Gerar Relatório
-                  </Button>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>Relatório de Visitantes</CardTitle>
-                  <CardDescription>Fluxo de visitantes por mercado</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Button className="w-full">
-                    <TrendingUp className="h-4 w-4 mr-2" />
-                    Gerar Relatório
-                  </Button>
-                </CardContent>
-              </Card>
-            </div>
           </TabsContent>
         </Tabs>
       </div>

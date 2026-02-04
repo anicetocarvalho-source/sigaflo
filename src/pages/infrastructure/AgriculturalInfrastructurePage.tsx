@@ -16,8 +16,6 @@ import {
   Building2,
   Plus,
   Search,
-  Filter,
-  Download,
   Warehouse,
   Droplets,
   Factory,
@@ -29,9 +27,8 @@ import {
   TrendingUp,
   Eye,
   Edit,
-  MoreHorizontal,
-  Calendar,
   Ruler,
+  Loader2,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -41,112 +38,13 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
 import { useLocationCascade } from '@/hooks/useLocationCascade';
-
-// Mock data for agricultural infrastructure
-const mockInfrastructure = [
-  {
-    id: '1',
-    name: 'Armazém Central de Luanda',
-    type: 'warehouse',
-    province: 'Luanda',
-    municipality: 'Cacuaco',
-    capacity: 5000,
-    capacityUnit: 'toneladas',
-    currentOccupancy: 3500,
-    status: 'operational',
-    condition: 'good',
-    builtYear: 2018,
-    lastInspection: '2024-10-15',
-    coordinates: { lat: -8.8383, lng: 13.2344 },
-    manager: 'João Silva',
-    contact: '+244 923 456 789',
-  },
-  {
-    id: '2',
-    name: 'Silo de Malanje',
-    type: 'silo',
-    province: 'Malanje',
-    municipality: 'Malanje',
-    capacity: 2000,
-    capacityUnit: 'toneladas',
-    currentOccupancy: 1800,
-    status: 'operational',
-    condition: 'fair',
-    builtYear: 2015,
-    lastInspection: '2024-08-20',
-    coordinates: { lat: -9.5402, lng: 16.3419 },
-    manager: 'Maria Santos',
-    contact: '+244 924 567 890',
-  },
-  {
-    id: '3',
-    name: 'Sistema de Irrigação do Cuanza Sul',
-    type: 'irrigation',
-    province: 'Cuanza Sul',
-    municipality: 'Sumbe',
-    capacity: 500,
-    capacityUnit: 'hectares',
-    currentOccupancy: 450,
-    status: 'operational',
-    condition: 'good',
-    builtYear: 2020,
-    lastInspection: '2024-11-01',
-    coordinates: { lat: -11.2069, lng: 13.8439 },
-    manager: 'Pedro Costa',
-    contact: '+244 925 678 901',
-  },
-  {
-    id: '4',
-    name: 'Centro de Processamento Huambo',
-    type: 'processing',
-    province: 'Huambo',
-    municipality: 'Huambo',
-    capacity: 100,
-    capacityUnit: 'ton/dia',
-    currentOccupancy: 75,
-    status: 'maintenance',
-    condition: 'fair',
-    builtYear: 2016,
-    lastInspection: '2024-09-10',
-    coordinates: { lat: -12.7761, lng: 15.7394 },
-    manager: 'Ana Ferreira',
-    contact: '+244 926 789 012',
-  },
-  {
-    id: '5',
-    name: 'Armazém Frigorífico Benguela',
-    type: 'cold_storage',
-    province: 'Benguela',
-    municipality: 'Benguela',
-    capacity: 800,
-    capacityUnit: 'toneladas',
-    currentOccupancy: 600,
-    status: 'operational',
-    condition: 'excellent',
-    builtYear: 2022,
-    lastInspection: '2024-10-25',
-    coordinates: { lat: -12.5763, lng: 13.4055 },
-    manager: 'Carlos Mendes',
-    contact: '+244 927 890 123',
-  },
-  {
-    id: '6',
-    name: 'Centro Logístico Uíge',
-    type: 'logistics',
-    province: 'Uíge',
-    municipality: 'Uíge',
-    capacity: 50,
-    capacityUnit: 'veículos',
-    currentOccupancy: 35,
-    status: 'operational',
-    condition: 'good',
-    builtYear: 2019,
-    lastInspection: '2024-07-15',
-    coordinates: { lat: -7.6088, lng: 15.0613 },
-    manager: 'Rosa Neto',
-    contact: '+244 928 901 234',
-  },
-];
+import { 
+  useAgriculturalInfrastructure, 
+  useAgriculturalInfrastructureStats,
+  useCreateAgriculturalInfrastructure,
+  AgriculturalInfrastructure 
+} from '@/hooks/useInfrastructure';
+import { toast } from 'sonner';
 
 const infrastructureTypeLabels: Record<string, string> = {
   warehouse: 'Armazém',
@@ -213,23 +111,7 @@ const getConditionBadge = (condition: string) => {
   }
 };
 
-// Chart data
-const typeDistribution = [
-  { name: 'Armazéns', value: 15, color: '#3b82f6' },
-  { name: 'Silos', value: 8, color: '#10b981' },
-  { name: 'Irrigação', value: 12, color: '#06b6d4' },
-  { name: 'Processamento', value: 5, color: '#f59e0b' },
-  { name: 'Frio', value: 4, color: '#8b5cf6' },
-  { name: 'Logística', value: 6, color: '#ec4899' },
-];
-
-const provinceCapacity = [
-  { province: 'Luanda', capacity: 12000, used: 9500 },
-  { province: 'Huambo', capacity: 8000, used: 6200 },
-  { province: 'Benguela', capacity: 6500, used: 5100 },
-  { province: 'Malanje', capacity: 5000, used: 4200 },
-  { province: 'Cuanza Sul', capacity: 4500, used: 3800 },
-];
+const CHART_COLORS = ['#3b82f6', '#10b981', '#06b6d4', '#f59e0b', '#8b5cf6', '#ec4899'];
 
 export default function AgriculturalInfrastructurePage() {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -243,22 +125,79 @@ export default function AgriculturalInfrastructurePage() {
     municipalities, 
     selectedProvinceId, 
     handleProvinceChange, 
-    handleMunicipalityChange 
+    handleMunicipalityChange,
+    selectedMunicipalityId,
   } = useLocationCascade({});
 
-  const filteredInfrastructure = mockInfrastructure.filter(item => {
-    const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.province.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesType = typeFilter === 'all' || item.type === typeFilter;
-    const matchesStatus = statusFilter === 'all' || item.status === statusFilter;
-    return matchesSearch && matchesType && matchesStatus;
+  // Fetch real data
+  const { data: infrastructure, isLoading, error } = useAgriculturalInfrastructure({
+    type: typeFilter !== 'all' ? typeFilter : undefined,
+    status: statusFilter !== 'all' ? statusFilter : undefined,
+    province_id: selectedProvinceId || undefined,
+  });
+  
+  const { data: stats } = useAgriculturalInfrastructureStats();
+  const createInfrastructure = useCreateAgriculturalInfrastructure();
+
+  // Form state
+  const [formData, setFormData] = useState({
+    name: '',
+    infrastructure_type: 'warehouse' as const,
+    capacity: '',
+    capacity_unit: 'toneladas',
+    built_year: '',
+    manager_name: '',
+    manager_contact: '',
+    description: '',
   });
 
-  // KPIs
-  const totalInfrastructure = mockInfrastructure.length;
-  const operationalCount = mockInfrastructure.filter(i => i.status === 'operational').length;
-  const totalCapacity = mockInfrastructure.reduce((sum, i) => i.type === 'warehouse' || i.type === 'silo' || i.type === 'cold_storage' ? sum + i.capacity : sum, 0);
-  const avgOccupancy = Math.round(mockInfrastructure.reduce((sum, i) => sum + (i.currentOccupancy / i.capacity * 100), 0) / mockInfrastructure.length);
+  const filteredInfrastructure = infrastructure?.filter(item => {
+    const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.provinces?.name?.toLowerCase().includes(searchTerm.toLowerCase());
+    return matchesSearch;
+  }) || [];
+
+  // Chart data from stats
+  const typeDistribution = stats ? Object.entries(stats.byType).map(([name, value], index) => ({
+    name: infrastructureTypeLabels[name] || name,
+    value,
+    color: CHART_COLORS[index % CHART_COLORS.length],
+  })) : [];
+
+  const handleSubmit = () => {
+    if (!formData.name) {
+      toast.error('Nome é obrigatório');
+      return;
+    }
+
+    createInfrastructure.mutate({
+      name: formData.name,
+      infrastructure_type: formData.infrastructure_type,
+      province_id: selectedProvinceId || undefined,
+      municipality_id: selectedMunicipalityId || undefined,
+      capacity: formData.capacity ? parseInt(formData.capacity) : undefined,
+      capacity_unit: formData.capacity_unit,
+      built_year: formData.built_year ? parseInt(formData.built_year) : undefined,
+      manager_name: formData.manager_name || undefined,
+      manager_contact: formData.manager_contact || undefined,
+      description: formData.description || undefined,
+      status: 'operational',
+    }, {
+      onSuccess: () => {
+        setShowNewDialog(false);
+        setFormData({
+          name: '',
+          infrastructure_type: 'warehouse',
+          capacity: '',
+          capacity_unit: 'toneladas',
+          built_year: '',
+          manager_name: '',
+          manager_contact: '',
+          description: '',
+        });
+      },
+    });
+  };
 
   return (
     <MainLayout title="Infraestruturas Agropecuárias" subtitle="Gestão de armazéns, silos, sistemas de irrigação e centros de processamento">
@@ -283,11 +222,19 @@ export default function AgriculturalInfrastructurePage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="name">Nome</Label>
-                    <Input id="name" placeholder="Nome da infraestrutura" />
+                    <Input 
+                      id="name" 
+                      placeholder="Nome da infraestrutura"
+                      value={formData.name}
+                      onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                    />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="type">Tipo</Label>
-                    <Select>
+                    <Select 
+                      value={formData.infrastructure_type}
+                      onValueChange={(val) => setFormData(prev => ({ ...prev, infrastructure_type: val as any }))}
+                    >
                       <SelectTrigger>
                         <SelectValue placeholder="Seleccione o tipo" />
                       </SelectTrigger>
@@ -333,11 +280,20 @@ export default function AgriculturalInfrastructurePage() {
                 <div className="grid grid-cols-3 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="capacity">Capacidade</Label>
-                    <Input id="capacity" type="number" placeholder="0" />
+                    <Input 
+                      id="capacity" 
+                      type="number" 
+                      placeholder="0"
+                      value={formData.capacity}
+                      onChange={(e) => setFormData(prev => ({ ...prev, capacity: e.target.value }))}
+                    />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="capacityUnit">Unidade</Label>
-                    <Select>
+                    <Select
+                      value={formData.capacity_unit}
+                      onValueChange={(val) => setFormData(prev => ({ ...prev, capacity_unit: val }))}
+                    >
                       <SelectTrigger>
                         <SelectValue placeholder="Unidade" />
                       </SelectTrigger>
@@ -351,26 +307,51 @@ export default function AgriculturalInfrastructurePage() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="builtYear">Ano Construção</Label>
-                    <Input id="builtYear" type="number" placeholder="2024" />
+                    <Input 
+                      id="builtYear" 
+                      type="number" 
+                      placeholder="2024"
+                      value={formData.built_year}
+                      onChange={(e) => setFormData(prev => ({ ...prev, built_year: e.target.value }))}
+                    />
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="manager">Responsável</Label>
-                    <Input id="manager" placeholder="Nome do responsável" />
+                    <Input 
+                      id="manager" 
+                      placeholder="Nome do responsável"
+                      value={formData.manager_name}
+                      onChange={(e) => setFormData(prev => ({ ...prev, manager_name: e.target.value }))}
+                    />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="contact">Contacto</Label>
-                    <Input id="contact" placeholder="+244 9XX XXX XXX" />
+                    <Input 
+                      id="contact" 
+                      placeholder="+244 9XX XXX XXX"
+                      value={formData.manager_contact}
+                      onChange={(e) => setFormData(prev => ({ ...prev, manager_contact: e.target.value }))}
+                    />
                   </div>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="description">Descrição</Label>
-                  <Textarea id="description" placeholder="Descrição da infraestrutura..." rows={3} />
+                  <Textarea 
+                    id="description" 
+                    placeholder="Descrição da infraestrutura..." 
+                    rows={3}
+                    value={formData.description}
+                    onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                  />
                 </div>
                 <div className="flex justify-end gap-2">
                   <Button variant="outline" onClick={() => setShowNewDialog(false)}>Cancelar</Button>
-                  <Button onClick={() => setShowNewDialog(false)}>Registar</Button>
+                  <Button onClick={handleSubmit} disabled={createInfrastructure.isPending}>
+                    {createInfrastructure.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                    Registar
+                  </Button>
                 </div>
               </div>
             </DialogContent>
@@ -383,7 +364,6 @@ export default function AgriculturalInfrastructurePage() {
             <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
             <TabsTrigger value="list">Lista</TabsTrigger>
             <TabsTrigger value="map">Mapa</TabsTrigger>
-            <TabsTrigger value="reports">Relatórios</TabsTrigger>
           </TabsList>
 
           {/* Dashboard Tab */}
@@ -396,7 +376,7 @@ export default function AgriculturalInfrastructurePage() {
                   <Building2 className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{totalInfrastructure}</div>
+                  <div className="text-2xl font-bold">{stats?.total || 0}</div>
                   <p className="text-xs text-muted-foreground">Registadas no sistema</p>
                 </CardContent>
               </Card>
@@ -406,8 +386,10 @@ export default function AgriculturalInfrastructurePage() {
                   <CheckCircle className="h-4 w-4 text-emerald-600" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{operationalCount}</div>
-                  <p className="text-xs text-muted-foreground">{Math.round(operationalCount / totalInfrastructure * 100)}% do total</p>
+                  <div className="text-2xl font-bold">{stats?.operational || 0}</div>
+                  <p className="text-xs text-muted-foreground">
+                    {stats?.total ? Math.round((stats.operational / stats.total) * 100) : 0}% do total
+                  </p>
                 </CardContent>
               </Card>
               <Card>
@@ -416,17 +398,19 @@ export default function AgriculturalInfrastructurePage() {
                   <Ruler className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{totalCapacity.toLocaleString()}</div>
-                  <p className="text-xs text-muted-foreground">Toneladas de armazenamento</p>
+                  <div className="text-2xl font-bold">{stats?.totalCapacity?.toLocaleString() || 0}</div>
+                  <p className="text-xs text-muted-foreground">Unidades de armazenamento</p>
                 </CardContent>
               </Card>
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
-                  <CardTitle className="text-sm font-medium">Ocupação Média</CardTitle>
+                  <CardTitle className="text-sm font-medium">Ocupação</CardTitle>
                   <TrendingUp className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{avgOccupancy}%</div>
+                  <div className="text-2xl font-bold">
+                    {stats?.totalCapacity ? Math.round((stats.totalOccupancy / stats.totalCapacity) * 100) : 0}%
+                  </div>
                   <p className="text-xs text-muted-foreground">Taxa de utilização</p>
                 </CardContent>
               </Card>
@@ -441,84 +425,63 @@ export default function AgriculturalInfrastructurePage() {
                 </CardHeader>
                 <CardContent>
                   <div className="h-[300px]">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <PieChart>
-                        <Pie
-                          data={typeDistribution}
-                          cx="50%"
-                          cy="50%"
-                          innerRadius={60}
-                          outerRadius={100}
-                          paddingAngle={5}
-                          dataKey="value"
-                        >
-                          {typeDistribution.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={entry.color} />
-                          ))}
-                        </Pie>
-                        <Tooltip />
-                        <Legend />
-                      </PieChart>
-                    </ResponsiveContainer>
+                    {typeDistribution.length > 0 ? (
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Pie
+                            data={typeDistribution}
+                            cx="50%"
+                            cy="50%"
+                            innerRadius={60}
+                            outerRadius={100}
+                            paddingAngle={5}
+                            dataKey="value"
+                          >
+                            {typeDistribution.map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={entry.color} />
+                            ))}
+                          </Pie>
+                          <Tooltip />
+                          <Legend />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    ) : (
+                      <div className="flex items-center justify-center h-full text-muted-foreground">
+                        Sem dados disponíveis
+                      </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>
-
               <Card>
                 <CardHeader>
-                  <CardTitle>Capacidade por Província</CardTitle>
-                  <CardDescription>Capacidade total vs utilizada (toneladas)</CardDescription>
+                  <CardTitle>Por Estado</CardTitle>
+                  <CardDescription>Estado operacional das infraestruturas</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="h-[300px]">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={provinceCapacity}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="province" />
-                        <YAxis />
-                        <Tooltip />
-                        <Legend />
-                        <Bar dataKey="capacity" name="Capacidade" fill="#3b82f6" />
-                        <Bar dataKey="used" name="Utilizada" fill="#10b981" />
-                      </BarChart>
-                    </ResponsiveContainer>
+                    {stats?.byStatus && Object.keys(stats.byStatus).length > 0 ? (
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={Object.entries(stats.byStatus).map(([name, value]) => ({
+                          name: statusLabels[name] || name,
+                          value,
+                        }))}>
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis dataKey="name" />
+                          <YAxis />
+                          <Tooltip />
+                          <Bar dataKey="value" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    ) : (
+                      <div className="flex items-center justify-center h-full text-muted-foreground">
+                        Sem dados disponíveis
+                      </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>
             </div>
-
-            {/* Recent Infrastructure */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Infraestruturas Recentes</CardTitle>
-                <CardDescription>Últimas infraestruturas registadas ou actualizadas</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {mockInfrastructure.slice(0, 4).map((item) => {
-                    const IconComponent = getTypeIcon(item.type);
-                    return (
-                      <div key={item.id} className="flex items-center gap-4 p-3 rounded-lg border bg-card">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-                          <IconComponent className="h-5 w-5 text-primary" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium truncate">{item.name}</p>
-                          <p className="text-sm text-muted-foreground">
-                            <MapPin className="h-3 w-3 inline mr-1" />
-                            {item.province}, {item.municipality}
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          {getStatusBadge(item.status)}
-                          {getConditionBadge(item.condition)}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </CardContent>
-            </Card>
           </TabsContent>
 
           {/* List Tab */}
@@ -526,23 +489,22 @@ export default function AgriculturalInfrastructurePage() {
             {/* Filters */}
             <Card>
               <CardContent className="pt-6">
-                <div className="flex flex-col gap-4 md:flex-row md:items-center">
-                  <div className="relative flex-1">
-                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <div className="flex flex-wrap gap-4">
+                  <div className="relative flex-1 min-w-[200px]">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
-                      placeholder="Pesquisar infraestruturas..."
-                      className="pl-9"
+                      placeholder="Pesquisar por nome ou localização..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
+                      className="pl-10"
                     />
                   </div>
                   <Select value={typeFilter} onValueChange={setTypeFilter}>
                     <SelectTrigger className="w-[180px]">
-                      <Filter className="mr-2 h-4 w-4" />
                       <SelectValue placeholder="Tipo" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">Todos os Tipos</SelectItem>
+                      <SelectItem value="all">Todos os tipos</SelectItem>
                       <SelectItem value="warehouse">Armazém</SelectItem>
                       <SelectItem value="silo">Silo</SelectItem>
                       <SelectItem value="irrigation">Irrigação</SelectItem>
@@ -556,204 +518,127 @@ export default function AgriculturalInfrastructurePage() {
                       <SelectValue placeholder="Estado" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">Todos os Estados</SelectItem>
+                      <SelectItem value="all">Todos os estados</SelectItem>
                       <SelectItem value="operational">Operacional</SelectItem>
                       <SelectItem value="maintenance">Manutenção</SelectItem>
                       <SelectItem value="inactive">Inactivo</SelectItem>
                       <SelectItem value="construction">Em Construção</SelectItem>
                     </SelectContent>
                   </Select>
-                  <Button variant="outline">
-                    <Download className="mr-2 h-4 w-4" />
-                    Exportar
-                  </Button>
                 </div>
               </CardContent>
             </Card>
 
             {/* Table */}
             <Card>
-              <CardContent className="pt-6">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Nome</TableHead>
-                      <TableHead>Tipo</TableHead>
-                      <TableHead>Localização</TableHead>
-                      <TableHead>Capacidade</TableHead>
-                      <TableHead>Ocupação</TableHead>
-                      <TableHead>Estado</TableHead>
-                      <TableHead>Condição</TableHead>
-                      <TableHead className="text-right">Acções</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredInfrastructure.map((item) => {
-                      const IconComponent = getTypeIcon(item.type);
-                      const occupancyPct = Math.round(item.currentOccupancy / item.capacity * 100);
-                      return (
-                        <TableRow key={item.id}>
-                          <TableCell>
-                            <div className="flex items-center gap-3">
-                              <div className="flex h-8 w-8 items-center justify-center rounded bg-primary/10">
-                                <IconComponent className="h-4 w-4 text-primary" />
-                              </div>
-                              <div>
-                                <p className="font-medium">{item.name}</p>
-                                <p className="text-xs text-muted-foreground">{item.manager}</p>
-                              </div>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <Badge variant="outline">{infrastructureTypeLabels[item.type]}</Badge>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex items-center gap-1 text-sm">
-                              <MapPin className="h-3 w-3 text-muted-foreground" />
-                              {item.province}
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            {item.capacity.toLocaleString()} {item.capacityUnit}
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex items-center gap-2">
-                              <div className="h-2 w-16 rounded-full bg-muted overflow-hidden">
-                                <div
-                                  className={`h-full rounded-full ${
-                                    occupancyPct > 90 ? 'bg-red-500' :
-                                    occupancyPct > 70 ? 'bg-amber-500' : 'bg-emerald-500'
-                                  }`}
-                                  style={{ width: `${occupancyPct}%` }}
-                                />
-                              </div>
-                              <span className="text-sm">{occupancyPct}%</span>
-                            </div>
-                          </TableCell>
-                          <TableCell>{getStatusBadge(item.status)}</TableCell>
-                          <TableCell>{getConditionBadge(item.condition)}</TableCell>
-                          <TableCell className="text-right">
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="icon">
-                                  <MoreHorizontal className="h-4 w-4" />
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end">
-                                <DropdownMenuItem>
-                                  <Eye className="mr-2 h-4 w-4" />
-                                  Ver Detalhes
-                                </DropdownMenuItem>
-                                <DropdownMenuItem>
-                                  <Edit className="mr-2 h-4 w-4" />
-                                  Editar
-                                </DropdownMenuItem>
-                                <DropdownMenuItem>
-                                  <Calendar className="mr-2 h-4 w-4" />
-                                  Agendar Inspecção
-                                </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          </TableCell>
+              <CardContent className="p-0">
+                {isLoading ? (
+                  <div className="flex items-center justify-center py-12">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                  </div>
+                ) : error ? (
+                  <div className="text-center py-12 text-destructive">
+                    Erro ao carregar dados
+                  </div>
+                ) : filteredInfrastructure.length > 0 ? (
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Nome</TableHead>
+                          <TableHead>Tipo</TableHead>
+                          <TableHead>Localização</TableHead>
+                          <TableHead>Capacidade</TableHead>
+                          <TableHead>Estado</TableHead>
+                          <TableHead>Condição</TableHead>
+                          <TableHead className="text-right">Acções</TableHead>
                         </TableRow>
-                      );
-                    })}
-                  </TableBody>
-                </Table>
+                      </TableHeader>
+                      <TableBody>
+                        {filteredInfrastructure.map((item) => {
+                          const TypeIcon = getTypeIcon(item.infrastructure_type);
+                          return (
+                            <TableRow key={item.id}>
+                              <TableCell>
+                                <div className="flex items-center gap-2">
+                                  <div className="p-2 rounded-lg bg-primary/10">
+                                    <TypeIcon className="h-4 w-4 text-primary" />
+                                  </div>
+                                  <div>
+                                    <p className="font-medium">{item.name}</p>
+                                    {item.manager_name && (
+                                      <p className="text-xs text-muted-foreground">{item.manager_name}</p>
+                                    )}
+                                  </div>
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <Badge variant="outline">
+                                  {infrastructureTypeLabels[item.infrastructure_type] || item.infrastructure_type}
+                                </Badge>
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex items-center gap-1 text-sm">
+                                  <MapPin className="h-3.5 w-3.5 text-muted-foreground" />
+                                  {item.municipalities?.name && item.provinces?.name 
+                                    ? `${item.municipalities.name}, ${item.provinces.name}`
+                                    : item.provinces?.name || '-'}
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                {item.capacity ? `${item.capacity.toLocaleString()} ${item.capacity_unit || ''}` : '-'}
+                              </TableCell>
+                              <TableCell>{getStatusBadge(item.status)}</TableCell>
+                              <TableCell>{item.condition ? getConditionBadge(item.condition) : '-'}</TableCell>
+                              <TableCell>
+                                <div className="flex justify-end gap-1">
+                                  <Button variant="ghost" size="icon">
+                                    <Eye className="h-4 w-4" />
+                                  </Button>
+                                  <Button variant="ghost" size="icon">
+                                    <Edit className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
+                      </TableBody>
+                    </Table>
+                  </div>
+                ) : (
+                  <div className="text-center py-12 text-muted-foreground">
+                    <Building2 className="h-12 w-12 mx-auto mb-4 opacity-20" />
+                    <p>Nenhuma infraestrutura encontrada</p>
+                    <Button className="mt-4" onClick={() => setShowNewDialog(true)}>
+                      <Plus className="h-4 w-4 mr-2" />
+                      Adicionar Infraestrutura
+                    </Button>
+                  </div>
+                )}
               </CardContent>
             </Card>
+
+            {filteredInfrastructure.length > 0 && (
+              <p className="text-sm text-muted-foreground text-center">
+                A mostrar {filteredInfrastructure.length} infraestrutura(s)
+              </p>
+            )}
           </TabsContent>
 
           {/* Map Tab */}
-          <TabsContent value="map">
+          <TabsContent value="map" className="space-y-4">
             <Card>
-              <CardHeader>
-                <CardTitle>Mapa de Infraestruturas</CardTitle>
-                <CardDescription>Visualização geográfica de todas as infraestruturas</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="h-[600px] rounded-lg bg-muted flex items-center justify-center">
-                  <div className="text-center">
-                    <MapPin className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                    <p className="text-muted-foreground">Mapa interactivo será exibido aqui</p>
-                    <p className="text-sm text-muted-foreground">Integração com Mapbox em desenvolvimento</p>
+              <CardContent className="pt-6">
+                <div className="h-[500px] bg-muted rounded-lg flex items-center justify-center">
+                  <div className="text-center text-muted-foreground">
+                    <MapPin className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                    <p>Mapa de infraestruturas</p>
+                    <p className="text-sm">Integração com Mapbox pendente</p>
                   </div>
                 </div>
               </CardContent>
             </Card>
-          </TabsContent>
-
-          {/* Reports Tab */}
-          <TabsContent value="reports" className="space-y-6">
-            <div className="grid gap-6 md:grid-cols-2">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Relatório de Capacidade</CardTitle>
-                  <CardDescription>Análise da capacidade de armazenamento</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <p className="text-sm text-muted-foreground">
-                    Gere um relatório detalhado sobre a capacidade total de armazenamento, 
-                    taxas de ocupação e projecções de necessidades futuras.
-                  </p>
-                  <Button variant="outline" className="w-full">
-                    <Download className="mr-2 h-4 w-4" />
-                    Gerar Relatório
-                  </Button>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>Relatório de Manutenção</CardTitle>
-                  <CardDescription>Estado e histórico de manutenções</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <p className="text-sm text-muted-foreground">
-                    Relatório sobre o estado de conservação das infraestruturas, 
-                    histórico de manutenções e necessidades identificadas.
-                  </p>
-                  <Button variant="outline" className="w-full">
-                    <Download className="mr-2 h-4 w-4" />
-                    Gerar Relatório
-                  </Button>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>Relatório por Província</CardTitle>
-                  <CardDescription>Distribuição geográfica</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <p className="text-sm text-muted-foreground">
-                    Análise da distribuição de infraestruturas por província, 
-                    identificando gaps e oportunidades de investimento.
-                  </p>
-                  <Button variant="outline" className="w-full">
-                    <Download className="mr-2 h-4 w-4" />
-                    Gerar Relatório
-                  </Button>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>Relatório de Inspecções</CardTitle>
-                  <CardDescription>Calendário e resultados</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <p className="text-sm text-muted-foreground">
-                    Relatório sobre inspecções realizadas, resultados obtidos 
-                    e calendário de próximas inspecções programadas.
-                  </p>
-                  <Button variant="outline" className="w-full">
-                    <Download className="mr-2 h-4 w-4" />
-                    Gerar Relatório
-                  </Button>
-                </CardContent>
-              </Card>
-            </div>
           </TabsContent>
         </Tabs>
       </div>

@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useProductionRecords, useDistinctCrops, useDistinctYears } from '@/hooks/useProductionHistory';
-import { useFarmers } from '@/hooks/useFarmers';
+import { useDistinctCrops, useDistinctYears } from '@/hooks/useProductionHistory';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,6 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Plus, Search, Eye, Edit, Loader2, Filter, X } from 'lucide-react';
+import { usePaginatedQuery } from '@/hooks/usePagination';
+import { PaginationControls } from '@/components/ui/pagination-controls';
 
 const CROP_LABELS: Record<string, string> = {
   arroz: 'Arroz',
@@ -45,19 +46,38 @@ export const ProductionList = () => {
 
   const { data: crops } = useDistinctCrops();
   const { data: years } = useDistinctYears();
-  const { data: records, isLoading } = useProductionRecords({
-    year: yearFilter ? parseInt(yearFilter) : undefined,
-    crop_type: cropFilter || undefined,
-    season: seasonFilter || undefined,
+  
+  // Server-side pagination
+  const {
+    data: paginatedData,
+    isLoading,
+    pagination,
+    goToPage,
+    setPageSize,
+  } = usePaginatedQuery<any>({
+    queryKey: ['production-history-paginated'],
+    tableName: 'production_history',
+    select: '*, farmers(name, registration_number)',
+    filters: {
+      ...(yearFilter && yearFilter !== '' ? { year: parseInt(yearFilter) } : {}),
+      ...(cropFilter && cropFilter !== '' ? { crop_type: cropFilter } : {}),
+      ...(seasonFilter && seasonFilter !== '' ? { season: seasonFilter } : {}),
+    },
+    initialPageSize: 20,
+    initialSortBy: 'created_at',
+    initialSortOrder: 'desc',
   });
 
-  const filteredRecords = records?.filter((record) => {
+  const records = paginatedData?.data;
+
+  // Client-side search filter (on current page only)
+  const filteredRecords = records?.filter((record: any) => {
     if (!search) return true;
     const searchLower = search.toLowerCase();
     return (
       record.farmers?.name?.toLowerCase().includes(searchLower) ||
       record.farmers?.registration_number?.toLowerCase().includes(searchLower) ||
-      record.crop_type.toLowerCase().includes(searchLower)
+      record.crop_type?.toLowerCase().includes(searchLower)
     );
   });
 
@@ -239,10 +259,16 @@ export const ProductionList = () => {
         </CardContent>
       </Card>
 
-      {filteredRecords && filteredRecords.length > 0 && (
-        <p className="text-sm text-muted-foreground text-center">
-          A mostrar {filteredRecords.length} registo(s)
-        </p>
+      {paginatedData && paginatedData.totalPages > 0 && (
+        <PaginationControls
+          currentPage={paginatedData.currentPage}
+          totalPages={paginatedData.totalPages}
+          totalCount={paginatedData.totalCount}
+          pageSize={pagination.pageSize}
+          onPageChange={goToPage}
+          onPageSizeChange={setPageSize}
+          isLoading={isLoading}
+        />
       )}
     </div>
   );
