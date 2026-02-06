@@ -1,88 +1,92 @@
 import { useState, useEffect } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
-import { ArrowLeft, TreePine, CheckCircle, XCircle, AlertTriangle, Calendar, MapPin, Building, Download, QrCode, Printer, Shield, Truck, Package } from "lucide-react";
+import { ArrowLeft, TreePine, CheckCircle, XCircle, AlertTriangle, Calendar, Download, QrCode, Printer, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { QRCodeSVG } from "qrcode.react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { supabase } from "@/integrations/supabase/client";
 
-interface LicenseData {
-  code: string;
-  type: "exploitation" | "transport" | "export";
-  status: "valid" | "expired" | "invalid" | "suspended";
-  holder: {
-    name: string;
-    nif: string;
-    type: string;
-  };
-  location: {
-    province: string;
-    municipality: string;
-    area?: string;
-  };
-  details: {
-    species: string[];
-    volume: string;
-    purpose: string;
-  };
-  dates: {
-    issued: string;
-    expires: string;
-  };
-  issuedBy: string;
+interface LicenseVerificationData {
+  license_number: string;
+  license_type: string;
+  status: string;
+  issue_date: string | null;
+  expiry_date: string | null;
 }
 
-const mockLicenses: Record<string, LicenseData> = {
-  "LIC-FL-2024-0234": {
-    code: "LIC-FL-2024-0234",
-    type: "exploitation",
-    status: "valid",
-    holder: {
-      name: "Madeiras do Sul, Lda",
-      nif: "5401234567",
-      type: "Empresa Privada"
-    },
-    location: {
-      province: "Cabinda",
-      municipality: "Buco-Zau",
-      area: "150 hectares"
-    },
-    details: {
-      species: ["Pau-preto", "Tola", "Umbila"],
-      volume: "2.500 m³",
-      purpose: "Exploração comercial sustentável"
-    },
-    dates: {
-      issued: "01/04/2024",
-      expires: "31/03/2025"
-    },
-    issuedBy: "Instituto de Desenvolvimento Florestal"
-  },
-  "LIC-TR-2024-0891": {
-    code: "LIC-TR-2024-0891",
-    type: "transport",
-    status: "valid",
-    holder: {
-      name: "TransLog Angola, SA",
-      nif: "5409876543",
-      type: "Transportadora"
-    },
-    location: {
-      province: "Uíge",
-      municipality: "Carmona",
-    },
-    details: {
-      species: ["Tola"],
-      volume: "80 m³",
-      purpose: "Transporte de madeira serrada"
-    },
-    dates: {
-      issued: "15/06/2024",
-      expires: "14/07/2024"
-    },
-    issuedBy: "Instituto de Desenvolvimento Florestal"
+const getLicenseTypeLabel = (type: string) => {
+  const map: Record<string, string> = {
+    exploitation: "Licença de Exploração",
+    transport: "Guia de Transporte",
+    export: "Licença de Exportação",
+    processing: "Licença de Processamento",
+  };
+  return map[type] || type;
+};
+
+const getStatusInfo = (status: string) => {
+  switch (status) {
+    case "active":
+    case "approved":
+      return {
+        icon: CheckCircle,
+        label: "Licença Válida",
+        description: "Esta licença está activa e em conformidade legal",
+        color: "text-success",
+        bg: "bg-success/10",
+        badgeClass: "bg-success text-success-foreground",
+      };
+    case "expired":
+      return {
+        icon: AlertTriangle,
+        label: "Licença Expirada",
+        description: "Esta licença ultrapassou a data de validade",
+        color: "text-warning",
+        bg: "bg-warning/10",
+        badgeClass: "bg-warning text-warning-foreground",
+      };
+    case "suspended":
+      return {
+        icon: AlertTriangle,
+        label: "Licença Suspensa",
+        description: "Esta licença está temporariamente suspensa",
+        color: "text-warning",
+        bg: "bg-warning/10",
+        badgeClass: "bg-warning text-warning-foreground",
+      };
+    case "submitted":
+    case "pending":
+      return {
+        icon: AlertTriangle,
+        label: "Em Análise",
+        description: "Licença submetida e aguardando aprovação",
+        color: "text-muted-foreground",
+        bg: "bg-muted/30",
+        badgeClass: "bg-muted text-muted-foreground",
+      };
+    case "revoked":
+    case "rejected":
+      return {
+        icon: XCircle,
+        label: "Licença Revogada",
+        description: "Esta licença foi revogada ou rejeitada",
+        color: "text-destructive",
+        bg: "bg-destructive/10",
+        badgeClass: "bg-destructive text-destructive-foreground",
+      };
+    default:
+      return {
+        icon: XCircle,
+        label: "Estado Desconhecido",
+        description: "Estado da licença não identificado",
+        color: "text-muted-foreground",
+        bg: "bg-muted/10",
+        badgeClass: "bg-muted text-muted-foreground",
+      };
   }
 };
 
@@ -90,9 +94,10 @@ const VerifyLicense = () => {
   const { code } = useParams();
   const [searchParams] = useSearchParams();
   const [searchCode, setSearchCode] = useState(code || searchParams.get("code") || "");
-  const [license, setLicense] = useState<LicenseData | null>(null);
+  const [license, setLicense] = useState<LicenseVerificationData | null>(null);
   const [searched, setSearched] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (code) {
@@ -100,15 +105,26 @@ const VerifyLicense = () => {
     }
   }, [code]);
 
-  const handleSearch = (codeToSearch: string) => {
+  const handleSearch = async (codeToSearch: string) => {
     setLoading(true);
     setSearched(true);
-    
-    setTimeout(() => {
-      const found = mockLicenses[codeToSearch.toUpperCase()];
-      setLicense(found || null);
+    setError(null);
+
+    try {
+      const { data, error: queryError } = await (supabase as any)
+        .from('license_verification_public')
+        .select('*')
+        .eq('license_number', codeToSearch.toUpperCase())
+        .maybeSingle();
+
+      if (queryError) throw queryError;
+      setLicense(data as LicenseVerificationData | null);
+    } catch (err: any) {
+      setError('Erro ao verificar a licença. Tente novamente.');
+      setLicense(null);
+    } finally {
       setLoading(false);
-    }, 800);
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -118,67 +134,8 @@ const VerifyLicense = () => {
     }
   };
 
-  const getLicenseTypeInfo = (type: string) => {
-    switch (type) {
-      case "exploitation":
-        return { label: "Licença de Exploração", icon: TreePine, color: "bg-primary text-primary-foreground" };
-      case "transport":
-        return { label: "Guia de Transporte", icon: Truck, color: "bg-info text-info-foreground" };
-      case "export":
-        return { label: "Licença de Exportação", icon: Package, color: "bg-accent text-accent-foreground" };
-      default:
-        return { label: "Licença", icon: TreePine, color: "bg-muted text-muted-foreground" };
-    }
-  };
-
-  const getStatusInfo = (status: string) => {
-    switch (status) {
-      case "valid":
-        return {
-          icon: CheckCircle,
-          label: "Licença Válida",
-          description: "Esta licença está activa e em conformidade legal",
-          color: "text-success",
-          bg: "bg-success/10"
-        };
-      case "expired":
-        return {
-          icon: AlertTriangle,
-          label: "Licença Expirada",
-          description: "Esta licença ultrapassou a data de validade",
-          color: "text-warning",
-          bg: "bg-warning/10"
-        };
-      case "suspended":
-        return {
-          icon: AlertTriangle,
-          label: "Licença Suspensa",
-          description: "Esta licença está temporariamente suspensa por decisão administrativa",
-          color: "text-warning",
-          bg: "bg-warning/10"
-        };
-      case "invalid":
-        return {
-          icon: XCircle,
-          label: "Licença Inválida",
-          description: "Esta licença não é reconhecida pelo sistema",
-          color: "text-destructive",
-          bg: "bg-destructive/10"
-        };
-      default:
-        return {
-          icon: XCircle,
-          label: "Não Encontrada",
-          description: "Nenhuma licença encontrada com este código",
-          color: "text-destructive",
-          bg: "bg-destructive/10"
-        };
-    }
-  };
-
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
       <header className="border-b border-border bg-card">
         <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-3">
@@ -201,7 +158,6 @@ const VerifyLicense = () => {
       </header>
 
       <main className="mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
-        {/* Search Form */}
         <Card className="mb-8">
           <CardHeader>
             <CardTitle className="text-base">Pesquisar Licença</CardTitle>
@@ -213,7 +169,7 @@ const VerifyLicense = () => {
             <form onSubmit={handleSubmit} className="flex gap-2">
               <Input
                 type="text"
-                placeholder="Ex: LIC-FL-2024-0234"
+                placeholder="Ex: LEX-2026-000001"
                 value={searchCode}
                 onChange={(e) => setSearchCode(e.target.value)}
                 className="flex-1 font-mono"
@@ -225,8 +181,26 @@ const VerifyLicense = () => {
           </CardContent>
         </Card>
 
+        {/* Loading */}
+        {loading && (
+          <div className="space-y-4">
+            <Skeleton className="h-24 w-full" />
+            <Skeleton className="h-48 w-full" />
+          </div>
+        )}
+
+        {/* Error */}
+        {error && !loading && (
+          <Card className="bg-destructive/5 border-destructive/20">
+            <CardContent className="flex flex-col items-center py-8">
+              <XCircle className="mb-4 h-12 w-12 text-destructive" />
+              <p className="text-sm text-muted-foreground">{error}</p>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Results */}
-        {searched && !loading && (
+        {searched && !loading && !error && (
           <>
             {license ? (
               <div className="space-y-6 animate-fade-in">
@@ -255,99 +229,36 @@ const VerifyLicense = () => {
                 <Card>
                   <CardHeader className="flex flex-row items-start justify-between">
                     <div>
-                      {(() => {
-                        const typeInfo = getLicenseTypeInfo(license.type);
-                        return (
-                          <Badge className={`mb-2 ${typeInfo.color}`}>
-                            <typeInfo.icon className="mr-1 h-3 w-3" />
-                            {typeInfo.label}
-                          </Badge>
-                        );
-                      })()}
+                      <Badge className={`mb-2 ${getStatusInfo(license.status).badgeClass}`}>
+                        <TreePine className="mr-1 h-3 w-3" />
+                        {getLicenseTypeLabel(license.license_type)}
+                      </Badge>
                       <CardTitle className="text-lg">Licença Florestal</CardTitle>
                       <CardDescription className="font-mono text-base">
-                        {license.code}
+                        {license.license_number}
                       </CardDescription>
                     </div>
                     <QRCodeSVG
-                      value={license.code}
+                      value={license.license_number}
                       size={80}
                       level="H"
                       className="rounded border border-border p-1"
                     />
                   </CardHeader>
                   <CardContent className="space-y-6">
-                    {/* Holder Info */}
+                    {/* Type Info */}
                     <div>
                       <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold text-muted-foreground">
-                        <Building className="h-4 w-4" /> Titular
+                        <TreePine className="h-4 w-4" /> Detalhes
                       </h3>
                       <div className="grid gap-2 rounded-lg bg-muted/50 p-4 sm:grid-cols-2">
-                        <div className="sm:col-span-2">
-                          <p className="text-xs text-muted-foreground">Denominação</p>
-                          <p className="font-medium text-foreground">{license.holder.name}</p>
+                        <div>
+                          <p className="text-xs text-muted-foreground">Tipo de Licença</p>
+                          <p className="font-medium text-foreground">{getLicenseTypeLabel(license.license_type)}</p>
                         </div>
                         <div>
-                          <p className="text-xs text-muted-foreground">NIF</p>
-                          <p className="font-medium text-foreground">{license.holder.nif}</p>
-                        </div>
-                        <div>
-                          <p className="text-xs text-muted-foreground">Tipo</p>
-                          <p className="font-medium text-foreground">{license.holder.type}</p>
-                        </div>
-                      </div>
-                    </div>
-
-                    <Separator />
-
-                    {/* Location */}
-                    <div>
-                      <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold text-muted-foreground">
-                        <MapPin className="h-4 w-4" /> Área de Exploração
-                      </h3>
-                      <div className="grid gap-2 rounded-lg bg-muted/50 p-4 sm:grid-cols-3">
-                        <div>
-                          <p className="text-xs text-muted-foreground">Província</p>
-                          <p className="font-medium text-foreground">{license.location.province}</p>
-                        </div>
-                        <div>
-                          <p className="text-xs text-muted-foreground">Município</p>
-                          <p className="font-medium text-foreground">{license.location.municipality}</p>
-                        </div>
-                        {license.location.area && (
-                          <div>
-                            <p className="text-xs text-muted-foreground">Área</p>
-                            <p className="font-medium text-foreground">{license.location.area}</p>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    <Separator />
-
-                    {/* Details */}
-                    <div>
-                      <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold text-muted-foreground">
-                        <TreePine className="h-4 w-4" /> Detalhes da Licença
-                      </h3>
-                      <div className="grid gap-2 rounded-lg bg-muted/50 p-4 sm:grid-cols-2">
-                        <div className="sm:col-span-2">
-                          <p className="text-xs text-muted-foreground">Espécies Autorizadas</p>
-                          <div className="mt-1 flex flex-wrap gap-1">
-                            {license.details.species.map((species) => (
-                              <Badge key={species} variant="secondary">
-                                {species}
-                              </Badge>
-                            ))}
-                          </div>
-                        </div>
-                        <div>
-                          <p className="text-xs text-muted-foreground">Volume Autorizado</p>
-                          <p className="font-medium text-foreground">{license.details.volume}</p>
-                        </div>
-                        <div>
-                          <p className="text-xs text-muted-foreground">Finalidade</p>
-                          <p className="font-medium text-foreground">{license.details.purpose}</p>
+                          <p className="text-xs text-muted-foreground">Estado</p>
+                          <Badge variant="secondary">{getStatusInfo(license.status).label}</Badge>
                         </div>
                       </div>
                     </div>
@@ -362,21 +273,29 @@ const VerifyLicense = () => {
                       <div className="grid gap-2 rounded-lg bg-muted/50 p-4 sm:grid-cols-2">
                         <div>
                           <p className="text-xs text-muted-foreground">Data de Emissão</p>
-                          <p className="font-medium text-foreground">{license.dates.issued}</p>
+                          <p className="font-medium text-foreground">
+                            {license.issue_date
+                              ? new Date(license.issue_date).toLocaleDateString('pt-PT')
+                              : "Pendente"}
+                          </p>
                         </div>
                         <div>
                           <p className="text-xs text-muted-foreground">Data de Expiração</p>
-                          <p className="font-medium text-foreground">{license.dates.expires}</p>
+                          <p className="font-medium text-foreground">
+                            {license.expiry_date
+                              ? new Date(license.expiry_date).toLocaleDateString('pt-PT')
+                              : "Pendente"}
+                          </p>
                         </div>
                       </div>
                     </div>
 
                     <Separator />
 
-                    {/* Issued By */}
+                    {/* Issuer */}
                     <div className="rounded-lg bg-primary/5 p-4">
                       <p className="text-xs text-muted-foreground">Emitido por</p>
-                      <p className="font-medium text-foreground">{license.issuedBy}</p>
+                      <p className="font-medium text-foreground">Instituto de Desenvolvimento Florestal</p>
                     </div>
 
                     {/* Actions */}
@@ -415,7 +334,6 @@ const VerifyLicense = () => {
           </>
         )}
 
-        {/* Security Notice */}
         <div className="mt-8 rounded-lg border border-border bg-muted/30 p-4">
           <div className="flex items-start gap-3">
             <Shield className="mt-0.5 h-5 w-5 text-primary" />

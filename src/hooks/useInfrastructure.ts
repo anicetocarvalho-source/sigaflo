@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { getCrudErrorMessage } from '@/lib/errorMessages';
 
 // Types
 export interface AgriculturalInfrastructure {
@@ -110,7 +111,7 @@ export function useCreateAgriculturalInfrastructure() {
       toast.success('Infraestrutura registada com sucesso');
     },
     onError: (error) => {
-      toast.error('Erro ao registar: ' + error.message);
+      toast.error(getCrudErrorMessage('create', 'infraestrutura', error));
     },
   });
 }
@@ -134,7 +135,7 @@ export function useUpdateAgriculturalInfrastructure() {
       toast.success('Infraestrutura actualizada com sucesso');
     },
     onError: (error) => {
-      toast.error('Erro ao actualizar: ' + error.message);
+      toast.error(getCrudErrorMessage('update', 'infraestrutura', error));
     },
   });
 }
@@ -192,7 +193,7 @@ export function useCreateMarketInfrastructure() {
       toast.success('Mercado registado com sucesso');
     },
     onError: (error) => {
-      toast.error('Erro ao registar: ' + error.message);
+      toast.error(getCrudErrorMessage('create', 'mercado', error));
     },
   });
 }
@@ -216,7 +217,7 @@ export function useUpdateMarketInfrastructure() {
       toast.success('Mercado actualizado com sucesso');
     },
     onError: (error) => {
-      toast.error('Erro ao actualizar: ' + error.message);
+      toast.error(getCrudErrorMessage('update', 'mercado', error));
     },
   });
 }

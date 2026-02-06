@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { getCrudErrorMessage } from '@/lib/errorMessages';
 
 export interface ProductionRecord {
   id: string;
@@ -104,7 +105,7 @@ export const useCreateProductionRecord = () => {
       toast.success('Registo de produção criado com sucesso');
     },
     onError: (error) => {
-      toast.error('Erro ao criar registo: ' + error.message);
+      toast.error(getCrudErrorMessage('create', 'registo de produção', error));
     },
   });
 };
@@ -130,7 +131,7 @@ export const useUpdateProductionRecord = () => {
       toast.success('Registo atualizado com sucesso');
     },
     onError: (error) => {
-      toast.error('Erro ao atualizar registo: ' + error.message);
+      toast.error(getCrudErrorMessage('update', 'registo de produção', error));
     },
   });
 };

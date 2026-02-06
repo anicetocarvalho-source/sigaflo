@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { getCrudErrorMessage } from '@/lib/errorMessages';
 import type { WorkflowStatus } from './useFarmers';
 
 export type CertificateType = 'production' | 'organic' | 'quality' | 'origin' | 'good_practices';
@@ -174,7 +175,7 @@ export const useCreateCertificate = () => {
       toast.success('Certificado criado com sucesso');
     },
     onError: (error) => {
-      toast.error('Erro ao criar certificado: ' + error.message);
+      toast.error(getCrudErrorMessage('create', 'certificado', error));
     },
   });
 };
@@ -199,7 +200,7 @@ export const useUpdateCertificate = () => {
       toast.success('Certificado atualizado com sucesso');
     },
     onError: (error) => {
-      toast.error('Erro ao atualizar certificado: ' + error.message);
+      toast.error(getCrudErrorMessage('update', 'certificado', error));
     },
   });
 };
@@ -257,7 +258,7 @@ export const useUpdateCertificateStatus = () => {
       toast.success('Estado atualizado com sucesso');
     },
     onError: (error) => {
-      toast.error('Erro ao atualizar estado: ' + error.message);
+      toast.error(getCrudErrorMessage('update', 'estado do certificado', error));
     },
   });
 };
@@ -280,7 +281,7 @@ export const useCreateProductionHistory = () => {
       toast.success('Histórico de produção adicionado');
     },
     onError: (error) => {
-      toast.error('Erro ao adicionar produção: ' + error.message);
+      toast.error(getCrudErrorMessage('create', 'histórico de produção', error));
     },
   });
 };

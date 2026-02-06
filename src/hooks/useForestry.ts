@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { getCrudErrorMessage } from '@/lib/errorMessages';
 import type { Tables, TablesInsert, TablesUpdate } from '@/integrations/supabase/types';
 
 // Database types
@@ -73,7 +74,7 @@ export function useCreateOperator() {
       toast.success('Operador criado com sucesso');
     },
     onError: (error) => {
-      toast.error('Erro ao criar operador: ' + error.message);
+      toast.error(getCrudErrorMessage('create', 'operador', error));
     },
   });
 }
@@ -135,7 +136,7 @@ export function useCreateLicense() {
       toast.success('Licença criada com sucesso');
     },
     onError: (error) => {
-      toast.error('Erro ao criar licença: ' + error.message);
+      toast.error(getCrudErrorMessage('create', 'licença', error));
     },
   });
 }
@@ -159,7 +160,7 @@ export function useUpdateLicense() {
       toast.success('Licença actualizada com sucesso');
     },
     onError: (error) => {
-      toast.error('Erro ao actualizar licença: ' + error.message);
+      toast.error(getCrudErrorMessage('update', 'licença', error));
     },
   });
 }
@@ -202,7 +203,7 @@ export function useCreateTree() {
       toast.success('Árvore registada com sucesso');
     },
     onError: (error) => {
-      toast.error('Erro ao registar árvore: ' + error.message);
+      toast.error(getCrudErrorMessage('create', 'árvore', error));
     },
   });
 }
@@ -245,7 +246,7 @@ export function useCreateLog() {
       toast.success('Tora registada com sucesso');
     },
     onError: (error) => {
-      toast.error('Erro ao registar tora: ' + error.message);
+      toast.error(getCrudErrorMessage('create', 'tora', error));
     },
   });
 }
@@ -282,7 +283,7 @@ export function useCreateTransportPermit() {
       toast.success('Guia de transporte criada com sucesso');
     },
     onError: (error) => {
-      toast.error('Erro ao criar guia: ' + error.message);
+      toast.error(getCrudErrorMessage('create', 'guia de transporte', error));
     },
   });
 }
@@ -319,7 +320,7 @@ export function useCreateInfraction() {
       toast.success('Auto de infracção criado com sucesso');
     },
     onError: (error) => {
-      toast.error('Erro ao criar auto: ' + error.message);
+      toast.error(getCrudErrorMessage('create', 'auto de infracção', error));
     },
   });
 }
@@ -342,7 +343,7 @@ export function useUpdateInfraction() {
       toast.success('Auto actualizado com sucesso');
     },
     onError: (error) => {
-      toast.error('Erro ao actualizar auto: ' + error.message);
+      toast.error(getCrudErrorMessage('update', 'auto de infracção', error));
     },
   });
 }
@@ -379,7 +380,7 @@ export function useCreateComplaint() {
       toast.success('Denúncia registada com sucesso');
     },
     onError: (error) => {
-      toast.error('Erro ao registar denúncia: ' + error.message);
+      toast.error(getCrudErrorMessage('create', 'denúncia', error));
     },
   });
 }
@@ -416,7 +417,7 @@ export function useCreateNursery() {
       toast.success('Viveiro criado com sucesso');
     },
     onError: (error) => {
-      toast.error('Erro ao criar viveiro: ' + error.message);
+      toast.error(getCrudErrorMessage('create', 'viveiro', error));
     },
   });
 }
@@ -453,7 +454,7 @@ export function useCreateReforestationProgram() {
       toast.success('Programa de reflorestamento criado com sucesso');
     },
     onError: (error) => {
-      toast.error('Erro ao criar programa: ' + error.message);
+      toast.error(getCrudErrorMessage('create', 'programa de reflorestamento', error));
     },
   });
 }
