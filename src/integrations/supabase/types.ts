@@ -4822,6 +4822,76 @@ export type Database = {
         }
         Relationships: []
       }
+      profiles_safe: {
+        Row: {
+          avatar_url: string | null
+          created_at: string | null
+          department: string | null
+          email: string | null
+          entity_id: string | null
+          full_name: string | null
+          id: string | null
+          is_active: boolean | null
+          municipality_id: string | null
+          phone: string | null
+          position: string | null
+          province_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string | null
+          department?: string | null
+          email?: never
+          entity_id?: string | null
+          full_name?: string | null
+          id?: string | null
+          is_active?: boolean | null
+          municipality_id?: string | null
+          phone?: never
+          position?: string | null
+          province_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string | null
+          department?: string | null
+          email?: never
+          entity_id?: string | null
+          full_name?: string | null
+          id?: string | null
+          is_active?: boolean | null
+          municipality_id?: string | null
+          phone?: never
+          position?: string | null
+          province_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_entity_id_fkey"
+            columns: ["entity_id"]
+            isOneToOne: false
+            referencedRelation: "farmers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_municipality_id_fkey"
+            columns: ["municipality_id"]
+            isOneToOne: false
+            referencedRelation: "municipalities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_province_id_fkey"
+            columns: ["province_id"]
+            isOneToOne: false
+            referencedRelation: "provinces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       calculate_risk_score: {
