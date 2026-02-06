@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
+import { getCrudErrorMessage } from '@/lib/errorMessages';
 
 // Types
 export interface SystemSetting {
@@ -86,7 +87,7 @@ export function useUpdateSystemSetting() {
       toast.success('Configuração guardada');
     },
     onError: (error) => {
-      toast.error('Erro ao guardar: ' + error.message);
+      toast.error(getCrudErrorMessage('update', 'configuração', error));
     },
   });
 }
@@ -141,7 +142,7 @@ export function useUpdateUserPreferences() {
       toast.success('Preferências guardadas');
     },
     onError: (error) => {
-      toast.error('Erro ao guardar: ' + error.message);
+      toast.error(getCrudErrorMessage('update', 'preferências', error));
     },
   });
 }

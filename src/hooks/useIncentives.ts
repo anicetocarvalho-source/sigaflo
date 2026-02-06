@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { getCrudErrorMessage } from '@/lib/errorMessages';
 
 // Types
 export interface IncentiveProgram {
@@ -146,7 +147,7 @@ export function useCreateProgram() {
       toast.success('Programa criado com sucesso');
     },
     onError: (error) => {
-      toast.error('Erro ao criar programa: ' + error.message);
+      toast.error(getCrudErrorMessage('create', 'programa', error));
     },
   });
 }
@@ -171,7 +172,7 @@ export function useUpdateProgram() {
       toast.success('Programa atualizado');
     },
     onError: (error) => {
-      toast.error('Erro ao atualizar: ' + error.message);
+      toast.error(getCrudErrorMessage('update', 'programa', error));
     },
   });
 }

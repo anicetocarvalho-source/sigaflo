@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { getCrudErrorMessage } from '@/lib/errorMessages';
 
 export interface ClimateOccurrence {
   id: string;
@@ -208,7 +209,7 @@ export function useCreateOccurrence() {
       toast.success('Ocorrência registada com sucesso');
     },
     onError: (error: any) => {
-      toast.error('Erro ao registar ocorrência: ' + error.message);
+      toast.error(getCrudErrorMessage('create', 'ocorrência', error));
     }
   });
 }
@@ -235,7 +236,7 @@ export function useUpdateOccurrence() {
       toast.success('Ocorrência atualizada com sucesso');
     },
     onError: (error: any) => {
-      toast.error('Erro ao atualizar ocorrência: ' + error.message);
+      toast.error(getCrudErrorMessage('update', 'ocorrência', error));
     }
   });
 }
@@ -277,7 +278,7 @@ export function useSimulateSmsInbound() {
       toast.success('SMS recebido e processado com sucesso');
     },
     onError: (error: any) => {
-      toast.error('Erro ao processar SMS: ' + error.message);
+      toast.error(getCrudErrorMessage('create', 'SMS', error));
     }
   });
 }
@@ -300,7 +301,7 @@ export function useSendAlert() {
       toast.success('Alertas SMS enviados com sucesso');
     },
     onError: (error: any) => {
-      toast.error('Erro ao enviar alertas: ' + error.message);
+      toast.error(getCrudErrorMessage('create', 'alertas SMS', error));
     }
   });
 }
@@ -328,7 +329,7 @@ export function useCreateSurvey() {
       toast.success('Inquéritos criados e enviados com sucesso');
     },
     onError: (error: any) => {
-      toast.error('Erro ao criar inquéritos: ' + error.message);
+      toast.error(getCrudErrorMessage('create', 'inquéritos', error));
     }
   });
 }

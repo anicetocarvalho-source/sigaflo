@@ -113,3 +113,15 @@ export function getCrudErrorMessage(
   
   return `${base} Tente novamente.`;
 }
+
+/**
+ * Helper para usar em onError de mutations do TanStack Query.
+ * Uso: onError: handleMutationError('criar', 'agricultor')
+ */
+export function handleMutationError(operation: 'create' | 'update' | 'delete', entity: string) {
+  return (error: Error) => {
+    import('sonner').then(({ toast }) => {
+      toast.error(getCrudErrorMessage(operation, entity, error));
+    });
+  };
+}

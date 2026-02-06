@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { getCrudErrorMessage } from '@/lib/errorMessages';
 
 export interface CoffeeLot {
   id: string;
@@ -113,7 +114,7 @@ export function useCreateCoffeeLot() {
       toast.success('Lote de café criado com sucesso');
     },
     onError: (error) => {
-      toast.error('Erro ao criar lote: ' + error.message);
+      toast.error(getCrudErrorMessage('create', 'lote de café', error));
     },
   });
 }
@@ -137,7 +138,7 @@ export function useUpdateCoffeeLot() {
       toast.success('Lote actualizado com sucesso');
     },
     onError: (error) => {
-      toast.error('Erro ao actualizar lote: ' + error.message);
+      toast.error(getCrudErrorMessage('update', 'lote de café', error));
     },
   });
 }

@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { getCrudErrorMessage } from '@/lib/errorMessages';
 import { 
   type FarmerType as FarmerTypeConstant, 
   type WorkflowStatus as WorkflowStatusConstant 
@@ -228,7 +229,7 @@ export const useCreateFarmer = () => {
       toast.success('Registo criado com sucesso');
     },
     onError: (error) => {
-      toast.error('Erro ao criar registo: ' + error.message);
+      toast.error(getCrudErrorMessage('create', 'registo', error));
     },
   });
 };
@@ -270,7 +271,7 @@ export const useUpdateFarmer = () => {
       toast.success('Registo atualizado com sucesso');
     },
     onError: (error) => {
-      toast.error('Erro ao atualizar registo: ' + error.message);
+      toast.error(getCrudErrorMessage('update', 'registo', error));
     },
   });
 };
