@@ -6,12 +6,13 @@ import { z } from 'zod';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
-import { Loader2, LogIn, UserPlus, Leaf } from 'lucide-react';
+import { Loader2, LogIn, UserPlus, Leaf, Shield, BarChart3, Globe } from 'lucide-react';
 import { DemoLogin } from '@/components/auth/DemoLogin';
+import authBg from '@/assets/auth-bg.jpg';
 
 const loginSchema = z.object({
   email: z.string().email('Email inválido'),
@@ -39,7 +40,6 @@ const AuthPage = () => {
   const [activeTab, setActiveTab] = useState('login');
   const [loadingDemoAccount, setLoadingDemoAccount] = useState<string | null>(null);
 
-  // Redirect if already logged in
   if (user) {
     navigate('/');
     return null;
@@ -59,7 +59,6 @@ const AuthPage = () => {
     setIsLoading(true);
     const { error } = await signIn(data.email, data.password);
     setIsLoading(false);
-
     if (error) {
       if (error.message.includes('Invalid login credentials')) {
         toast.error('Credenciais inválidas. Verifique o email e a palavra-passe.');
@@ -70,7 +69,6 @@ const AuthPage = () => {
       }
       return;
     }
-
     toast.success('Sessão iniciada com sucesso!');
     navigate('/');
   };
@@ -82,7 +80,6 @@ const AuthPage = () => {
       phone: data.phone || '',
     });
     setIsLoading(false);
-
     if (error) {
       if (error.message.includes('User already registered')) {
         toast.error('Este email já está registado. Tente iniciar sessão.');
@@ -91,7 +88,6 @@ const AuthPage = () => {
       }
       return;
     }
-
     toast.success('Conta criada com sucesso! Pode agora iniciar sessão.');
     setActiveTab('login');
     loginForm.setValue('email', data.email);
@@ -100,12 +96,9 @@ const AuthPage = () => {
   const handleDemoLogin = async (email: string, password: string) => {
     setLoadingDemoAccount(email);
     setIsLoading(true);
-    
     const { error } = await signIn(email, password);
-    
     setIsLoading(false);
     setLoadingDemoAccount(null);
-
     if (error) {
       if (error.message.includes('Invalid login credentials')) {
         toast.error('Conta de demonstração não configurada. Contacte o administrador.');
@@ -114,130 +107,221 @@ const AuthPage = () => {
       }
       return;
     }
-
     toast.success('Sessão de demonstração iniciada!');
     navigate('/');
   };
 
+  const features = [
+    { icon: Shield, label: 'Segurança institucional com RBAC jurisdicional' },
+    { icon: BarChart3, label: 'Analytics e inteligência agro-florestal' },
+    { icon: Globe, label: 'Cobertura nacional — 18 províncias' },
+  ];
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950 dark:to-gray-900 p-4">
-      <div className="w-full max-w-md">
-        <Card>
-          <CardHeader className="text-center space-y-4">
-            <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
-              <Leaf className="h-8 w-8 text-primary" />
+    <div className="min-h-screen flex">
+      {/* Left panel — hero image + branding */}
+      <div className="hidden lg:flex lg:w-[55%] relative overflow-hidden">
+        <img
+          src={authBg}
+          alt="Paisagem agrícola angolana"
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+        {/* Dark overlay */}
+        <div className="absolute inset-0 bg-gradient-to-br from-[hsl(152,45%,12%)/0.85] via-[hsl(152,45%,18%)/0.7] to-[hsl(150,40%,10%)/0.8]" />
+
+        {/* Content over image */}
+        <div className="relative z-10 flex flex-col justify-between p-12 w-full">
+          {/* Top — logo */}
+          <div className="flex items-center gap-3">
+            <div className="h-11 w-11 rounded-xl bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center">
+              <Leaf className="h-6 w-6 text-white" />
             </div>
             <div>
-              <CardTitle className="text-2xl font-bold">SIGAFLO</CardTitle>
-              <CardDescription>
-                Sistema Integrado de Gestão Agro-Florestal
-              </CardDescription>
+              <span className="text-white font-bold text-xl tracking-tight" style={{ fontFamily: 'Outfit, sans-serif' }}>
+                SIGAFLO
+              </span>
+              <span className="block text-white/60 text-[11px] leading-tight tracking-wide uppercase">
+                República de Angola
+              </span>
             </div>
-          </CardHeader>
-          <CardContent>
-            <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="login" className="flex items-center gap-2">
-                  <LogIn className="h-4 w-4" />
-                  Entrar
-                </TabsTrigger>
-                <TabsTrigger value="signup" className="flex items-center gap-2">
-                  <UserPlus className="h-4 w-4" />
-                  Registar
-                </TabsTrigger>
-              </TabsList>
+          </div>
 
-              <TabsContent value="login" className="mt-6">
-                <Form {...loginForm}>
-                  <form onSubmit={loginForm.handleSubmit(handleLogin)} className="space-y-4">
+          {/* Center — headline */}
+          <div className="max-w-lg">
+            <h1
+              className="text-4xl xl:text-5xl font-bold text-white leading-[1.15] mb-5"
+              style={{ fontFamily: 'Outfit, sans-serif' }}
+            >
+              Sistema Integrado de Gestão Agro-Florestal
+            </h1>
+            <p className="text-white/70 text-lg leading-relaxed mb-10">
+              Plataforma institucional para a gestão, rastreabilidade e análise dos sectores agropecuário e florestal de Angola.
+            </p>
+
+            {/* Feature pills */}
+            <div className="space-y-3">
+              {features.map((f, i) => (
+                <div key={i} className="flex items-center gap-3">
+                  <div className="h-9 w-9 rounded-lg bg-white/10 backdrop-blur-sm flex items-center justify-center flex-shrink-0">
+                    <f.icon className="h-4 w-4 text-[hsl(38,92%,55%)]" />
+                  </div>
+                  <span className="text-white/80 text-sm">{f.label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Bottom — footer */}
+          <div className="flex items-center gap-2 text-white/40 text-xs">
+            <span>MINAGRIP</span>
+            <span>·</span>
+            <span>INCA</span>
+            <span>·</span>
+            <span>IDF</span>
+            <span>·</span>
+            <span>INE</span>
+            <span>·</span>
+            <span>INAMET</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Right panel — auth forms */}
+      <div className="flex-1 flex flex-col items-center justify-center bg-background p-6 sm:p-10 lg:p-16 overflow-y-auto">
+        {/* Mobile logo */}
+        <div className="lg:hidden flex items-center gap-3 mb-8">
+          <div className="h-12 w-12 rounded-xl gradient-primary flex items-center justify-center">
+            <Leaf className="h-6 w-6 text-white" />
+          </div>
+          <div>
+            <span className="text-foreground font-bold text-2xl tracking-tight" style={{ fontFamily: 'Outfit, sans-serif' }}>
+              SIGAFLO
+            </span>
+            <span className="block text-muted-foreground text-xs">
+              Sistema Integrado de Gestão Agro-Florestal
+            </span>
+          </div>
+        </div>
+
+        <div className="w-full max-w-[420px]">
+          <div className="mb-8">
+            <h2
+              className="text-2xl font-bold text-foreground mb-1"
+              style={{ fontFamily: 'Outfit, sans-serif' }}
+            >
+              {activeTab === 'login' ? 'Bem-vindo de volta' : 'Criar conta'}
+            </h2>
+            <p className="text-muted-foreground text-sm">
+              {activeTab === 'login'
+                ? 'Introduza as suas credenciais para aceder à plataforma.'
+                : 'Preencha os dados para registar uma nova conta.'}
+            </p>
+          </div>
+
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <TabsList className="grid w-full grid-cols-2 mb-6">
+              <TabsTrigger value="login" className="flex items-center gap-2">
+                <LogIn className="h-4 w-4" />
+                Entrar
+              </TabsTrigger>
+              <TabsTrigger value="signup" className="flex items-center gap-2">
+                <UserPlus className="h-4 w-4" />
+                Registar
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="login" className="mt-0">
+              <Form {...loginForm}>
+                <form onSubmit={loginForm.handleSubmit(handleLogin)} className="space-y-5">
+                  <FormField
+                    control={loginForm.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Email</FormLabel>
+                        <FormControl>
+                          <Input placeholder="seu.email@exemplo.com" type="email" className="h-11" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={loginForm.control}
+                    name="password"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Palavra-passe</FormLabel>
+                        <FormControl>
+                          <Input placeholder="••••••••" type="password" className="h-11" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <Button type="submit" className="w-full h-11 text-sm font-semibold" disabled={isLoading}>
+                    {isLoading && !loadingDemoAccount ? (
+                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    ) : (
+                      <LogIn className="h-4 w-4 mr-2" />
+                    )}
+                    Entrar na plataforma
+                  </Button>
+                </form>
+              </Form>
+            </TabsContent>
+
+            <TabsContent value="signup" className="mt-0">
+              <Form {...signupForm}>
+                <form onSubmit={signupForm.handleSubmit(handleSignup)} className="space-y-4">
+                  <FormField
+                    control={signupForm.control}
+                    name="full_name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Nome Completo</FormLabel>
+                        <FormControl>
+                          <Input placeholder="João Silva" className="h-11" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={signupForm.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Email</FormLabel>
+                        <FormControl>
+                          <Input placeholder="seu.email@exemplo.com" type="email" className="h-11" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={signupForm.control}
+                    name="phone"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Telefone (opcional)</FormLabel>
+                        <FormControl>
+                          <Input placeholder="+244 923 456 789" className="h-11" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <div className="grid grid-cols-2 gap-3">
                     <FormField
-                      control={loginForm.control}
-                      name="email"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Email</FormLabel>
-                          <FormControl>
-                            <Input placeholder="seu.email@exemplo.com" type="email" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={loginForm.control}
+                      control={signupForm.control}
                       name="password"
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Palavra-passe</FormLabel>
                           <FormControl>
-                            <Input placeholder="••••••••" type="password" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <Button type="submit" className="w-full" disabled={isLoading}>
-                      {isLoading && !loadingDemoAccount ? (
-                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                      ) : (
-                        <LogIn className="h-4 w-4 mr-2" />
-                      )}
-                      Entrar
-                    </Button>
-                  </form>
-                </Form>
-              </TabsContent>
-
-              <TabsContent value="signup" className="mt-6">
-                <Form {...signupForm}>
-                  <form onSubmit={signupForm.handleSubmit(handleSignup)} className="space-y-4">
-                    <FormField
-                      control={signupForm.control}
-                      name="full_name"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Nome Completo</FormLabel>
-                          <FormControl>
-                            <Input placeholder="João Silva" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={signupForm.control}
-                      name="email"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Email</FormLabel>
-                          <FormControl>
-                            <Input placeholder="seu.email@exemplo.com" type="email" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={signupForm.control}
-                      name="phone"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Telefone (opcional)</FormLabel>
-                          <FormControl>
-                            <Input placeholder="+244 923 456 789" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={signupForm.control}
-                      name="password"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Palavra-passe</FormLabel>
-                          <FormControl>
-                            <Input placeholder="••••••••" type="password" {...field} />
+                            <Input placeholder="••••••" type="password" className="h-11" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -248,34 +332,48 @@ const AuthPage = () => {
                       name="confirmPassword"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Confirmar Palavra-passe</FormLabel>
+                          <FormLabel>Confirmar</FormLabel>
                           <FormControl>
-                            <Input placeholder="••••••••" type="password" {...field} />
+                            <Input placeholder="••••••" type="password" className="h-11" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
-                    <Button type="submit" className="w-full" disabled={isLoading}>
-                      {isLoading ? (
-                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                      ) : (
-                        <UserPlus className="h-4 w-4 mr-2" />
-                      )}
-                      Registar
-                    </Button>
-                  </form>
-                </Form>
-              </TabsContent>
-            </Tabs>
-          </CardContent>
-        </Card>
+                  </div>
+                  <Button type="submit" className="w-full h-11 text-sm font-semibold" disabled={isLoading}>
+                    {isLoading ? (
+                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    ) : (
+                      <UserPlus className="h-4 w-4 mr-2" />
+                    )}
+                    Criar conta
+                  </Button>
+                </form>
+              </Form>
+            </TabsContent>
+          </Tabs>
 
-        <DemoLogin 
-          onSelectAccount={handleDemoLogin}
-          isLoading={isLoading}
-          loadingAccount={loadingDemoAccount}
-        />
+          {/* Divider */}
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-border" />
+            </div>
+            <div className="relative flex justify-center text-xs">
+              <span className="bg-background px-3 text-muted-foreground">ou acesso rápido</span>
+            </div>
+          </div>
+
+          <DemoLogin
+            onSelectAccount={handleDemoLogin}
+            isLoading={isLoading}
+            loadingAccount={loadingDemoAccount}
+          />
+
+          <p className="text-center text-xs text-muted-foreground mt-8">
+            © {new Date().getFullYear()} SIGAFLO — Todos os direitos reservados
+          </p>
+        </div>
       </div>
     </div>
   );
