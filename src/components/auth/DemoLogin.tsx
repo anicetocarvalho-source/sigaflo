@@ -127,72 +127,49 @@ export const DemoLogin = ({ onSelectAccount, isLoading, loadingAccount }: DemoLo
   };
 
   return (
-    <Card className="mt-6 border-dashed border-2 border-primary/30 bg-primary/5">
-      <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Users className="h-5 w-5 text-primary" />
-            <CardTitle className="text-lg">Login de Demonstração</CardTitle>
-          </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleSeedDemoUsers}
-            disabled={isSeeding}
-            className="text-xs"
+    <div className="space-y-3">
+      <div className="flex items-center justify-between">
+        <p className="text-xs text-muted-foreground">Contas de demonstração</p>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={handleSeedDemoUsers}
+          disabled={isSeeding}
+          className="text-xs h-7 px-2"
+        >
+          {isSeeding ? (
+            <Loader2 className="h-3 w-3 animate-spin mr-1" />
+          ) : (
+            <Settings className="h-3 w-3 mr-1" />
+          )}
+          Configurar
+        </Button>
+      </div>
+      <div className="grid grid-cols-2 gap-1.5">
+        {DEMO_ACCOUNTS.map((account) => (
+          <button
+            key={account.email}
+            className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-left transition-colors hover:bg-accent/50 disabled:opacity-50 ${account.color}`}
+            onClick={() => onSelectAccount(account.email, account.password)}
+            disabled={isLoading}
           >
-            {isSeeding ? (
-              <Loader2 className="h-3 w-3 animate-spin mr-1" />
-            ) : (
-              <Settings className="h-3 w-3 mr-1" />
-            )}
-            Configurar Contas
-          </Button>
-        </div>
-        <CardDescription>
-          Escolha uma conta de teste para explorar as funcionalidades da plataforma
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-2">
-        <div className="grid gap-2">
-          {DEMO_ACCOUNTS.map((account) => (
-            <Button
-              key={account.email}
-              variant="outline"
-              className={`h-auto p-3 justify-start text-left ${account.color} hover:opacity-80 transition-opacity`}
-              onClick={() => onSelectAccount(account.email, account.password)}
-              disabled={isLoading}
-            >
-              <div className="flex items-start gap-3 w-full">
-                <div className="mt-0.5">
-                  {loadingAccount === account.email ? (
-                    <Loader2 className="h-5 w-5 animate-spin" />
-                  ) : (
-                    account.icon
-                  )}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="font-medium text-sm">
-                      {getRoleLabel(account.role)}
-                    </span>
-                    <Badge variant="secondary" className="text-xs">
-                      Demo
-                    </Badge>
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">
-                    {account.description}
-                  </p>
-                </div>
-              </div>
-            </Button>
-          ))}
-        </div>
-        <p className="text-xs text-muted-foreground text-center pt-2">
-          Todas as contas de demonstração usam a palavra-passe: <code className="bg-muted px-1 rounded">demo123456</code>
-        </p>
-      </CardContent>
-    </Card>
+            <div className="flex-shrink-0">
+              {loadingAccount === account.email ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <span className="[&>svg]:h-4 [&>svg]:w-4">{account.icon}</span>
+              )}
+            </div>
+            <span className="text-xs font-medium truncate">
+              {getRoleLabel(account.role)}
+            </span>
+          </button>
+        ))}
+      </div>
+      <p className="text-[10px] text-muted-foreground text-center">
+        Palavra-passe: <code className="bg-muted px-1 rounded text-[10px]">demo123456</code>
+      </p>
+    </div>
   );
 };
 

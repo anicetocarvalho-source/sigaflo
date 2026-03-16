@@ -187,7 +187,7 @@ const AuthPage = () => {
       </div>
 
       {/* Right panel — auth forms */}
-      <div className="flex-1 flex flex-col items-center justify-center bg-background p-6 sm:p-10 lg:p-16 overflow-y-auto">
+      <div className="flex-1 flex flex-col items-center bg-background p-6 sm:p-10 lg:p-12 overflow-y-auto min-h-screen lg:justify-center">
         {/* Mobile logo */}
         <div className="lg:hidden flex items-center gap-3 mb-8">
           <div className="h-12 w-12 rounded-xl gradient-primary flex items-center justify-center">
