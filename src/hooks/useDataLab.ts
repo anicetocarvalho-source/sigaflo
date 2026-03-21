@@ -367,7 +367,7 @@ export function useDataLabStats() {
         pending_requests: requests.count || 0,
         total_queries_today: queries.count || 0,
         total_exports_today: exports.count || 0,
-        active_sessions: Math.floor(Math.random() * 10) + 1, // Mock for now
+        active_sessions: 0, // TODO: implement real session tracking
       } as DataLabStats;
     },
   });

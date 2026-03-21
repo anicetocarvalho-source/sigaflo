@@ -85,9 +85,9 @@ export function ProductiveProfileDetail({ profileId, onBack }: ProductiveProfile
     (profile.complianceScore * 0.6) + (activeCerts.length > 0 ? 40 : 0)
   );
 
-  // Calculate production trend (simulated - would need historical comparison)
+  // Calculate production trend from actual historical data
   const productionTrend = productionHistory.length > 1 
-    ? Math.round((Math.random() * 30) - 10) 
+    ? Math.round(((productionHistory[0]?.quantity || 0) - (productionHistory[1]?.quantity || 0)) / Math.max(productionHistory[1]?.quantity || 1, 1) * 100) 
     : 0;
 
   const subsidiesReceived = incentivesHistory
