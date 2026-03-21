@@ -308,22 +308,7 @@ export function useEventFrequencyData() {
         yearlyData[year].total++;
       });
 
-      // Add simulated historical data if no real data
-      const years = [2020, 2021, 2022, 2023, 2024];
-      years.forEach(year => {
-        if (!yearlyData[year]) {
-          yearlyData[year] = {
-            year,
-            drought: Math.floor(Math.random() * 8) + 2,
-            flood: Math.floor(Math.random() * 6) + 1,
-            fire: Math.floor(Math.random() * 4),
-            pest: Math.floor(Math.random() * 5) + 1,
-            total: 0
-          };
-          yearlyData[year].total = yearlyData[year].drought + yearlyData[year].flood + 
-                                    yearlyData[year].fire + yearlyData[year].pest;
-        }
-      });
+      // Only include years with real data - no simulated data
 
       return Object.values(yearlyData).sort((a, b) => a.year - b.year);
     }

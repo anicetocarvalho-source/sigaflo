@@ -80,6 +80,24 @@ import SettingsPage from "./pages/settings/SettingsPage";
 
 const queryClient = new QueryClient();
 
+// Role groups for route protection
+const ADMIN_ROLES: Array<'admin_national' | 'admin_provincial' | 'admin_municipal' | 'technician_national' | 'technician_provincial' | 'technician_municipal' | 'private_entity' | 'viewer'> = ['admin_national', 'admin_provincial', 'admin_municipal'];
+const TECHNICIAN_AND_ADMIN: Array<'admin_national' | 'admin_provincial' | 'admin_municipal' | 'technician_national' | 'technician_provincial' | 'technician_municipal' | 'private_entity' | 'viewer'> = [
+  'admin_national', 'admin_provincial', 'admin_municipal',
+  'technician_national', 'technician_provincial', 'technician_municipal'
+];
+const NATIONAL_LEVEL: Array<'admin_national' | 'admin_provincial' | 'admin_municipal' | 'technician_national' | 'technician_provincial' | 'technician_municipal' | 'private_entity' | 'viewer'> = ['admin_national', 'technician_national'];
+const ALL_INTERNAL: Array<'admin_national' | 'admin_provincial' | 'admin_municipal' | 'technician_national' | 'technician_provincial' | 'technician_municipal' | 'private_entity' | 'viewer'> = [
+  'admin_national', 'admin_provincial', 'admin_municipal',
+  'technician_national', 'technician_provincial', 'technician_municipal',
+  'private_entity'
+];
+const FORESTRY_ROLES: Array<'admin_national' | 'admin_provincial' | 'admin_municipal' | 'technician_national' | 'technician_provincial' | 'technician_municipal' | 'private_entity' | 'viewer'> = [
+  'admin_national', 'admin_provincial', 'admin_municipal',
+  'technician_national', 'technician_provincial', 'technician_municipal',
+  'private_entity'
+];
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
@@ -95,114 +113,95 @@ const App = () => (
             {/* Protected Routes */}
             <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
             
-            {/* Farmers Module */}
-            <Route path="/agricultores" element={<ProtectedRoute><FarmersListPage /></ProtectedRoute>} />
-            <Route path="/agricultores/novo" element={<ProtectedRoute><FarmerNewPage /></ProtectedRoute>} />
-            <Route path="/agricultores/escolas" element={<ProtectedRoute><FieldSchoolsPage /></ProtectedRoute>} />
-            <Route path="/agricultores/cooperativas" element={<ProtectedRoute><CooperativesPage /></ProtectedRoute>} />
-            <Route path="/agricultores/:id" element={<ProtectedRoute><FarmerDetailPage /></ProtectedRoute>} />
-            <Route path="/agricultores/:id/editar" element={<ProtectedRoute><FarmerEditPage /></ProtectedRoute>} />
-            <Route path="/agricultores/:id/membros" element={<ProtectedRoute><AddMembersPage /></ProtectedRoute>} />
+            {/* Farmers Module - all internal roles */}
+            <Route path="/agricultores" element={<ProtectedRoute requiredRoles={ALL_INTERNAL}><FarmersListPage /></ProtectedRoute>} />
+            <Route path="/agricultores/novo" element={<ProtectedRoute requiredRoles={TECHNICIAN_AND_ADMIN}><FarmerNewPage /></ProtectedRoute>} />
+            <Route path="/agricultores/escolas" element={<ProtectedRoute requiredRoles={ALL_INTERNAL}><FieldSchoolsPage /></ProtectedRoute>} />
+            <Route path="/agricultores/cooperativas" element={<ProtectedRoute requiredRoles={ALL_INTERNAL}><CooperativesPage /></ProtectedRoute>} />
+            <Route path="/agricultores/:id" element={<ProtectedRoute requiredRoles={ALL_INTERNAL}><FarmerDetailPage /></ProtectedRoute>} />
+            <Route path="/agricultores/:id/editar" element={<ProtectedRoute requiredRoles={TECHNICIAN_AND_ADMIN}><FarmerEditPage /></ProtectedRoute>} />
+            <Route path="/agricultores/:id/membros" element={<ProtectedRoute requiredRoles={TECHNICIAN_AND_ADMIN}><AddMembersPage /></ProtectedRoute>} />
             
             {/* Certificates Module */}
-            <Route path="/certificados" element={<ProtectedRoute><CertificatesPage /></ProtectedRoute>} />
-            <Route path="/certificados/novo" element={<ProtectedRoute><CertificateNewPage /></ProtectedRoute>} />
-            <Route path="/certificados/verificar" element={<ProtectedRoute><CertificateVerificationPage /></ProtectedRoute>} />
-            <Route path="/certificados/:id" element={<ProtectedRoute><CertificateDetailPage /></ProtectedRoute>} />
+            <Route path="/certificados" element={<ProtectedRoute requiredRoles={TECHNICIAN_AND_ADMIN}><CertificatesPage /></ProtectedRoute>} />
+            <Route path="/certificados/novo" element={<ProtectedRoute requiredRoles={TECHNICIAN_AND_ADMIN}><CertificateNewPage /></ProtectedRoute>} />
+            <Route path="/certificados/verificar" element={<ProtectedRoute requiredRoles={ALL_INTERNAL}><CertificateVerificationPage /></ProtectedRoute>} />
+            <Route path="/certificados/:id" element={<ProtectedRoute requiredRoles={TECHNICIAN_AND_ADMIN}><CertificateDetailPage /></ProtectedRoute>} />
             
             {/* Production Module */}
-            <Route path="/producao" element={<ProtectedRoute><ProductionPage /></ProtectedRoute>} />
-            <Route path="/producao/novo" element={<ProtectedRoute><ProductionNewPage /></ProtectedRoute>} />
-            <Route path="/producao/:id" element={<ProtectedRoute><ProductionDetailPage /></ProtectedRoute>} />
-            <Route path="/producao/:id/editar" element={<ProtectedRoute><ProductionEditPage /></ProtectedRoute>} />
+            <Route path="/producao" element={<ProtectedRoute requiredRoles={ALL_INTERNAL}><ProductionPage /></ProtectedRoute>} />
+            <Route path="/producao/novo" element={<ProtectedRoute requiredRoles={TECHNICIAN_AND_ADMIN}><ProductionNewPage /></ProtectedRoute>} />
+            <Route path="/producao/:id" element={<ProtectedRoute requiredRoles={ALL_INTERNAL}><ProductionDetailPage /></ProtectedRoute>} />
+            <Route path="/producao/:id/editar" element={<ProtectedRoute requiredRoles={TECHNICIAN_AND_ADMIN}><ProductionEditPage /></ProtectedRoute>} />
             
             {/* Admin Routes */}
-            <Route 
-              path="/utilizadores" 
-              element={
-                <ProtectedRoute requiredRoles={['admin_national', 'admin_provincial', 'admin_municipal']}>
-                  <UsersPage />
-                </ProtectedRoute>
-              } 
-            />
+            <Route path="/utilizadores" element={<ProtectedRoute requiredRoles={ADMIN_ROLES}><UsersPage /></ProtectedRoute>} />
             
             {/* Profile */}
             <Route path="/perfil" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
             
             {/* Occurrences */}
-            <Route path="/ocorrencias/climaticas" element={<ProtectedRoute><ClimateOccurrencesPage /></ProtectedRoute>} />
-            <Route path="/ocorrencias/climaticas/:id" element={<ProtectedRoute><OccurrenceDetailPage /></ProtectedRoute>} />
-            <Route path="/ocorrencias/fitossanitarias" element={<ProtectedRoute><PhytosanitaryOccurrencesPage /></ProtectedRoute>} />
-            <Route path="/ocorrencias/alertas" element={<ProtectedRoute><OccurrenceAlertsPage /></ProtectedRoute>} />
-            <Route path="/ocorrencias/*" element={<ProtectedRoute><OccurrencesPage /></ProtectedRoute>} />
+            <Route path="/ocorrencias/climaticas" element={<ProtectedRoute requiredRoles={TECHNICIAN_AND_ADMIN}><ClimateOccurrencesPage /></ProtectedRoute>} />
+            <Route path="/ocorrencias/climaticas/:id" element={<ProtectedRoute requiredRoles={TECHNICIAN_AND_ADMIN}><OccurrenceDetailPage /></ProtectedRoute>} />
+            <Route path="/ocorrencias/fitossanitarias" element={<ProtectedRoute requiredRoles={TECHNICIAN_AND_ADMIN}><PhytosanitaryOccurrencesPage /></ProtectedRoute>} />
+            <Route path="/ocorrencias/alertas" element={<ProtectedRoute requiredRoles={TECHNICIAN_AND_ADMIN}><OccurrenceAlertsPage /></ProtectedRoute>} />
+            <Route path="/ocorrencias/*" element={<ProtectedRoute requiredRoles={TECHNICIAN_AND_ADMIN}><OccurrencesPage /></ProtectedRoute>} />
             
             {/* Infrastructure Module */}
-            <Route path="/infraestruturas/agropecuarias" element={<ProtectedRoute><AgriculturalInfrastructurePage /></ProtectedRoute>} />
-            <Route path="/infraestruturas/mercados" element={<ProtectedRoute><MarketsInfrastructurePage /></ProtectedRoute>} />
+            <Route path="/infraestruturas/agropecuarias" element={<ProtectedRoute requiredRoles={ALL_INTERNAL}><AgriculturalInfrastructurePage /></ProtectedRoute>} />
+            <Route path="/infraestruturas/mercados" element={<ProtectedRoute requiredRoles={ALL_INTERNAL}><MarketsInfrastructurePage /></ProtectedRoute>} />
             
             {/* Forestry Module */}
-            <Route path="/florestal" element={<ProtectedRoute><ForestryPage /></ProtectedRoute>} />
-            <Route path="/florestal/inventario" element={<ProtectedRoute><ForestInventoryPage /></ProtectedRoute>} />
-            <Route path="/florestal/licenciamento" element={<ProtectedRoute><ForestryPage /></ProtectedRoute>} />
-            <Route path="/florestal/rastreabilidade" element={<ProtectedRoute><ForestryTraceabilityPage /></ProtectedRoute>} />
-            <Route path="/florestal/fiscalizacao" element={<ProtectedRoute><ForestryEnforcementPage /></ProtectedRoute>} />
-            <Route path="/florestal/reflorestamento" element={<ProtectedRoute><ForestryReforestationPage /></ProtectedRoute>} />
-            <Route path="/florestal/denuncias" element={<ProtectedRoute><ForestryComplaintsPage /></ProtectedRoute>} />
-            <Route path="/florestal/concessao/:id" element={<ProtectedRoute><ConcessionDetailPage /></ProtectedRoute>} />
-            <Route path="/florestal/*" element={<ProtectedRoute><ForestryPage /></ProtectedRoute>} />
+            <Route path="/florestal" element={<ProtectedRoute requiredRoles={FORESTRY_ROLES}><ForestryPage /></ProtectedRoute>} />
+            <Route path="/florestal/inventario" element={<ProtectedRoute requiredRoles={FORESTRY_ROLES}><ForestInventoryPage /></ProtectedRoute>} />
+            <Route path="/florestal/licenciamento" element={<ProtectedRoute requiredRoles={FORESTRY_ROLES}><ForestryPage /></ProtectedRoute>} />
+            <Route path="/florestal/rastreabilidade" element={<ProtectedRoute requiredRoles={FORESTRY_ROLES}><ForestryTraceabilityPage /></ProtectedRoute>} />
+            <Route path="/florestal/fiscalizacao" element={<ProtectedRoute requiredRoles={TECHNICIAN_AND_ADMIN}><ForestryEnforcementPage /></ProtectedRoute>} />
+            <Route path="/florestal/reflorestamento" element={<ProtectedRoute requiredRoles={FORESTRY_ROLES}><ForestryReforestationPage /></ProtectedRoute>} />
+            <Route path="/florestal/denuncias" element={<ProtectedRoute requiredRoles={FORESTRY_ROLES}><ForestryComplaintsPage /></ProtectedRoute>} />
+            <Route path="/florestal/concessao/:id" element={<ProtectedRoute requiredRoles={FORESTRY_ROLES}><ConcessionDetailPage /></ProtectedRoute>} />
+            <Route path="/florestal/*" element={<ProtectedRoute requiredRoles={FORESTRY_ROLES}><ForestryPage /></ProtectedRoute>} />
             
             {/* Coffee Module */}
-            <Route path="/cafe" element={<ProtectedRoute><CoffeePage /></ProtectedRoute>} />
-            <Route path="/cafe/lotes" element={<ProtectedRoute><CoffeeLotsPage /></ProtectedRoute>} />
-            <Route path="/cafe/semaforizacao" element={<ProtectedRoute><CoffeeSemaphorePage /></ProtectedRoute>} />
-            <Route path="/cafe/verificar" element={<ProtectedRoute><CoffeeVerificationPage /></ProtectedRoute>} />
-            <Route path="/cafe/rastreio" element={<ProtectedRoute><CoffeeTraceabilityPage /></ProtectedRoute>} />
-            <Route path="/cafe/*" element={<ProtectedRoute><CoffeePage /></ProtectedRoute>} />
+            <Route path="/cafe" element={<ProtectedRoute requiredRoles={ALL_INTERNAL}><CoffeePage /></ProtectedRoute>} />
+            <Route path="/cafe/lotes" element={<ProtectedRoute requiredRoles={ALL_INTERNAL}><CoffeeLotsPage /></ProtectedRoute>} />
+            <Route path="/cafe/semaforizacao" element={<ProtectedRoute requiredRoles={TECHNICIAN_AND_ADMIN}><CoffeeSemaphorePage /></ProtectedRoute>} />
+            <Route path="/cafe/verificar" element={<ProtectedRoute requiredRoles={ALL_INTERNAL}><CoffeeVerificationPage /></ProtectedRoute>} />
+            <Route path="/cafe/rastreio" element={<ProtectedRoute requiredRoles={ALL_INTERNAL}><CoffeeTraceabilityPage /></ProtectedRoute>} />
+            <Route path="/cafe/*" element={<ProtectedRoute requiredRoles={ALL_INTERNAL}><CoffeePage /></ProtectedRoute>} />
             
             {/* Rice Strategic Module */}
-            <Route path="/arroz" element={<ProtectedRoute><RiceDashboard /></ProtectedRoute>} />
-            <Route path="/arroz/producao" element={<ProtectedRoute><RiceProductionPage /></ProtectedRoute>} />
-            <Route path="/arroz/importacoes" element={<ProtectedRoute><RiceImportsPage /></ProtectedRoute>} />
-            <Route path="/arroz/precos" element={<ProtectedRoute><RicePricesPage /></ProtectedRoute>} />
-            <Route path="/arroz/consumo" element={<ProtectedRoute><RiceConsumptionPage /></ProtectedRoute>} />
-            <Route path="/arroz/politicas" element={<ProtectedRoute><RicePoliciesPage /></ProtectedRoute>} />
-            <Route path="/arroz/*" element={<ProtectedRoute><RiceDashboard /></ProtectedRoute>} />
+            <Route path="/arroz" element={<ProtectedRoute requiredRoles={TECHNICIAN_AND_ADMIN}><RiceDashboard /></ProtectedRoute>} />
+            <Route path="/arroz/producao" element={<ProtectedRoute requiredRoles={TECHNICIAN_AND_ADMIN}><RiceProductionPage /></ProtectedRoute>} />
+            <Route path="/arroz/importacoes" element={<ProtectedRoute requiredRoles={TECHNICIAN_AND_ADMIN}><RiceImportsPage /></ProtectedRoute>} />
+            <Route path="/arroz/precos" element={<ProtectedRoute requiredRoles={TECHNICIAN_AND_ADMIN}><RicePricesPage /></ProtectedRoute>} />
+            <Route path="/arroz/consumo" element={<ProtectedRoute requiredRoles={TECHNICIAN_AND_ADMIN}><RiceConsumptionPage /></ProtectedRoute>} />
+            <Route path="/arroz/politicas" element={<ProtectedRoute requiredRoles={NATIONAL_LEVEL}><RicePoliciesPage /></ProtectedRoute>} />
+            <Route path="/arroz/*" element={<ProtectedRoute requiredRoles={TECHNICIAN_AND_ADMIN}><RiceDashboard /></ProtectedRoute>} />
             
-            {/* ONAF Module */}
-            <Route path="/onaf/*" element={<ProtectedRoute><ONAFPage /></ProtectedRoute>} />
+            {/* ONAF Module - national level */}
+            <Route path="/onaf/*" element={<ProtectedRoute requiredRoles={NATIONAL_LEVEL}><ONAFPage /></ProtectedRoute>} />
             
             {/* IPN Module */}
-            <Route path="/ipn/*" element={<ProtectedRoute><IPNPage /></ProtectedRoute>} />
+            <Route path="/ipn/*" element={<ProtectedRoute requiredRoles={TECHNICIAN_AND_ADMIN}><IPNPage /></ProtectedRoute>} />
             
-            {/* Incentives Module */}
-            <Route path="/incentivos/*" element={<ProtectedRoute><IncentivesPage /></ProtectedRoute>} />
-            
-            {/* Incentives Analytics Module */}
-            <Route path="/incentivos-analytics/*" element={<ProtectedRoute><IncentivesAnalyticsPage /></ProtectedRoute>} />
-            
+            {/* Incentives Module - admin only */}
+            <Route path="/incentivos/*" element={<ProtectedRoute requiredRoles={ADMIN_ROLES}><IncentivesPage /></ProtectedRoute>} />
+            <Route path="/incentivos-analytics/*" element={<ProtectedRoute requiredRoles={NATIONAL_LEVEL}><IncentivesAnalyticsPage /></ProtectedRoute>} />
             
             {/* Climate Risk Module */}
-            <Route path="/risco-climatico/*" element={<ProtectedRoute><ClimateRiskPage /></ProtectedRoute>} />
-            
-            {/* Climate Risk Analytics Module */}
-            <Route path="/risco-climatico-analytics/*" element={<ProtectedRoute><ClimateRiskAnalyticsPage /></ProtectedRoute>} />
+            <Route path="/risco-climatico/*" element={<ProtectedRoute requiredRoles={TECHNICIAN_AND_ADMIN}><ClimateRiskPage /></ProtectedRoute>} />
+            <Route path="/risco-climatico-analytics/*" element={<ProtectedRoute requiredRoles={NATIONAL_LEVEL}><ClimateRiskAnalyticsPage /></ProtectedRoute>} />
             
             {/* Credit & Insurance Module */}
-            <Route path="/credito-seguro/*" element={<ProtectedRoute><CreditInsurancePage /></ProtectedRoute>} />
+            <Route path="/credito-seguro/*" element={<ProtectedRoute requiredRoles={TECHNICIAN_AND_ADMIN}><CreditInsurancePage /></ProtectedRoute>} />
             
-            {/* Data Lab Module */}
-            <Route 
-              path="/laboratorio-dados/*" 
-              element={
-                <ProtectedRoute requiredRoles={['admin_national', 'admin_provincial', 'technician_national']}>
-                  <DataLabPage />
-                </ProtectedRoute>
-              } 
-            />
+            {/* Data Lab Module - national level */}
+            <Route path="/laboratorio-dados/*" element={<ProtectedRoute requiredRoles={NATIONAL_LEVEL}><DataLabPage /></ProtectedRoute>} />
             
             {/* Secondary Navigation */}
-            <Route path="/relatorios" element={<ProtectedRoute><ReportsPage /></ProtectedRoute>} />
-            <Route path="/mapas" element={<ProtectedRoute><MapsPage /></ProtectedRoute>} />
+            <Route path="/relatorios" element={<ProtectedRoute requiredRoles={TECHNICIAN_AND_ADMIN}><ReportsPage /></ProtectedRoute>} />
+            <Route path="/mapas" element={<ProtectedRoute requiredRoles={ALL_INTERNAL}><MapsPage /></ProtectedRoute>} />
             <Route path="/documentacao" element={<ProtectedRoute><DocumentationPage /></ProtectedRoute>} />
             <Route path="/notificacoes" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
             <Route path="/configuracoes" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
@@ -225,5 +224,4 @@ const App = () => (
     </AuthProvider>
   </QueryClientProvider>
 );
-
 export default App;
