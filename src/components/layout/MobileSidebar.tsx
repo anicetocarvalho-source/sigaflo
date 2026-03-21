@@ -175,7 +175,13 @@ export function MobileSidebar({ open, onOpenChange }: MobileSidebarProps) {
   const isChildActive = (children?: { href: string }[]) =>
     children?.some(child => location.pathname.startsWith(child.href));
 
-  const visibleNavigation = navigation.filter(item => !item.adminOnly || isAdmin);
+  const visibleNavigation = navigation.filter(item => {
+    if (item.allowedRoles) {
+      return item.allowedRoles.some(role => roles.includes(role));
+    }
+    if (item.adminOnly) return isAdmin;
+    return true;
+  });
 
   const primaryRole = roles[0];
   const initials = profile?.full_name
