@@ -43,6 +43,11 @@ interface NavItem {
   allowedRoles?: UserRole[];
 }
 
+const TECH_AND_ADMIN: UserRole[] = ['admin_national', 'admin_provincial', 'admin_municipal', 'technician_national', 'technician_provincial', 'technician_municipal'];
+const ALL_INTERNAL: UserRole[] = [...TECH_AND_ADMIN, 'private_entity'];
+const NATIONAL_ONLY: UserRole[] = ['admin_national', 'technician_national'];
+const ADMIN_ONLY: UserRole[] = ['admin_national', 'admin_provincial', 'admin_municipal'];
+
 const navigation: NavItem[] = [
   {
     label: 'Painel Principal',
@@ -52,6 +57,7 @@ const navigation: NavItem[] = [
   {
     label: 'Agricultores',
     icon: Users,
+    allowedRoles: ALL_INTERNAL,
     children: [
       { label: 'Registo de Agricultores', href: '/agricultores' },
       { label: 'Escolas de Campo', href: '/agricultores/escolas' },
@@ -62,10 +68,12 @@ const navigation: NavItem[] = [
     label: 'Histórico de Produção',
     href: '/producao',
     icon: TrendingUp,
+    allowedRoles: ALL_INTERNAL,
   },
   {
     label: 'Certificados',
     icon: FileCheck,
+    allowedRoles: TECH_AND_ADMIN,
     children: [
       { label: 'Emissão de Certificados', href: '/certificados' },
       { label: 'Verificação Pública', href: '/certificados/verificar' },
@@ -74,6 +82,7 @@ const navigation: NavItem[] = [
   {
     label: 'Ocorrências',
     icon: CloudRain,
+    allowedRoles: TECH_AND_ADMIN,
     children: [
       { label: 'Climáticas', href: '/ocorrencias/climaticas' },
       { label: 'Fitossanitárias', href: '/ocorrencias/fitossanitarias' },
@@ -83,6 +92,7 @@ const navigation: NavItem[] = [
   {
     label: 'Infra-estruturas',
     icon: Building2,
+    allowedRoles: ALL_INTERNAL,
     children: [
       { label: 'Agropecuárias', href: '/infraestruturas/agropecuarias' },
       { label: 'Mercados', href: '/infraestruturas/mercados' },
@@ -91,6 +101,7 @@ const navigation: NavItem[] = [
   {
     label: 'Gestão Florestal',
     icon: TreePine,
+    allowedRoles: ALL_INTERNAL,
     children: [
       { label: 'Inventário Florestal', href: '/florestal/inventario' },
       { label: 'Licenciamento', href: '/florestal/licenciamento' },
@@ -103,6 +114,7 @@ const navigation: NavItem[] = [
   {
     label: 'Cadeia do Café',
     icon: Coffee,
+    allowedRoles: ALL_INTERNAL,
     children: [
       { label: 'Lotes de Café', href: '/cafe/lotes' },
       { label: 'Rastreio por Lote', href: '/cafe/rastreio' },
@@ -113,6 +125,7 @@ const navigation: NavItem[] = [
   {
     label: 'Produção de Arroz',
     icon: Wheat,
+    allowedRoles: TECH_AND_ADMIN,
     children: [
       { label: 'Visão Geral', href: '/arroz' },
       { label: 'Produção Nacional', href: '/arroz/producao' },
@@ -126,15 +139,18 @@ const navigation: NavItem[] = [
     label: 'Observatório (ONAF)',
     href: '/onaf',
     icon: Eye,
+    allowedRoles: NATIONAL_ONLY,
   },
   {
     label: 'Identidade Produtiva',
     href: '/ipn',
     icon: Fingerprint,
+    allowedRoles: TECH_AND_ADMIN,
   },
   {
     label: 'Gestão de Incentivos',
     icon: Gift,
+    allowedRoles: ADMIN_ONLY,
     children: [
       { label: 'Programas e Alocações', href: '/incentivos' },
       { label: 'Analytics e Impacto', href: '/incentivos-analytics' },
@@ -143,6 +159,7 @@ const navigation: NavItem[] = [
   {
     label: 'Risco Climático',
     icon: Umbrella,
+    allowedRoles: TECH_AND_ADMIN,
     children: [
       { label: 'Ocorrências e Gestão', href: '/risco-climatico' },
       { label: 'Analytics e Seguro', href: '/risco-climatico-analytics' },
@@ -152,17 +169,20 @@ const navigation: NavItem[] = [
     label: 'Crédito e Seguro',
     href: '/credito-seguro',
     icon: Landmark,
+    allowedRoles: TECH_AND_ADMIN,
   },
   {
     label: 'Laboratório de Dados',
     href: '/laboratorio-dados',
     icon: FlaskConical,
+    allowedRoles: NATIONAL_ONLY,
     adminOnly: true,
   },
   {
     label: 'Gestão de Utilizadores',
     href: '/utilizadores',
     icon: UserCog,
+    allowedRoles: ADMIN_ONLY,
     adminOnly: true,
   },
 ];
