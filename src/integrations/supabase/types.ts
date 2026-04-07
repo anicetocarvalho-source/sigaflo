@@ -4892,6 +4892,82 @@ export type Database = {
           },
         ]
       }
+      public_agriculture_by_province: {
+        Row: {
+          approved_count: number | null
+          farmer_count: number | null
+          province_name: string | null
+        }
+        Relationships: []
+      }
+      public_agriculture_stats: {
+        Row: {
+          approved_farmers: number | null
+          certificates_issued: number | null
+          company_count: number | null
+          cooperative_count: number | null
+          family_farmers: number | null
+          field_school_count: number | null
+          individual_farmers: number | null
+          provinces_with_farmers: number | null
+          total_cultivated_ha: number | null
+          total_farmers: number | null
+          total_production_kg: number | null
+        }
+        Relationships: []
+      }
+      public_climate_alerts: {
+        Row: {
+          affected_area_ha: number | null
+          affected_farmers_count: number | null
+          occurrence_type: string | null
+          province_name: string | null
+          report_date: string | null
+          severity: string | null
+          title: string | null
+        }
+        Relationships: []
+      }
+      public_coffee_stats: {
+        Row: {
+          exported_lots: number | null
+          in_transit_lots: number | null
+          premium_lots: number | null
+          registered_lots: number | null
+          standard_lots: number | null
+          total_bags: number | null
+          total_lots: number | null
+          total_volume_kg: number | null
+          varieties_count: number | null
+        }
+        Relationships: []
+      }
+      public_forestry_stats: {
+        Row: {
+          active_licenses: number | null
+          planted_area_ha: number | null
+          planted_seedlings: number | null
+          reforestation_programs: number | null
+          target_reforestation_ha: number | null
+          target_seedlings: number | null
+          total_complaints: number | null
+          total_infractions: number | null
+          total_licenses: number | null
+          total_trees_registered: number | null
+        }
+        Relationships: []
+      }
+      public_rice_stats: {
+        Row: {
+          avg_retail_price_aoa: number | null
+          import_records: number | null
+          production_records: number | null
+          total_area_ha: number | null
+          total_imports_tonnes: number | null
+          total_production_tonnes: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       calculate_risk_score: {

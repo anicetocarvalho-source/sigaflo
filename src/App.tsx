@@ -67,6 +67,13 @@ import AgriculturalInfrastructurePage from "./pages/infrastructure/AgriculturalI
 import MarketsInfrastructurePage from "./pages/infrastructure/MarketsInfrastructurePage";
 
 // Public Portal
+import PublicLayout from "./components/public/PublicLayout";
+import PortalHome from "./pages/public/PortalHome";
+import PortalAgriculture from "./pages/public/PortalAgriculture";
+import PortalForestry from "./pages/public/PortalForestry";
+import PortalCoffee from "./pages/public/PortalCoffee";
+import PortalRice from "./pages/public/PortalRice";
+import PortalAbout from "./pages/public/PortalAbout";
 import VerificationPortal from "./pages/public/VerificationPortal";
 import QRScanner from "./pages/public/QRScanner";
 import VerifyCertificate from "./pages/public/VerifyCertificate";
@@ -206,15 +213,27 @@ const App = () => (
             <Route path="/notificacoes" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
             <Route path="/configuracoes" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
             
-            {/* Public Verification Portal (no auth required) */}
+            {/* Public Portal */}
+            <Route path="/portal" element={<PublicLayout />}>
+              <Route index element={<PortalHome />} />
+              <Route path="agricultura" element={<PortalAgriculture />} />
+              <Route path="florestal" element={<PortalForestry />} />
+              <Route path="cafe" element={<PortalCoffee />} />
+              <Route path="arroz" element={<PortalRice />} />
+              <Route path="sobre" element={<PortalAbout />} />
+              <Route path="verificar" element={<VerificationPortal />} />
+              <Route path="verificar/scanner" element={<QRScanner />} />
+              <Route path="verificar/certificado" element={<VerifyCertificate />} />
+              <Route path="verificar/certificado/:code" element={<VerifyCertificate />} />
+              <Route path="verificar/licenca" element={<VerifyLicense />} />
+              <Route path="verificar/licenca/:code" element={<VerifyLicense />} />
+              <Route path="verificar/cafe" element={<VerifyCoffee />} />
+              <Route path="verificar/cafe/:code" element={<VerifyCoffee />} />
+            </Route>
+
+            {/* Legacy redirects */}
             <Route path="/verificar" element={<VerificationPortal />} />
-            <Route path="/verificar/scanner" element={<QRScanner />} />
-            <Route path="/verificar/certificado" element={<VerifyCertificate />} />
-            <Route path="/verificar/certificado/:code" element={<VerifyCertificate />} />
-            <Route path="/verificar/licenca" element={<VerifyLicense />} />
-            <Route path="/verificar/licenca/:code" element={<VerifyLicense />} />
-            <Route path="/verificar/cafe" element={<VerifyCoffee />} />
-            <Route path="/verificar/cafe/:code" element={<VerifyCoffee />} />
+            <Route path="/verificar/*" element={<VerificationPortal />} />
             
             {/* Catch-all */}
             <Route path="*" element={<NotFound />} />
