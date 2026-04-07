@@ -230,6 +230,15 @@ const App = () => (
               <Route path="cafe" element={<PortalCoffee />} />
               <Route path="arroz" element={<PortalRice />} />
               <Route path="sobre" element={<PortalAbout />} />
+              <Route path="indicadores" element={<PortalIndicators />} />
+              <Route path="legislacao" element={<PortalLegislation />} />
+              <Route path="legislacao/:id" element={<PortalLegislationDetail />} />
+              <Route path="noticias" element={<PortalNews />} />
+              <Route path="noticias/:id" element={<PortalNewsDetail />} />
+              <Route path="mapa" element={<PortalMap />} />
+              <Route path="faq" element={<PortalFAQ />} />
+              <Route path="contactos" element={<PortalContacts />} />
+              <Route path="registos" element={<PortalRegistry />} />
               <Route path="verificar" element={<VerificationPortal />} />
               <Route path="verificar/scanner" element={<QRScanner />} />
               <Route path="verificar/certificado" element={<VerifyCertificate />} />
