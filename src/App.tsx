@@ -74,6 +74,15 @@ import PortalForestry from "./pages/public/PortalForestry";
 import PortalCoffee from "./pages/public/PortalCoffee";
 import PortalRice from "./pages/public/PortalRice";
 import PortalAbout from "./pages/public/PortalAbout";
+import PortalIndicators from "./pages/public/PortalIndicators";
+import PortalLegislation from "./pages/public/PortalLegislation";
+import PortalLegislationDetail from "./pages/public/PortalLegislationDetail";
+import PortalNews from "./pages/public/PortalNews";
+import PortalNewsDetail from "./pages/public/PortalNewsDetail";
+import PortalMap from "./pages/public/PortalMap";
+import PortalFAQ from "./pages/public/PortalFAQ";
+import PortalContacts from "./pages/public/PortalContacts";
+import PortalRegistry from "./pages/public/PortalRegistry";
 import VerificationPortal from "./pages/public/VerificationPortal";
 import QRScanner from "./pages/public/QRScanner";
 import VerifyCertificate from "./pages/public/VerifyCertificate";
@@ -221,6 +230,15 @@ const App = () => (
               <Route path="cafe" element={<PortalCoffee />} />
               <Route path="arroz" element={<PortalRice />} />
               <Route path="sobre" element={<PortalAbout />} />
+              <Route path="indicadores" element={<PortalIndicators />} />
+              <Route path="legislacao" element={<PortalLegislation />} />
+              <Route path="legislacao/:id" element={<PortalLegislationDetail />} />
+              <Route path="noticias" element={<PortalNews />} />
+              <Route path="noticias/:id" element={<PortalNewsDetail />} />
+              <Route path="mapa" element={<PortalMap />} />
+              <Route path="faq" element={<PortalFAQ />} />
+              <Route path="contactos" element={<PortalContacts />} />
+              <Route path="registos" element={<PortalRegistry />} />
               <Route path="verificar" element={<VerificationPortal />} />
               <Route path="verificar/scanner" element={<QRScanner />} />
               <Route path="verificar/certificado" element={<VerifyCertificate />} />

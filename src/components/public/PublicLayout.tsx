@@ -1,18 +1,45 @@
 import { useState } from "react";
 import { Link, Outlet, useLocation } from "react-router-dom";
-import { Menu, X, Leaf, TreePine, Coffee, Wheat, ShieldCheck, Info } from "lucide-react";
+import { Menu, Leaf, TreePine, Coffee, Wheat, ShieldCheck, Info, BarChart3, BookOpen, Newspaper, MapPin, HelpCircle, Building2, Users, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
+import {
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+} from "@/components/ui/navigation-menu";
 
-const navItems = [
-  { label: "Início", path: "/portal", icon: Leaf },
-  { label: "Agricultura", path: "/portal/agricultura", icon: Wheat },
-  { label: "Florestas", path: "/portal/florestal", icon: TreePine },
-  { label: "Café", path: "/portal/cafe", icon: Coffee },
-  { label: "Arroz", path: "/portal/arroz", icon: Wheat },
+const sectorItems = [
+  { label: "Agricultura", path: "/portal/agricultura", icon: Wheat, desc: "Produção agrícola e agricultores" },
+  { label: "Florestas", path: "/portal/florestal", icon: TreePine, desc: "Licenciamento e reflorestamento" },
+  { label: "Café", path: "/portal/cafe", icon: Coffee, desc: "Cadeia de valor do café" },
+  { label: "Arroz", path: "/portal/arroz", icon: Wheat, desc: "Produção e importações" },
+];
+
+const infoItems = [
+  { label: "Indicadores", path: "/portal/indicadores", icon: BarChart3 },
+  { label: "Legislação", path: "/portal/legislacao", icon: BookOpen },
+  { label: "Notícias", path: "/portal/noticias", icon: Newspaper },
+  { label: "Mapa", path: "/portal/mapa", icon: MapPin },
+  { label: "Registos", path: "/portal/registos", icon: Users },
+];
+
+const utilItems = [
   { label: "Verificação", path: "/portal/verificar", icon: ShieldCheck },
+  { label: "FAQ", path: "/portal/faq", icon: HelpCircle },
+  { label: "Contactos", path: "/portal/contactos", icon: Building2 },
   { label: "Sobre", path: "/portal/sobre", icon: Info },
+];
+
+const allMobileItems = [
+  { label: "Início", path: "/portal", icon: Leaf },
+  ...sectorItems.map(s => ({ label: s.label, path: s.path, icon: s.icon })),
+  ...infoItems,
+  ...utilItems,
 ];
 
 export default function PublicLayout() {
@@ -42,8 +69,55 @@ export default function PublicLayout() {
             </Link>
 
             {/* Desktop Nav */}
-            <nav className="hidden lg:flex items-center gap-1">
-              {navItems.map((item) => (
+            <nav className="hidden lg:flex items-center gap-0.5">
+              <Link
+                to="/portal"
+                className={cn(
+                  "px-3 py-2 rounded-md text-sm font-medium transition-colors",
+                  isActive("/portal") && location.pathname === "/portal"
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                )}
+              >
+                Início
+              </Link>
+
+              <NavigationMenu>
+                <NavigationMenuList>
+                  <NavigationMenuItem>
+                    <NavigationMenuTrigger className="text-sm font-medium text-muted-foreground hover:text-foreground bg-transparent h-auto px-3 py-2">
+                      Sectores
+                    </NavigationMenuTrigger>
+                    <NavigationMenuContent>
+                      <div className="grid w-[400px] gap-1 p-3">
+                        {sectorItems.map((item) => {
+                          const Icon = item.icon;
+                          return (
+                            <Link
+                              key={item.path}
+                              to={item.path}
+                              className={cn(
+                                "flex items-center gap-3 rounded-md p-3 text-sm transition-colors hover:bg-muted",
+                                isActive(item.path) && "bg-muted"
+                              )}
+                            >
+                              <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                                <Icon className="h-4 w-4 text-primary" />
+                              </div>
+                              <div>
+                                <div className="font-medium">{item.label}</div>
+                                <div className="text-xs text-muted-foreground">{item.desc}</div>
+                              </div>
+                            </Link>
+                          );
+                        })}
+                      </div>
+                    </NavigationMenuContent>
+                  </NavigationMenuItem>
+                </NavigationMenuList>
+              </NavigationMenu>
+
+              {infoItems.map((item) => (
                 <Link
                   key={item.path}
                   to={item.path}
@@ -57,6 +131,18 @@ export default function PublicLayout() {
                   {item.label}
                 </Link>
               ))}
+
+              <Link
+                to="/portal/verificar"
+                className={cn(
+                  "px-3 py-2 rounded-md text-sm font-medium transition-colors",
+                  isActive("/portal/verificar")
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                )}
+              >
+                Verificação
+              </Link>
             </nav>
 
             {/* Login + Mobile */}
@@ -72,13 +158,13 @@ export default function PublicLayout() {
                     <Menu className="h-5 w-5" />
                   </Button>
                 </SheetTrigger>
-                <SheetContent side="right" className="w-72">
+                <SheetContent side="right" className="w-72 overflow-y-auto">
                   <SheetTitle className="flex items-center gap-2 mb-6">
                     <Leaf className="h-5 w-5 text-primary" />
                     SIGAFLO
                   </SheetTitle>
                   <nav className="flex flex-col gap-1">
-                    {navItems.map((item) => {
+                    {allMobileItems.map((item) => {
                       const Icon = item.icon;
                       return (
                         <Link
@@ -145,6 +231,8 @@ export default function PublicLayout() {
             <div>
               <h4 className="font-semibold text-sm mb-3">Institucional</h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
+                <li><Link to="/portal/indicadores" className="hover:text-foreground transition-colors">Indicadores</Link></li>
+                <li><Link to="/portal/legislacao" className="hover:text-foreground transition-colors">Legislação</Link></li>
                 <li><Link to="/portal/verificar" className="hover:text-foreground transition-colors">Verificação de Documentos</Link></li>
                 <li><Link to="/portal/sobre" className="hover:text-foreground transition-colors">Sobre o SIGAFLO</Link></li>
                 <li><Link to="/auth" className="hover:text-foreground transition-colors">Acesso Institucional</Link></li>
@@ -161,6 +249,8 @@ export default function PublicLayout() {
               <span>INCA</span>
               <span>•</span>
               <span>IDF</span>
+              <span>•</span>
+              <span>INCER</span>
               <span>•</span>
               <span>INE</span>
             </div>
