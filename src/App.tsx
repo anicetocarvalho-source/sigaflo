@@ -67,6 +67,13 @@ import AgriculturalInfrastructurePage from "./pages/infrastructure/AgriculturalI
 import MarketsInfrastructurePage from "./pages/infrastructure/MarketsInfrastructurePage";
 
 // Public Portal
+import PublicLayout from "./components/public/PublicLayout";
+import PortalHome from "./pages/public/PortalHome";
+import PortalAgriculture from "./pages/public/PortalAgriculture";
+import PortalForestry from "./pages/public/PortalForestry";
+import PortalCoffee from "./pages/public/PortalCoffee";
+import PortalRice from "./pages/public/PortalRice";
+import PortalAbout from "./pages/public/PortalAbout";
 import VerificationPortal from "./pages/public/VerificationPortal";
 import QRScanner from "./pages/public/QRScanner";
 import VerifyCertificate from "./pages/public/VerifyCertificate";
