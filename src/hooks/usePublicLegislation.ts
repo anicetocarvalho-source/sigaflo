@@ -9,8 +9,7 @@ export function usePublicLegislation(filters?: {
   return useQuery({
     queryKey: ["public-legislation", filters],
     queryFn: async () => {
-      let query = supabase
-        .from("legislation")
+      let query = (supabase.from as any)("legislation")
         .select("*")
         .eq("is_published", true)
         .order("published_date", { ascending: false });
@@ -21,7 +20,7 @@ export function usePublicLegislation(filters?: {
 
       const { data, error } = await query;
       if (error) throw error;
-      return data;
+      return data as any[];
     },
   });
 }
@@ -31,14 +30,13 @@ export function usePublicLegislationDetail(id: string | undefined) {
     queryKey: ["public-legislation-detail", id],
     queryFn: async () => {
       if (!id) return null;
-      const { data, error } = await supabase
-        .from("legislation")
+      const { data, error } = await (supabase.from as any)("legislation")
         .select("*")
         .eq("id", id)
         .eq("is_published", true)
         .maybeSingle();
       if (error) throw error;
-      return data;
+      return data as any;
     },
     enabled: !!id,
   });

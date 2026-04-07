@@ -5,8 +5,7 @@ export function usePublicNews(filters?: { category?: string; search?: string }) 
   return useQuery({
     queryKey: ["public-news", filters],
     queryFn: async () => {
-      let query = supabase
-        .from("portal_news")
+      let query = (supabase.from as any)("portal_news")
         .select("*")
         .eq("is_published", true)
         .order("published_at", { ascending: false });
@@ -16,7 +15,7 @@ export function usePublicNews(filters?: { category?: string; search?: string }) 
 
       const { data, error } = await query;
       if (error) throw error;
-      return data;
+      return data as any[];
     },
   });
 }
@@ -26,14 +25,13 @@ export function usePublicNewsDetail(id: string | undefined) {
     queryKey: ["public-news-detail", id],
     queryFn: async () => {
       if (!id) return null;
-      const { data, error } = await supabase
-        .from("portal_news")
+      const { data, error } = await (supabase.from as any)("portal_news")
         .select("*")
         .eq("id", id)
         .eq("is_published", true)
         .maybeSingle();
       if (error) throw error;
-      return data;
+      return data as any;
     },
     enabled: !!id,
   });
