@@ -1,83 +1,135 @@
 
 
-# Portal Público Agroflorestal de Angola — Transformação
+# Portal Nacional Agroflorestal de Angola (PNAA) — Plano de Transformação
 
-## Objectivo
-Transformar o portal `/verificar` de uma simples página de verificação de documentos num **hub informativo completo** do sector agroflorestal angolano, mantendo a verificação como uma das funcionalidades mas adicionando secções informativas, indicadores públicos, e navegação por sectores.
+## Estado Actual
+O portal `/portal` já possui: homepage com KPIs, 4 páginas sectoriais (Agricultura, Florestas, Café, Arroz), verificação de documentos (certificados, licenças, café), e página Sobre. Todas as páginas consomem dados reais via views SQL públicas.
 
-## Arquitectura de Páginas
+## O Que Falta (Gap Analysis)
 
-```text
-/portal                          → Homepage do Portal Público (novo)
-/portal/agricultura              → Sector Agrícola (indicadores, culturas)
-/portal/florestal                → Sector Florestal (concessões, reflorestamento)
-/portal/cafe                     → Cadeia do Café (rastreio, qualidade)
-/portal/arroz                    → Arroz Nacional (produção, importações)
-/portal/verificar                → Verificação de Documentos (actual)
-/portal/verificar/certificado    → (mantém)
-/portal/verificar/licenca        → (mantém)
-/portal/verificar/cafe           → (mantém)
-/portal/verificar/scanner        → (mantém)
-/portal/sobre                    → Sobre o SIGAFLO / Instituições
-```
+O pedido define 8 módulos core. Mapeamento do que **existe vs. falta**:
 
-## Componentes a Criar
+| Módulo | Existe | Falta |
+|---|---|---|
+| 1. Portal Público (homepage) | ✅ Parcial | Indicadores & Estatísticas, Legislação, Notícias, FAQ, Contactos, Mapa interactivo |
+| 2. Verificação de Documentos | ✅ Completo | Histórico de verificações, melhorias visuais |
+| 3. Certificação & Registo | ✅ (backoffice) | Página pública de consulta de registos (produtores, cooperativas, exportadores) |
+| 4. Indicadores & Inteligência | ⚠️ Básico | Dashboard público de indicadores com filtros (província, ano, cultura), export CSV/PDF |
+| 5. Mapas Interactivos | ❌ | Mapa público de Angola com layers (culturas, florestas, produção) |
+| 6. Motor de Legislação | ❌ | Tabela `legislation`, página pesquisável, filtros, download PDF |
+| 7. Serviços Digitais (auth) | ❌ | Submissão de documentos, tracking de pedidos, timeline |
+| 8. Admin Backoffice (CMS) | ❌ | Gestão de conteúdos (notícias, páginas, documentos legislativos) |
 
-### 1. Layout do Portal Público (`src/components/public/PublicLayout.tsx`)
-- Header fixo com logo SIGAFLO, menu de navegação horizontal (Início, Agricultura, Florestas, Café, Arroz, Verificação, Sobre)
-- Menu mobile (hamburger → drawer)
-- Footer institucional com logos MINAGRIP/INCA/IDF e links úteis
+## Estratégia de Implementação
 
-### 2. Homepage do Portal (`src/pages/public/PortalHome.tsx`)
-- **Hero** com imagem de fundo agrícola, título "Portal Agroflorestal de Angola", barra de pesquisa
-- **KPIs públicos** (4 cards): Total agricultores registados, Hectares cultivados, Certificados emitidos, Licenças florestais activas — dados reais via queries públicas (views seguras)
-- **Sectores** (grid 4 cards): Agricultura, Florestas, Café, Arroz — com ícone, descrição curta, link
-- **Últimas notícias/alertas**: Alertas climáticos activos (dados públicos da tabela `climate_occurrences` severidade critical/high)
-- **Verificação rápida**: Manter a barra de pesquisa de documentos
-- **Mapa de Angola**: Visualização simplificada das províncias com indicadores
+Dado o volume, proponho **3 fases** implementadas sequencialmente. A primeira fase transforma o portal num hub informativo completo. As fases seguintes adicionam serviços digitais e CMS.
 
-### 3. Página Sectorial — Agricultura (`src/pages/public/PortalAgriculture.tsx`)
-- Indicadores: agricultores por tipo, produção por cultura principal, distribuição provincial
-- Charts públicos (bar/pie) com dados agregados
-- Sem dados individuais (protegidos por RLS)
+---
 
-### 4. Página Sectorial — Florestas (`src/pages/public/PortalForestry.tsx`)
-- Indicadores: concessões activas, licenças emitidas, área reflorestada, infracções
-- Progresso do reflorestamento nacional
+### FASE 1 — Hub Informativo Nacional (esta implementação)
 
-### 5. Página Sectorial — Café (`src/pages/public/PortalCoffee.tsx`)
-- Indicadores: lotes por semaforização (verde/amarelo/vermelho), variedades, exportação
-- Rastreio de lote público (link para verificação)
+**1.1 — Navegação expandida do portal**
+- Adicionar ao header: Indicadores, Legislação, Notícias, Mapas, FAQ, Contactos
+- Mega-menu dropdown para Sectores (Agricultura, Florestas, Café, Arroz)
+- Redesign do header para comportar mais itens (estilo portal governamental)
 
-### 6. Página Sectorial — Arroz (`src/pages/public/PortalRice.tsx`)
-- Indicadores: produção vs importação, preços médios, consumo per capita
-- Gráfico de tendência de soberania alimentar
+**1.2 — Homepage premium redesenhada**
+- Hero com animação subtil e branding institucional forte
+- Barra de pesquisa global (documentos + legislação + notícias)
+- 6 KPIs principais (adicionar exportações e preço médio)
+- Secção "Serviços Rápidos" (verificação, consulta registos, legislação)
+- Secção "Últimas Notícias" (3-4 cards)
+- Secção "Legislação Recente" (3 itens)
+- Secção "Mapa de Angola" (preview estático com link para mapa completo)
+- Parceiros institucionais (MINAGRIP, INCA, IDF, INCER, INE, INAMET)
 
-### 7. Página Sobre (`src/pages/public/PortalAbout.tsx`)
-- Descrição do SIGAFLO, missão, instituições parceiras
-- Contactos e links institucionais
+**1.3 — Página de Indicadores & Estatísticas (`/portal/indicadores`)**
+- Dashboard público completo com:
+  - Filtros: província, ano, cultura
+  - Charts: produção por cultura, área cultivada, tendências anuais
+  - Tabela resumo exportável (CSV)
+- Dados via views públicas existentes + novas views para séries temporais
 
-## Dados Públicos (Segurança)
-- Criar **views SQL públicas agregadas** para expor apenas totais/contagens — NUNCA dados individuais
-- Views: `public_agriculture_stats`, `public_forestry_stats`, `public_coffee_stats`, `public_rice_stats`, `public_climate_alerts`
-- RLS permite SELECT para `anon` nestas views apenas
+**1.4 — Motor de Legislação (`/portal/legislacao`)**
+- Migration: tabela `legislation` (title, type, sector, date, summary, pdf_url, published)
+- Página com pesquisa, filtros (tipo, sector, data), listagem paginada
+- Página de detalhe com leitura limpa e download
 
-## Alterações Técnicas
+**1.5 — Página de Notícias (`/portal/noticias`)**
+- Migration: tabela `portal_news` (title, excerpt, content, image_url, category, published_at, author_id)
+- Listagem com cards, filtros por categoria
+- Página de detalhe de notícia
 
-1. **Migration SQL**: Criar views públicas agregadas
-2. **Hook `usePublicStats.ts`**: Queries anónimas (sem auth) para as views públicas
-3. **Routing (`App.tsx`)**: Mover rotas `/verificar/*` para `/portal/*` (redirect de compatibilidade)
-4. **Reutilização**: Charts (Recharts), Cards, design system existente
+**1.6 — Mapa Público Interactivo (`/portal/mapa`)**
+- Mapa de Angola via Mapbox (token já configurado via edge function)
+- Layers: províncias com indicadores, culturas principais, zonas florestais
+- Popup com stats por província
 
-## Design
-- Manter palette SIGAFLO (verde institucional, dourado accent)
-- Header branco com menu horizontal, estilo portal governamental
-- Secções alternadas (fundo branco / fundo muted)
-- Responsive: mobile-first com menu hamburger
-- Footer com brasão/logos institucionais
+**1.7 — FAQ e Contactos**
+- `/portal/faq` — Accordion com perguntas frequentes por categoria
+- `/portal/contactos` — Formulário de contacto + dados das instituições
 
-## Estimativa
-- 8 novos ficheiros (layout + 6 páginas + hook)
-- 1 migration SQL (views públicas)
-- Alterações em `App.tsx` (novas rotas)
+**1.8 — Consulta Pública de Registos (`/portal/registos`)**
+- Pesquisa pública de produtores/cooperativas por número de registo
+- Mostra apenas dados não-sensíveis (nome, tipo, província, status, data de registo)
+- View SQL pública dedicada (`public_farmer_registry`)
+
+### Alterações Técnicas (Fase 1)
+
+**Migrations SQL:**
+1. Tabela `legislation` com campos: id, title, type (enum: decree, law, notice, regulation), sector, published_date, summary, content, pdf_url, is_published, created_by
+2. Tabela `portal_news` com campos: id, title, excerpt, content, image_url, category, published_at, is_published, created_by
+3. View `public_farmer_registry` (nome, tipo, província, status — sem PII)
+4. View `public_indicators_by_year` (séries temporais agregadas)
+5. RLS: anon SELECT em views; admin INSERT/UPDATE nas tabelas
+
+**Novos ficheiros (~14):**
+- `src/pages/public/PortalIndicators.tsx`
+- `src/pages/public/PortalLegislation.tsx`
+- `src/pages/public/PortalLegislationDetail.tsx`
+- `src/pages/public/PortalNews.tsx`
+- `src/pages/public/PortalNewsDetail.tsx`
+- `src/pages/public/PortalMap.tsx`
+- `src/pages/public/PortalFAQ.tsx`
+- `src/pages/public/PortalContacts.tsx`
+- `src/pages/public/PortalRegistry.tsx`
+- `src/hooks/usePublicLegislation.ts`
+- `src/hooks/usePublicNews.ts`
+- `src/hooks/usePublicRegistry.ts`
+- Actualização: `PublicLayout.tsx` (mega-menu)
+- Actualização: `PortalHome.tsx` (redesign completo)
+- Actualização: `App.tsx` (novas rotas)
+
+---
+
+### FASE 2 — Serviços Digitais (futura)
+- Portal autenticado para produtores/exportadores
+- Submissão e tracking de pedidos de certificação
+- Timeline de estado do pedido
+- Notificações por email
+
+### FASE 3 — CMS & Backoffice (futura)
+- Interface admin para gerir notícias, legislação, páginas
+- Workflow de aprovação/publicação
+- Gestão de conteúdos do portal
+
+---
+
+## Resumo da Fase 1
+
+| Item | Ficheiros | Esforço |
+|---|---|---|
+| Header mega-menu | 1 | Médio |
+| Homepage redesign | 1 | Alto |
+| Indicadores | 2 | Alto |
+| Legislação | 3 + migration | Alto |
+| Notícias | 3 + migration | Médio |
+| Mapa público | 1 | Médio |
+| FAQ + Contactos | 2 | Baixo |
+| Registo público | 2 + view | Médio |
+| Rotas | 1 | Baixo |
+
+**Total: ~14 ficheiros novos, 3 actualizados, 2 migrations SQL**
+
+Devo implementar a **Fase 1 completa** agora?
 
