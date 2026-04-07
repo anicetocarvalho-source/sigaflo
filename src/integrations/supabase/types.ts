@@ -4942,6 +4942,18 @@ export type Database = {
         }
         Relationships: []
       }
+      public_farmer_registry: {
+        Row: {
+          farmer_type: Database["public"]["Enums"]["farmer_type"] | null
+          municipality_name: string | null
+          name: string | null
+          province_name: string | null
+          registration_date: string | null
+          registration_number: string | null
+          status: string | null
+        }
+        Relationships: []
+      }
       public_forestry_stats: {
         Row: {
           active_licenses: number | null
@@ -4954,6 +4966,18 @@ export type Database = {
           total_infractions: number | null
           total_licenses: number | null
           total_trees_registered: number | null
+        }
+        Relationships: []
+      }
+      public_indicators_by_year: {
+        Row: {
+          crop_type: string | null
+          num_records: number | null
+          productivity_kg_ha: number | null
+          province_name: string | null
+          total_area_ha: number | null
+          total_quantity_kg: number | null
+          year: number | null
         }
         Relationships: []
       }
