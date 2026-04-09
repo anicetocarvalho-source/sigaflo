@@ -108,7 +108,7 @@ export default function SettingsPage() {
     <MainLayout title="Configurações" subtitle="Gerir preferências e configurações do sistema">
       <div className="max-w-4xl mx-auto space-y-6">
         <Tabs defaultValue="profile" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="profile" className="gap-2">
               <User className="h-4 w-4" />
               <span className="hidden sm:inline">Perfil</span>
@@ -120,6 +120,10 @@ export default function SettingsPage() {
             <TabsTrigger value="appearance" className="gap-2">
               <Palette className="h-4 w-4" />
               <span className="hidden sm:inline">Aparência</span>
+            </TabsTrigger>
+            <TabsTrigger value="gateway" className="gap-2">
+              <CreditCard className="h-4 w-4" />
+              <span className="hidden sm:inline">Pagamentos</span>
             </TabsTrigger>
             <TabsTrigger value="general" className="gap-2">
               <Settings className="h-4 w-4" />
@@ -462,6 +466,11 @@ export default function SettingsPage() {
                 </div>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          {/* Gateway Tab */}
+          <TabsContent value="gateway">
+            <GatewaySettings />
           </TabsContent>
         </Tabs>
       </div>
