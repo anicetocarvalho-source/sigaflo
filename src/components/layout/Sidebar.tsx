@@ -202,6 +202,16 @@ const navigation: NavItem[] = [
     ],
   },
   {
+    label: 'Monitoria',
+    icon: Activity,
+    allowedRoles: TECH_AND_ADMIN,
+    children: [
+      { label: 'Alertas & Riscos', href: '/monitoria/alertas' },
+      { label: 'Score Agrícola', href: '/monitoria/score' },
+      { label: 'NDVI Satélite', href: '/monitoria/ndvi' },
+    ],
+  },
+  {
     label: 'Laboratório de Dados',
     href: '/laboratorio-dados',
     icon: FlaskConical,
