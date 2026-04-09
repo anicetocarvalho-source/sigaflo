@@ -14,7 +14,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { 
+import {
   Edit, 
   MapPin, 
   Phone, 
@@ -46,6 +46,10 @@ import {
   ShoppingCart,
   Eye,
   LandPlot,
+  Tractor,
+  Satellite,
+  Activity,
+  UserCog,
 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { useFarmer, useFarmers } from '@/hooks/useFarmers';
@@ -53,6 +57,9 @@ import { useProductionHistory, useCertificates } from '@/hooks/useCertificates';
 import { useFinancialProfile, useCreditSimulations, useProductionCertificates, useCreditDossiers, useInsuranceRiskScores } from '@/hooks/useCreditInsurance';
 import { useAllocations } from '@/hooks/useIncentives';
 import { useOccurrences } from '@/hooks/useOccurrences';
+import { useTechnicians } from '@/hooks/useTechnicians';
+import { useServiceOrders } from '@/hooks/useMechanization';
+import { useMonitoring } from '@/hooks/useMonitoring';
 import { FarmerTypeIcon, getFarmerTypeLabel, getFarmerTypeColor } from './FarmerTypeIcon';
 import { WorkflowStatusBadge } from './WorkflowStatusBadge';
 import { WorkflowActions } from './WorkflowActions';
