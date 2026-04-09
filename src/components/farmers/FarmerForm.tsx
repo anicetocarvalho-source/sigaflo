@@ -202,6 +202,10 @@ export const FarmerForm = ({ farmer, onSubmit, isLoading, defaultCooperativeId, 
   }, [farmer]);
 
   const handleSubmit = (data: FarmerFormData) => {
+    if (biDuplicateWarning) {
+      toast.error('Não é possível submeter: BI/NIF duplicado detectado.');
+      return;
+    }
     const cleanedData: FarmerFormSubmitData = {
       ...data,
       email: data.email === '' ? null : data.email,
