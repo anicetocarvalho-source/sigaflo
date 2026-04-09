@@ -126,6 +126,16 @@ export const FarmerProfileComplete = () => {
   const { data: allocations } = useAllocations(undefined, undefined);
   const { data: allOccurrences } = useOccurrences();
   const { data: allFarmers } = useFarmers();
+  const { technicians } = useTechnicians();
+  const { data: serviceOrders } = useServiceOrders();
+  const { scores, ndviReadings, alerts: monitoringAlerts } = useMonitoring();
+
+  // Filter data for this farmer
+  const farmerTechnician = technicians.find(t => t.id === farmer?.technician_id);
+  const farmerOrders = serviceOrders?.filter((o: any) => o.farmer_id === id) || [];
+  const farmerScores = scores?.filter((s: any) => s.farmer_id === id) || [];
+  const farmerNdvi = ndviReadings?.filter((n: any) => n.farmer_id === id) || [];
+  const farmerMonitoringAlerts = monitoringAlerts?.filter((a: any) => a.province_id === farmer?.province_id) || [];
 
   // Get members for cooperatives and field schools
   const members = allFarmers?.filter(f => 
