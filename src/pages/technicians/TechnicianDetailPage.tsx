@@ -4,13 +4,16 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { ArrowLeft, Users, MapPin, Phone, Mail, UserPlus, UserMinus, Briefcase } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ArrowLeft, Users, MapPin, Phone, Mail, UserPlus, UserMinus, Briefcase, TrendingUp, AlertTriangle } from 'lucide-react';
 import { useTechnicians } from '@/hooks/useTechnicians';
 import { useAuth } from '@/contexts/AuthContext';
 import { AssignFarmersDialog } from '@/components/technicians/AssignFarmersDialog';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Checkbox } from '@/components/ui/checkbox';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 
 export default function TechnicianDetailPage() {
   const { id } = useParams<{ id: string }>();
