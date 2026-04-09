@@ -1,38 +1,36 @@
 
 
-# Correcção: Separação de tipos de agricultor na listagem
+# Ajuste das Abas e Foto no Perfil do Agricultor
 
-## Problema Identificado
+## Problemas Identificados
+1. **16 tabs em duas linhas** — transborda visualmente, difícil de navegar (visível no screenshot)
+2. **Sem foto do agricultor no header** — o campo `photo_url` existe no modelo mas não é mostrado
 
-A listagem em `/agricultores` mostra **todos os registos** sem distinção de tipo (individuais, famílias, cooperativas, escolas de campo, empresas). Quando o utilizador clica num registo que é na verdade uma Escola de Campo, abre o perfil dessa escola — não de um agricultor individual. A tabela não mostra a coluna "Tipo", tornando impossível distinguir os registos.
+## Solução
 
-As cooperativas e escolas de campo já têm páginas dedicadas (`/agricultores/escolas` e `/agricultores/cooperativas`), mas continuam a aparecer na lista geral.
+### 1. Header com Foto (Avatar)
+Adicionar um `Avatar` circular (48×48) à esquerda do nome no header (linha ~220-238 de `FarmerProfileComplete.tsx`). Se `farmer.photo_url` existir, mostra a imagem; caso contrário, mostra as iniciais do nome com fundo colorido por tipo.
 
-## Correcções
+### 2. Reorganizar Tabs com Scroll Horizontal
+Em vez de duas linhas de tabs, usar um container com **scroll horizontal** (`overflow-x-auto`) e uma única linha. As tabs ficam todas visíveis com scroll lateral, sem quebrar em múltiplas linhas.
 
-### 1. Filtrar tipos na listagem principal (`FarmersListComplete.tsx`)
-- Filtrar `useFarmers()` para excluir `cooperative` e `field_school` da lista principal (estes têm páginas próprias)
-- Adicionar coluna "Tipo" à tabela com o badge colorido (`FarmerTypeIcon` + `getFarmerTypeLabel`)
-- Adicionar filtro dropdown por tipo (Individual, Familiar, Empresa)
+Alterações:
+- `TabsList` recebe `className="flex w-full overflow-x-auto flex-nowrap"` em vez de `flex-wrap`
+- Cada `TabsTrigger` com `flex-shrink-0` para manter largura natural
+- Opcional: agrupar as tabs em categorias lógicas com separadores visuais subtis (um `|` ou margem extra) entre grupos:
+  - **Perfil**: Identificação, Documentos, Cartão, Biometria
+  - **Actividade**: Produção, Parcelas, Campanhas, Certificados
+  - **Financeiro**: AgroPay, Compras, Incentivos, Scores
+  - **Contexto**: Ocorrências, Representantes, Previsão
 
-### 2. Adicionar filtro de tipo no hook (`useFarmers`)
-- Suportar filtro `excludeTypes` para excluir tipos específicos da query, OU
-- Passar `type` filter com array de tipos permitidos
-
-### 3. Manter consistência nas páginas dedicadas
-- `/agricultores/escolas` já filtra por `field_school` — verificar que está correcto
-- `/agricultores/cooperativas` já filtra por `cooperative` — verificar
-
-## Ficheiros a editar
+## Ficheiros a Editar
 
 | Ficheiro | Alteração |
 |---|---|
-| `src/components/farmers/FarmersListComplete.tsx` | Filtrar cooperativas/escolas, adicionar coluna Tipo, dropdown filtro |
-| `src/hooks/useFarmers.ts` | Adicionar suporte para `excludeTypes` no filtro |
+| `src/components/farmers/FarmerProfileComplete.tsx` | Adicionar Avatar no header + tabs em scroll horizontal |
 
-## Resultado esperado
-- Lista `/agricultores` mostra apenas: individuais, famílias e empresas
-- Coluna "Tipo" visível com badge colorido
-- Cooperativas e Escolas de Campo acessíveis apenas pelas suas páginas dedicadas
-- Clicar num agricultor abre sempre o perfil correcto do tipo esperado
+## Detalhes Técnicos
+- Usar componente `Avatar` do shadcn/ui (já existe em `src/components/ui/avatar.tsx`)
+- `TabsList`: trocar `flex-wrap` por `overflow-x-auto flex-nowrap` com scrollbar subtil via Tailwind
+- Foto fallback: iniciais extraídas de `farmer.name.split(' ')` com cor de fundo baseada em `getFarmerTypeColor`
 
