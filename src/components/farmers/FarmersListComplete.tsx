@@ -330,6 +330,19 @@ export const FarmersListComplete = () => {
               </SelectContent>
             </Select>
 
+            {/* Type Filter */}
+            <Select value={typeFilter} onValueChange={setTypeFilter}>
+              <SelectTrigger>
+                <SelectValue placeholder="Tipo" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos os Tipos</SelectItem>
+                <SelectItem value="individual">Pequeno Agricultor</SelectItem>
+                <SelectItem value="family">Agricultura Familiar</SelectItem>
+                <SelectItem value="company">Empresa/Grande Produtor</SelectItem>
+              </SelectContent>
+            </Select>
+
             {/* Crop Filter */}
             <Select value={cropFilter} onValueChange={setCropFilter}>
               <SelectTrigger>
@@ -407,6 +420,7 @@ export const FarmersListComplete = () => {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Nome do Agricultor</TableHead>
+                    <TableHead>Tipo</TableHead>
                     <TableHead>Localização</TableHead>
                     <TableHead>Cultura Principal</TableHead>
                     <TableHead className="text-right">Área (ha)</TableHead>
