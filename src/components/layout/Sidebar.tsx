@@ -63,6 +63,9 @@ const navigation: NavItem[] = [
       { label: 'Registo de Agricultores', href: '/agricultores' },
       { label: 'Escolas de Campo', href: '/agricultores/escolas' },
       { label: 'Cooperativas', href: '/agricultores/cooperativas' },
+      { label: 'Parcelas', href: '/parcelas' },
+      { label: 'Cadastro de Campo', href: '/cadastro-campo' },
+      { label: 'Acesso Externo', href: '/cadastro-externo' },
     ],
   },
   {

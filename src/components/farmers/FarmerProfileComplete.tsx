@@ -1896,6 +1896,45 @@ export const FarmerProfileComplete = () => {
             </Card>
           </TabsContent>
         )}
+
+        {/* Representatives Tab */}
+        <TabsContent value="representatives">
+          <FarmerRepresentatives farmerId={id!} />
+        </TabsContent>
+
+        {/* Parcels Tab */}
+        <TabsContent value="parcels">
+          <FarmerParcels farmerId={id!} />
+        </TabsContent>
+
+        {/* Campaigns Tab */}
+        <TabsContent value="campaigns">
+          <FarmerCampaigns farmerId={id!} />
+        </TabsContent>
+
+        {/* AgroPay Tab */}
+        <TabsContent value="agropay">
+          <FarmerAgroPay farmerId={id!} cultivatedAreaHa={farmer.cultivated_area_ha} />
+        </TabsContent>
+
+        {/* Purchases Tab */}
+        <TabsContent value="purchases">
+          <FarmerPurchases farmerId={id!} />
+        </TabsContent>
+
+        {/* Biometry Tab */}
+        <TabsContent value="biometry">
+          <FarmerBiometry fingerprintData={farmer.fingerprint_data} />
+        </TabsContent>
+
+        {/* Forecast Tab */}
+        <TabsContent value="forecast">
+          <FarmerForecast 
+            mainCrops={farmer.main_crops || []} 
+            province={farmer.provinces?.name} 
+            areaHa={farmer.cultivated_area_ha} 
+          />
+        </TabsContent>
       </Tabs>
     </div>
   );
