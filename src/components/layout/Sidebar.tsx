@@ -183,6 +183,12 @@ const navigation: NavItem[] = [
     allowedRoles: TECH_AND_ADMIN,
   },
   {
+    label: 'Técnicos de Campo',
+    href: '/tecnicos',
+    icon: UserCog,
+    allowedRoles: TECH_AND_ADMIN,
+  },
+  {
     label: 'Vendas & POS',
     icon: ShoppingCart,
     allowedRoles: TECH_AND_ADMIN,
