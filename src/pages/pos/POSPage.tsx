@@ -101,6 +101,27 @@ export default function POSPage() {
       items,
     });
     setSaleResult(result);
+    
+    // Auto-create service orders for mechanization items
+    if (hasMechanization && farmer) {
+      const mechItems = cartItems.filter(i => i.product_name?.toLowerCase().includes('mecanização'));
+      for (const item of mechItems) {
+        try {
+          await createServiceOrder.mutateAsync({
+            farmer_id: farmer.id,
+            service_type: 'ploughing',
+            area_ha: farmer.cultivated_area_ha || 1,
+            cost_aoa: item.unit_price_aoa * item.quantity,
+            payment_method: method === 'agropay' ? 'deferred' : method,
+            payment_status: method === 'agropay' ? 'pending' : 'paid',
+            requested_date: new Date().toISOString().split('T')[0],
+            status: 'requested',
+            notes: `Gerado automaticamente via POS — Factura ${result?.invoice?.invoice_number || ''}`,
+          } as any);
+        } catch { /* ignore individual failures */ }
+      }
+    }
+    
     setStep(4);
     setShowReceipt(true);
   };
