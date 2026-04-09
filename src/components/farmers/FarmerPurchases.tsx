@@ -40,8 +40,8 @@ export const FarmerPurchases = ({ farmerId }: Props) => {
   });
 
   const activePackage = packages?.find(p => p.status === 'active');
-  const totalSubsidy = purchases?.reduce((s, p) => s + (p.subsidy_value || 0), 0) || 0;
-  const totalCopay = purchases?.reduce((s, p) => s + (p.copayment_value || 0), 0) || 0;
+  const totalSubsidy = purchases?.reduce((s, p) => s + (p.subsidy_value_aoa || 0), 0) || 0;
+  const totalCopay = purchases?.reduce((s, p) => s + (p.copayment_value_aoa || 0), 0) || 0;
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -91,7 +91,7 @@ export const FarmerPurchases = ({ farmerId }: Props) => {
             {activePackage.purchase_package_items?.length ? (
               <div className="space-y-3">
                 {activePackage.purchase_package_items.map((item: any) => {
-                  const used = purchases?.filter(p => p.product === item.product_id && ['approved', 'pending'].includes(p.status)).length || 0;
+                  const used = purchases?.filter(p => p.product_id === item.product_id && ['approved', 'pending'].includes(p.status)).length || 0;
                   const pct = item.max_quantity > 0 ? (used / item.max_quantity) * 100 : 0;
                   return (
                     <div key={item.id}>
@@ -137,10 +137,10 @@ export const FarmerPurchases = ({ farmerId }: Props) => {
                 {purchases.map(p => (
                   <TableRow key={p.id}>
                     <TableCell className="text-sm">{new Date(p.created_at).toLocaleDateString('pt-AO')}</TableCell>
-                    <TableCell>{p.product}</TableCell>
-                    <TableCell>{p.supplier || '—'}</TableCell>
-                    <TableCell className="font-medium">{Number(p.total_value).toLocaleString('pt-AO')} AOA</TableCell>
-                    <TableCell className="text-green-600">{Number(p.subsidy_value).toLocaleString('pt-AO')} AOA</TableCell>
+                    <TableCell>{p.product_id}</TableCell>
+                    <TableCell>{p.supplier_id || '—'}</TableCell>
+                    <TableCell className="font-medium">{Number(p.total_value_aoa).toLocaleString('pt-AO')} AOA</TableCell>
+                    <TableCell className="text-primary">{Number(p.subsidy_value_aoa).toLocaleString('pt-AO')} AOA</TableCell>
                     <TableCell>{getStatusBadge(p.status)}</TableCell>
                   </TableRow>
                 ))}

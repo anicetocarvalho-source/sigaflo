@@ -38,7 +38,7 @@ export const FarmerAgroPay = ({ farmerId, cultivatedAreaHa }: Props) => {
     },
   });
 
-  const balance = wallet?.balance || 0;
+  const balance = wallet?.balance_aoa || 0;
   const limitPerHa = 50000; // AOA per ha
   const maxLimit = (cultivatedAreaHa || 0) * limitPerHa;
 
@@ -94,10 +94,10 @@ export const FarmerAgroPay = ({ farmerId, cultivatedAreaHa }: Props) => {
                     <TableCell className="font-medium">
                       <span className="flex items-center gap-1">
                         <ArrowDownRight className="h-3 w-3 text-destructive" />
-                        {Number(s.total).toLocaleString('pt-AO')} AOA
+                        {Number(s.total_aoa).toLocaleString('pt-AO')} AOA
                       </span>
                     </TableCell>
-                    <TableCell className="text-sm text-muted-foreground">{Number(s.iva_total).toLocaleString('pt-AO')} AOA</TableCell>
+                    <TableCell className="text-sm text-muted-foreground">{Number(s.iva_total_aoa).toLocaleString('pt-AO')} AOA</TableCell>
                     <TableCell>
                       <Badge variant={s.status === 'completed' ? 'default' : 'secondary'}>{s.status}</Badge>
                     </TableCell>
