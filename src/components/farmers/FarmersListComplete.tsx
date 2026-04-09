@@ -34,8 +34,9 @@ import {
   Users,
   Plus
 } from 'lucide-react';
-import { useFarmers, useProvinces, type Farmer } from '@/hooks/useFarmers';
+import { useFarmers, useProvinces, type Farmer, type FarmerType } from '@/hooks/useFarmers';
 import { useFinancialProfiles, type FarmerFinancialProfile } from '@/hooks/useCreditInsurance';
+import { FarmerTypeIcon, getFarmerTypeLabel, getFarmerTypeColor } from '@/components/farmers/FarmerTypeIcon';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 
