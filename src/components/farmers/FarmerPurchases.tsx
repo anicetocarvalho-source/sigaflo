@@ -138,7 +138,7 @@ export const FarmerPurchases = ({ farmerId }: Props) => {
                   <TableRow key={p.id}>
                     <TableCell className="text-sm">{new Date(p.created_at).toLocaleDateString('pt-AO')}</TableCell>
                     <TableCell>{p.product_id}</TableCell>
-                    <TableCell>{p.supplier_id || '—'}</TableCell>
+                    <TableCell>{p.supplier || '—'}</TableCell>
                     <TableCell className="font-medium">{Number(p.total_value_aoa).toLocaleString('pt-AO')} AOA</TableCell>
                     <TableCell className="text-primary">{Number(p.subsidy_value_aoa).toLocaleString('pt-AO')} AOA</TableCell>
                     <TableCell>{getStatusBadge(p.status)}</TableCell>
