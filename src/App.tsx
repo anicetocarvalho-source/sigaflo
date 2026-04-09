@@ -106,6 +106,11 @@ import FaturasPage from "./pages/pos/FaturasPage";
 import ComprasPage from "./pages/pos/ComprasPage";
 import PacotesComprasPage from "./pages/pos/PacotesComprasPage";
 
+// Monitoring Module
+import AlertsPage from "./pages/monitoring/AlertsPage";
+import AgriculturalScorePage from "./pages/monitoring/AgriculturalScorePage";
+import NDVIPage from "./pages/monitoring/NDVIPage";
+
 const queryClient = new QueryClient();
 
 // Role groups for route protection
