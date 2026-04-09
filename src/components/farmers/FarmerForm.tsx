@@ -23,6 +23,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { MapPin, User, Leaf, Building2, Users, FileText, Camera, Award, Home } from 'lucide-react';
 import { useProvinces, useMunicipalities, useCommunes, useFarmers } from '@/hooks/useFarmers';
+import { supabase } from '@/integrations/supabase/client';
 import type { Farmer, FarmerType } from '@/hooks/useFarmers';
 import { MemberSelector } from './MemberSelector';
 import { PhotoUpload } from './PhotoUpload';
