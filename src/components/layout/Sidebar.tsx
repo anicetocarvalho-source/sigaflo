@@ -212,6 +212,12 @@ const navigation: NavItem[] = [
     ],
   },
   {
+    label: 'Seguros Agrícolas',
+    href: '/seguros',
+    icon: Shield,
+    allowedRoles: TECH_AND_ADMIN,
+  },
+  {
     label: 'Laboratório de Dados',
     href: '/laboratorio-dados',
     icon: FlaskConical,
