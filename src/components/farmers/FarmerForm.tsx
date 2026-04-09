@@ -330,8 +330,20 @@ export const FarmerForm = ({ farmer, onSubmit, isLoading, defaultCooperativeId, 
                             : 'BI / NIF'}
                         </FormLabel>
                         <FormControl>
-                          <Input {...field} value={field.value || ''} placeholder="Número de identificação" />
+                          <Input
+                            {...field}
+                            value={field.value || ''}
+                            placeholder="Número de identificação"
+                            onBlur={(e) => {
+                              field.onBlur();
+                              checkBiDuplicate(e.target.value);
+                            }}
+                          />
                         </FormControl>
+                        {checkingBi && <p className="text-xs text-muted-foreground">A verificar duplicados…</p>}
+                        {biDuplicateWarning && (
+                          <p className="text-xs text-destructive font-medium">{biDuplicateWarning}</p>
+                        )}
                         <FormMessage />
                       </FormItem>
                     )}
