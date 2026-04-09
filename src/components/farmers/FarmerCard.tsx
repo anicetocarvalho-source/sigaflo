@@ -35,7 +35,7 @@ export const FarmerCard = ({ farmer, onPrint, showActions = true }: FarmerCardPr
   const [flipped, setFlipped] = useState(false);
 
   const qrPayload = JSON.stringify({
-    plataforma: 'ONAPA',
+    plataforma: 'SIGAFLO',
     id: farmer.id,
     nome: farmer.name,
     bi: farmer.bi_nif || '',
@@ -68,7 +68,7 @@ export const FarmerCard = ({ farmer, onPrint, showActions = true }: FarmerCardPr
             .back { background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 50%, #bbf7d0 100%); color: #1a1a1a; padding: 12px 14px; }
             .header-line { font-size: 7px; opacity: 0.8; text-transform: uppercase; letter-spacing: 0.5px; }
             .ministry { font-size: 8px; font-weight: 600; margin: 1px 0; }
-            .onapa { font-size: 9px; font-weight: 700; letter-spacing: 1px; }
+            .sigaflo { font-size: 9px; font-weight: 700; letter-spacing: 1px; }
             .photo { width: 55px; height: 68px; border-radius: 6px; border: 2px solid rgba(255,255,255,0.4); overflow: hidden; background: rgba(255,255,255,0.15); display: flex; align-items: center; justify-content: center; }
             .photo img { width: 100%; height: 100%; object-fit: cover; }
             .name { font-size: 13px; font-weight: 700; margin-bottom: 2px; }
@@ -90,7 +90,7 @@ export const FarmerCard = ({ farmer, onPrint, showActions = true }: FarmerCardPr
             <div style="margin-bottom: 6px;">
               <div class="header-line">República de Angola</div>
               <div class="ministry">Ministério da Agricultura e Pescas</div>
-              <div class="onapa">ONAPA</div>
+              <div class="sigaflo">SIGAFLO</div>
             </div>
             <div style="display: flex; gap: 10px;">
               <div class="photo">
@@ -124,7 +124,7 @@ export const FarmerCard = ({ farmer, onPrint, showActions = true }: FarmerCardPr
             <div class="qr-section">
               <img src="https://api.qrserver.com/v1/create-qr-code/?size=70x70&data=${encodeURIComponent(qrPayload)}" width="70" height="70" />
             </div>
-            <div class="back-footer">Válido enquanto o registo estiver activo · ONAPA</div>
+            <div class="back-footer">Válido enquanto o registo estiver activo · SIGAFLO</div>
           </div>
         </body>
         </html>
@@ -160,7 +160,7 @@ export const FarmerCard = ({ farmer, onPrint, showActions = true }: FarmerCardPr
               <div className="mb-3">
                 <p className="text-[9px] uppercase tracking-wider opacity-70">República de Angola</p>
                 <p className="text-[10px] font-semibold">Ministério da Agricultura e Pescas</p>
-                <p className="text-xs font-bold tracking-widest">ONAPA</p>
+                <p className="text-xs font-bold tracking-widest">SIGAFLO</p>
               </div>
 
               {/* Body */}
@@ -249,7 +249,7 @@ export const FarmerCard = ({ farmer, onPrint, showActions = true }: FarmerCardPr
 
               {/* Footer */}
               <p className="absolute bottom-2 left-4 right-4 text-[7px] text-muted-foreground">
-                Válido enquanto o registo estiver activo · ONAPA · Sistema Nacional de Registo Agroflorestal
+                Válido enquanto o registo estiver activo · SIGAFLO · Sistema Nacional de Registo Agroflorestal
               </p>
             </div>
           </div>
