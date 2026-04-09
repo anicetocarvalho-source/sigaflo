@@ -1586,6 +1586,44 @@ export type Database = {
           },
         ]
       }
+      farmer_wallets: {
+        Row: {
+          balance_aoa: number
+          created_at: string
+          farmer_id: string
+          id: string
+          is_active: boolean
+          pin_hash: string | null
+          updated_at: string
+        }
+        Insert: {
+          balance_aoa?: number
+          created_at?: string
+          farmer_id: string
+          id?: string
+          is_active?: boolean
+          pin_hash?: string | null
+          updated_at?: string
+        }
+        Update: {
+          balance_aoa?: number
+          created_at?: string
+          farmer_id?: string
+          id?: string
+          is_active?: boolean
+          pin_hash?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "farmer_wallets_farmer_id_fkey"
+            columns: ["farmer_id"]
+            isOneToOne: true
+            referencedRelation: "farmers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       farmers: {
         Row: {
           address: string | null
@@ -3659,6 +3697,123 @@ export type Database = {
           },
         ]
       }
+      invoice_series: {
+        Row: {
+          code: Database["public"]["Enums"]["invoice_series_type"]
+          created_at: string
+          id: string
+          is_active: boolean
+          last_number: number
+          prefix: string
+          updated_at: string
+        }
+        Insert: {
+          code: Database["public"]["Enums"]["invoice_series_type"]
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          last_number?: number
+          prefix: string
+          updated_at?: string
+        }
+        Update: {
+          code?: Database["public"]["Enums"]["invoice_series_type"]
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          last_number?: number
+          prefix?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      invoices: {
+        Row: {
+          communicated_at: string | null
+          created_at: string
+          farmer_id: string | null
+          hash_anterior: string | null
+          hash_fiscal: string | null
+          id: string
+          invoice_number: string
+          is_offline: boolean
+          issued_at: string
+          iva_total_aoa: number
+          notes: string | null
+          operator_id: string | null
+          qr_data: string | null
+          sale_id: string | null
+          series_code: Database["public"]["Enums"]["invoice_series_type"]
+          status: Database["public"]["Enums"]["invoice_status"]
+          subtotal_aoa: number
+          system_id: string
+          total_aoa: number
+          updated_at: string
+          xml_data: string | null
+        }
+        Insert: {
+          communicated_at?: string | null
+          created_at?: string
+          farmer_id?: string | null
+          hash_anterior?: string | null
+          hash_fiscal?: string | null
+          id?: string
+          invoice_number: string
+          is_offline?: boolean
+          issued_at?: string
+          iva_total_aoa?: number
+          notes?: string | null
+          operator_id?: string | null
+          qr_data?: string | null
+          sale_id?: string | null
+          series_code?: Database["public"]["Enums"]["invoice_series_type"]
+          status?: Database["public"]["Enums"]["invoice_status"]
+          subtotal_aoa?: number
+          system_id?: string
+          total_aoa?: number
+          updated_at?: string
+          xml_data?: string | null
+        }
+        Update: {
+          communicated_at?: string | null
+          created_at?: string
+          farmer_id?: string | null
+          hash_anterior?: string | null
+          hash_fiscal?: string | null
+          id?: string
+          invoice_number?: string
+          is_offline?: boolean
+          issued_at?: string
+          iva_total_aoa?: number
+          notes?: string | null
+          operator_id?: string | null
+          qr_data?: string | null
+          sale_id?: string | null
+          series_code?: Database["public"]["Enums"]["invoice_series_type"]
+          status?: Database["public"]["Enums"]["invoice_status"]
+          subtotal_aoa?: number
+          system_id?: string
+          total_aoa?: number
+          updated_at?: string
+          xml_data?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoices_farmer_id_fkey"
+            columns: ["farmer_id"]
+            isOneToOne: false
+            referencedRelation: "farmers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoices_sale_id_fkey"
+            columns: ["sale_id"]
+            isOneToOne: false
+            referencedRelation: "pos_sales"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       market_infrastructure: {
         Row: {
           address: string | null
@@ -3910,6 +4065,215 @@ export type Database = {
             columns: ["province_id"]
             isOneToOne: false
             referencedRelation: "provinces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payment_gateway_config: {
+        Row: {
+          config_data: Json
+          created_at: string
+          display_name: string
+          id: string
+          is_active: boolean
+          is_sandbox: boolean
+          provider: string
+          updated_at: string
+        }
+        Insert: {
+          config_data?: Json
+          created_at?: string
+          display_name: string
+          id?: string
+          is_active?: boolean
+          is_sandbox?: boolean
+          provider: string
+          updated_at?: string
+        }
+        Update: {
+          config_data?: Json
+          created_at?: string
+          display_name?: string
+          id?: string
+          is_active?: boolean
+          is_sandbox?: boolean
+          provider?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      pos_products: {
+        Row: {
+          category: string
+          created_at: string
+          id: string
+          is_active: boolean
+          is_exempt: boolean
+          iva_rate: number
+          name: string
+          price_aoa: number
+          stock: number
+          unit: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          is_exempt?: boolean
+          iva_rate?: number
+          name: string
+          price_aoa?: number
+          stock?: number
+          unit?: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          is_exempt?: boolean
+          iva_rate?: number
+          name?: string
+          price_aoa?: number
+          stock?: number
+          unit?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      pos_sale_items: {
+        Row: {
+          created_at: string
+          id: string
+          is_exempt: boolean
+          iva_rate: number
+          iva_value_aoa: number
+          product_id: string
+          product_name: string
+          quantity: number
+          sale_id: string
+          subtotal_aoa: number
+          unit_price_aoa: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_exempt?: boolean
+          iva_rate?: number
+          iva_value_aoa?: number
+          product_id: string
+          product_name: string
+          quantity?: number
+          sale_id: string
+          subtotal_aoa?: number
+          unit_price_aoa?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_exempt?: boolean
+          iva_rate?: number
+          iva_value_aoa?: number
+          product_id?: string
+          product_name?: string
+          quantity?: number
+          sale_id?: string
+          subtotal_aoa?: number
+          unit_price_aoa?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pos_sale_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "pos_products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pos_sale_items_sale_id_fkey"
+            columns: ["sale_id"]
+            isOneToOne: false
+            referencedRelation: "pos_sales"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pos_sales: {
+        Row: {
+          created_at: string
+          farmer_id: string
+          hash_anterior: string | null
+          hash_fiscal: string | null
+          id: string
+          is_offline: boolean
+          iva_total_aoa: number
+          notes: string | null
+          operator_id: string | null
+          payment_method: Database["public"]["Enums"]["pos_payment_method"]
+          payment_reference: string | null
+          qr_data: string | null
+          representative_bi: string | null
+          representative_name: string | null
+          representative_relationship: string | null
+          status: string
+          subtotal_aoa: number
+          synced_at: string | null
+          total_aoa: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          farmer_id: string
+          hash_anterior?: string | null
+          hash_fiscal?: string | null
+          id?: string
+          is_offline?: boolean
+          iva_total_aoa?: number
+          notes?: string | null
+          operator_id?: string | null
+          payment_method?: Database["public"]["Enums"]["pos_payment_method"]
+          payment_reference?: string | null
+          qr_data?: string | null
+          representative_bi?: string | null
+          representative_name?: string | null
+          representative_relationship?: string | null
+          status?: string
+          subtotal_aoa?: number
+          synced_at?: string | null
+          total_aoa?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          farmer_id?: string
+          hash_anterior?: string | null
+          hash_fiscal?: string | null
+          id?: string
+          is_offline?: boolean
+          iva_total_aoa?: number
+          notes?: string | null
+          operator_id?: string | null
+          payment_method?: Database["public"]["Enums"]["pos_payment_method"]
+          payment_reference?: string | null
+          qr_data?: string | null
+          representative_bi?: string | null
+          representative_name?: string | null
+          representative_relationship?: string | null
+          status?: string
+          subtotal_aoa?: number
+          synced_at?: string | null
+          total_aoa?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pos_sales_farmer_id_fkey"
+            columns: ["farmer_id"]
+            isOneToOne: false
+            referencedRelation: "farmers"
             referencedColumns: ["id"]
           },
         ]
@@ -4205,6 +4569,118 @@ export type Database = {
           name?: string
         }
         Relationships: []
+      }
+      purchase_package_items: {
+        Row: {
+          created_at: string
+          id: string
+          max_quantity: number
+          package_id: string
+          product_id: string | null
+          product_name: string
+          unit: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          max_quantity?: number
+          package_id: string
+          product_id?: string | null
+          product_name: string
+          unit?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          max_quantity?: number
+          package_id?: string
+          product_id?: string | null
+          product_name?: string
+          unit?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "purchase_package_items_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: false
+            referencedRelation: "purchase_packages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "purchase_package_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "pos_products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      purchase_packages: {
+        Row: {
+          campaign: string
+          campaign_year: number
+          created_at: string
+          created_by: string | null
+          crop_type: string | null
+          farmer_id: string | null
+          id: string
+          municipality_id: string | null
+          notes: string | null
+          province_id: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          campaign: string
+          campaign_year?: number
+          created_at?: string
+          created_by?: string | null
+          crop_type?: string | null
+          farmer_id?: string | null
+          id?: string
+          municipality_id?: string | null
+          notes?: string | null
+          province_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          campaign?: string
+          campaign_year?: number
+          created_at?: string
+          created_by?: string | null
+          crop_type?: string | null
+          farmer_id?: string | null
+          id?: string
+          municipality_id?: string | null
+          notes?: string | null
+          province_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "purchase_packages_farmer_id_fkey"
+            columns: ["farmer_id"]
+            isOneToOne: false
+            referencedRelation: "farmers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "purchase_packages_municipality_id_fkey"
+            columns: ["municipality_id"]
+            isOneToOne: false
+            referencedRelation: "municipalities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "purchase_packages_province_id_fkey"
+            columns: ["province_id"]
+            isOneToOne: false
+            referencedRelation: "provinces"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       rice_alerts: {
         Row: {
@@ -4514,6 +4990,97 @@ export type Database = {
             columns: ["province_id"]
             isOneToOne: false
             referencedRelation: "provinces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      subsidized_purchases: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          copayment_value_aoa: number
+          created_at: string
+          farmer_id: string
+          id: string
+          is_deferred: boolean
+          notes: string | null
+          order_service_id: string | null
+          product_id: string | null
+          product_name: string
+          purchase_package_id: string | null
+          quantity: number
+          rejection_reason: string | null
+          status: Database["public"]["Enums"]["purchase_status"]
+          subsidy_percentage: number
+          subsidy_value_aoa: number
+          supplier: string | null
+          total_value_aoa: number
+          updated_at: string
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          copayment_value_aoa?: number
+          created_at?: string
+          farmer_id: string
+          id?: string
+          is_deferred?: boolean
+          notes?: string | null
+          order_service_id?: string | null
+          product_id?: string | null
+          product_name: string
+          purchase_package_id?: string | null
+          quantity?: number
+          rejection_reason?: string | null
+          status?: Database["public"]["Enums"]["purchase_status"]
+          subsidy_percentage?: number
+          subsidy_value_aoa?: number
+          supplier?: string | null
+          total_value_aoa?: number
+          updated_at?: string
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          copayment_value_aoa?: number
+          created_at?: string
+          farmer_id?: string
+          id?: string
+          is_deferred?: boolean
+          notes?: string | null
+          order_service_id?: string | null
+          product_id?: string | null
+          product_name?: string
+          purchase_package_id?: string | null
+          quantity?: number
+          rejection_reason?: string | null
+          status?: Database["public"]["Enums"]["purchase_status"]
+          subsidy_percentage?: number
+          subsidy_value_aoa?: number
+          supplier?: string | null
+          total_value_aoa?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subsidized_purchases_farmer_id_fkey"
+            columns: ["farmer_id"]
+            isOneToOne: false
+            referencedRelation: "farmers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subsidized_purchases_package_fk"
+            columns: ["purchase_package_id"]
+            isOneToOne: false
+            referencedRelation: "purchase_packages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subsidized_purchases_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "pos_products"
             referencedColumns: ["id"]
           },
         ]
@@ -5081,6 +5648,15 @@ export type Database = {
         | "unauthorized_area"
         | "environmental_damage"
         | "other"
+      invoice_series_type: "FE" | "FR" | "NC"
+      invoice_status:
+        | "emitida"
+        | "pendente"
+        | "comunicada"
+        | "aceite"
+        | "rejeitada"
+      pos_payment_method: "agropay" | "unitel_money" | "deferred"
+      purchase_status: "pending" | "approved" | "rejected" | "completed"
       tracking_status:
         | "at_origin"
         | "felled"
@@ -5294,6 +5870,16 @@ export const Constants = {
         "environmental_damage",
         "other",
       ],
+      invoice_series_type: ["FE", "FR", "NC"],
+      invoice_status: [
+        "emitida",
+        "pendente",
+        "comunicada",
+        "aceite",
+        "rejeitada",
+      ],
+      pos_payment_method: ["agropay", "unitel_money", "deferred"],
+      purchase_status: ["pending", "approved", "rejected", "completed"],
       tracking_status: [
         "at_origin",
         "felled",

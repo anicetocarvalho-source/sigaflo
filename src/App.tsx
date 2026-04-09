@@ -94,6 +94,12 @@ import DocumentationPage from "./pages/docs/DocumentationPage";
 import NotificationsPage from "./pages/notifications/NotificationsPage";
 import SettingsPage from "./pages/settings/SettingsPage";
 
+// POS Module
+import POSPage from "./pages/pos/POSPage";
+import FaturasPage from "./pages/pos/FaturasPage";
+import ComprasPage from "./pages/pos/ComprasPage";
+import PacotesComprasPage from "./pages/pos/PacotesComprasPage";
+
 const queryClient = new QueryClient();
 
 // Role groups for route protection
@@ -211,6 +217,12 @@ const App = () => (
             
             {/* Credit & Insurance Module */}
             <Route path="/credito-seguro/*" element={<ProtectedRoute requiredRoles={TECHNICIAN_AND_ADMIN}><CreditInsurancePage /></ProtectedRoute>} />
+            
+            {/* POS & Sales Module */}
+            <Route path="/pos" element={<ProtectedRoute requiredRoles={TECHNICIAN_AND_ADMIN}><POSPage /></ProtectedRoute>} />
+            <Route path="/faturas" element={<ProtectedRoute requiredRoles={TECHNICIAN_AND_ADMIN}><FaturasPage /></ProtectedRoute>} />
+            <Route path="/compras" element={<ProtectedRoute requiredRoles={TECHNICIAN_AND_ADMIN}><ComprasPage /></ProtectedRoute>} />
+            <Route path="/pacotes-compras" element={<ProtectedRoute requiredRoles={ADMIN_ROLES}><PacotesComprasPage /></ProtectedRoute>} />
             
             {/* Data Lab Module - national level */}
             <Route path="/laboratorio-dados/*" element={<ProtectedRoute requiredRoles={NATIONAL_LEVEL}><DataLabPage /></ProtectedRoute>} />
