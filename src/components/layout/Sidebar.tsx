@@ -32,6 +32,8 @@ import {
   Landmark,
   ShoppingCart,
   Tractor,
+  Activity,
+  Satellite,
 } from 'lucide-react';
 
 type UserRole = 'admin_national' | 'admin_provincial' | 'admin_municipal' | 'technician_national' | 'technician_provincial' | 'technician_municipal' | 'private_entity' | 'viewer';
