@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -223,6 +224,12 @@ export const FarmerProfileComplete = () => {
               <ArrowLeft className="h-4 w-4" />
             </Button>
           </Link>
+          <Avatar className="h-12 w-12 border-2 border-primary/20">
+            <AvatarImage src={farmer.photo_url || undefined} alt={farmer.name} />
+            <AvatarFallback className={getFarmerTypeColor(farmer.farmer_type)}>
+              {farmer.name.split(' ').filter(Boolean).slice(0, 2).map(n => n[0]).join('').toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
           <div>
             <div className="flex items-center gap-3">
               <h1 className="text-2xl font-bold">{farmer.name}</h1>
@@ -339,7 +346,7 @@ export const FarmerProfileComplete = () => {
 
       {/* Main Content Tabs */}
       <Tabs defaultValue="identification" className="w-full">
-        <TabsList className="flex flex-wrap w-full gap-1">
+        <TabsList className="flex w-full overflow-x-auto flex-nowrap gap-1 scrollbar-thin scrollbar-thumb-muted">
           <TabsTrigger value="identification" className="flex items-center gap-1">
             <User className="h-4 w-4" />
             <span className="hidden sm:inline">Identificação</span>
