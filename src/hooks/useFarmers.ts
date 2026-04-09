@@ -62,6 +62,7 @@ export interface Farmer {
   family_workers_count?: number;
   head_of_household?: boolean;
   household_notes?: string;
+  technician_id?: string;
   // Relations
   provinces?: { name: string; code: string };
   municipalities?: { name: string };
