@@ -89,7 +89,7 @@ export const FarmerCard = ({ farmer, onPrint, showActions = true }: FarmerCardPr
           <div class="card front">
             <div style="margin-bottom: 6px;">
               <div class="header-line">República de Angola</div>
-              <div class="ministry">Ministério da Agricultura e Pescas</div>
+              <div class="ministry">Ministério da Agricultura e Florestas</div>
               <div class="sigaflo">SIGAFLO</div>
             </div>
             <div style="display: flex; gap: 10px;">
@@ -159,7 +159,7 @@ export const FarmerCard = ({ farmer, onPrint, showActions = true }: FarmerCardPr
               {/* Header */}
               <div className="mb-3">
                 <p className="text-[9px] uppercase tracking-wider opacity-70">República de Angola</p>
-                <p className="text-[10px] font-semibold">Ministério da Agricultura e Pescas</p>
+                <p className="text-[10px] font-semibold">Ministério da Agricultura e Florestas</p>
                 <p className="text-xs font-bold tracking-widest">SIGAFLO</p>
               </div>
 
