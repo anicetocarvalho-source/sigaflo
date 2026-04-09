@@ -32,6 +32,8 @@ import {
   Landmark,
   ShoppingCart,
   Tractor,
+  Activity,
+  Satellite,
 } from 'lucide-react';
 
 type UserRole = 'admin_national' | 'admin_provincial' | 'admin_municipal' | 'technician_national' | 'technician_provincial' | 'technician_municipal' | 'private_entity' | 'viewer';
@@ -197,6 +199,16 @@ const navigation: NavItem[] = [
       { label: 'Facturas', href: '/faturas' },
       { label: 'Compras Subsidiadas', href: '/compras' },
       { label: 'Pacotes de Compras', href: '/pacotes-compras' },
+    ],
+  },
+  {
+    label: 'Monitoria',
+    icon: Activity,
+    allowedRoles: TECH_AND_ADMIN,
+    children: [
+      { label: 'Alertas & Riscos', href: '/monitoria/alertas' },
+      { label: 'Score Agrícola', href: '/monitoria/score' },
+      { label: 'NDVI Satélite', href: '/monitoria/ndvi' },
     ],
   },
   {
