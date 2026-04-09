@@ -41,7 +41,10 @@ import {
   Fingerprint,
   Download,
   ExternalLink,
-  QrCode
+  QrCode,
+  ShoppingCart,
+  Eye,
+  LandPlot,
 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { useFarmer, useFarmers } from '@/hooks/useFarmers';
@@ -52,6 +55,13 @@ import { useOccurrences } from '@/hooks/useOccurrences';
 import { FarmerTypeIcon, getFarmerTypeLabel, getFarmerTypeColor } from './FarmerTypeIcon';
 import { WorkflowStatusBadge } from './WorkflowStatusBadge';
 import { WorkflowActions } from './WorkflowActions';
+import { FarmerRepresentatives } from './FarmerRepresentatives';
+import { FarmerParcels } from './FarmerParcels';
+import { FarmerCampaigns } from './FarmerCampaigns';
+import { FarmerAgroPay } from './FarmerAgroPay';
+import { FarmerPurchases } from './FarmerPurchases';
+import { FarmerBiometry } from './FarmerBiometry';
+import { FarmerForecast } from './FarmerForecast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 import mapboxgl from 'mapbox-gl';
@@ -367,6 +377,34 @@ export const FarmerProfileComplete = () => {
           <TabsTrigger value="scores" className="flex items-center gap-1">
             <BarChart3 className="h-4 w-4" />
             <span className="hidden sm:inline">Scores</span>
+          </TabsTrigger>
+          <TabsTrigger value="representatives" className="flex items-center gap-1">
+            <Users className="h-4 w-4" />
+            <span className="hidden sm:inline">Representantes</span>
+          </TabsTrigger>
+          <TabsTrigger value="parcels" className="flex items-center gap-1">
+            <LandPlot className="h-4 w-4" />
+            <span className="hidden sm:inline">Parcelas</span>
+          </TabsTrigger>
+          <TabsTrigger value="campaigns" className="flex items-center gap-1">
+            <Calendar className="h-4 w-4" />
+            <span className="hidden sm:inline">Campanhas</span>
+          </TabsTrigger>
+          <TabsTrigger value="agropay" className="flex items-center gap-1">
+            <Wallet className="h-4 w-4" />
+            <span className="hidden sm:inline">AgroPay</span>
+          </TabsTrigger>
+          <TabsTrigger value="purchases" className="flex items-center gap-1">
+            <ShoppingCart className="h-4 w-4" />
+            <span className="hidden sm:inline">Compras</span>
+          </TabsTrigger>
+          <TabsTrigger value="biometry" className="flex items-center gap-1">
+            <Fingerprint className="h-4 w-4" />
+            <span className="hidden sm:inline">Biometria</span>
+          </TabsTrigger>
+          <TabsTrigger value="forecast" className="flex items-center gap-1">
+            <Eye className="h-4 w-4" />
+            <span className="hidden sm:inline">Previsão</span>
           </TabsTrigger>
           {(farmer.farmer_type === 'cooperative' || farmer.farmer_type === 'field_school') && (
             <TabsTrigger value="members" className="flex items-center gap-1">
