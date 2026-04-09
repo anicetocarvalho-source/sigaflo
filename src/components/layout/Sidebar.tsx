@@ -30,6 +30,7 @@ import {
   Umbrella,
   FlaskConical,
   Landmark,
+  ShoppingCart,
 } from 'lucide-react';
 
 type UserRole = 'admin_national' | 'admin_provincial' | 'admin_municipal' | 'technician_national' | 'technician_provincial' | 'technician_municipal' | 'private_entity' | 'viewer';
@@ -170,6 +171,17 @@ const navigation: NavItem[] = [
     href: '/credito-seguro',
     icon: Landmark,
     allowedRoles: TECH_AND_ADMIN,
+  },
+  {
+    label: 'Vendas & POS',
+    icon: ShoppingCart,
+    allowedRoles: TECH_AND_ADMIN,
+    children: [
+      { label: 'Ponto de Venda', href: '/pos' },
+      { label: 'Facturas', href: '/faturas' },
+      { label: 'Compras Subsidiadas', href: '/compras' },
+      { label: 'Pacotes de Compras', href: '/pacotes-compras' },
+    ],
   },
   {
     label: 'Laboratório de Dados',
