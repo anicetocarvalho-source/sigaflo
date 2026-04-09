@@ -51,6 +51,7 @@ import { useAllocations } from '@/hooks/useIncentives';
 import { useOccurrences } from '@/hooks/useOccurrences';
 import { FarmerTypeIcon, getFarmerTypeLabel, getFarmerTypeColor } from './FarmerTypeIcon';
 import { WorkflowStatusBadge } from './WorkflowStatusBadge';
+import { WorkflowActions } from './WorkflowActions';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 import mapboxgl from 'mapbox-gl';
@@ -249,6 +250,17 @@ export const FarmerProfileComplete = () => {
           </Link>
         </div>
       </div>
+
+      {/* Workflow Actions */}
+      <Card className="border-dashed">
+        <CardContent className="pt-6">
+          <WorkflowActions
+            farmerId={farmer.id}
+            currentStatus={farmer.status}
+            farmerName={farmer.name}
+          />
+        </CardContent>
+      </Card>
 
       {/* Quick Stats */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
