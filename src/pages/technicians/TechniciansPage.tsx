@@ -53,7 +53,7 @@ export default function TechniciansPage() {
     notes: '',
   });
 
-  const { provinces, municipalities } = useLocationCascade(form.province_id, '');
+  const { provinces, municipalities } = useLocationCascade({ initialProvinceId: form.province_id });
 
   const filtered = technicians.filter(t =>
     t.full_name.toLowerCase().includes(search.toLowerCase()) ||
@@ -88,7 +88,7 @@ export default function TechniciansPage() {
   };
 
   return (
-    <MainLayout>
+    <MainLayout title="Técnicos de Campo" subtitle="Gestão de extensionistas e atribuição de agricultores">
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>

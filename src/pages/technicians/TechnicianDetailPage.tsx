@@ -25,11 +25,11 @@ export default function TechnicianDetailPage() {
   const farmers = farmersQuery.data || [];
 
   if (isLoading) {
-    return <MainLayout><div className="flex items-center justify-center h-64 text-muted-foreground">A carregar...</div></MainLayout>;
+    return <MainLayout title="Técnico de Campo"><div className="flex items-center justify-center h-64 text-muted-foreground">A carregar...</div></MainLayout>;
   }
 
   if (!tech) {
-    return <MainLayout><div className="flex items-center justify-center h-64 text-muted-foreground">Técnico não encontrado</div></MainLayout>;
+    return <MainLayout title="Técnico de Campo"><div className="flex items-center justify-center h-64 text-muted-foreground">Técnico não encontrado</div></MainLayout>;
   }
 
   const toggleFarmer = (id: string) => {
@@ -51,7 +51,7 @@ export default function TechnicianDetailPage() {
   };
 
   return (
-    <MainLayout>
+    <MainLayout title="Técnico de Campo" subtitle={tech.full_name}>
       <div className="space-y-6">
         <Button variant="ghost" onClick={() => navigate('/tecnicos')} className="gap-2">
           <ArrowLeft className="h-4 w-4" /> Voltar
