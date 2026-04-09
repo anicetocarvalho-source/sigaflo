@@ -109,6 +109,33 @@ export const FarmerForm = ({ farmer, onSubmit, isLoading, defaultCooperativeId, 
   const [selectedProvince, setSelectedProvince] = useState<string | undefined>(farmer?.province_id || undefined);
   const [selectedMunicipality, setSelectedMunicipality] = useState<string | undefined>(farmer?.municipality_id || undefined);
   const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
+  const [biDuplicateWarning, setBiDuplicateWarning] = useState<string | null>(null);
+  const [checkingBi, setCheckingBi] = useState(false);
+
+  const checkBiDuplicate = useCallback(async (bi: string) => {
+    if (!bi || bi.length < 5) {
+      setBiDuplicateWarning(null);
+      return;
+    }
+    setCheckingBi(true);
+    try {
+      const { data } = await supabase
+        .from('farmers')
+        .select('id, name')
+        .eq('bi_nif', bi)
+        .neq('id', farmer?.id || '00000000-0000-0000-0000-000000000000')
+        .limit(1);
+      if (data && data.length > 0) {
+        setBiDuplicateWarning(`BI/NIF já registado para: ${data[0].name}`);
+      } else {
+        setBiDuplicateWarning(null);
+      }
+    } catch {
+      setBiDuplicateWarning(null);
+    } finally {
+      setCheckingBi(false);
+    }
+  }, [farmer?.id]);
 
   const { data: provinces } = useProvinces();
   const { data: municipalities } = useMunicipalities(selectedProvince);
