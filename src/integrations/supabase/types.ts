@@ -1444,6 +1444,66 @@ export type Database = {
           },
         ]
       }
+      farmer_campaigns: {
+        Row: {
+          created_at: string
+          crop: string
+          current_phase: number
+          expected_harvest: string | null
+          farmer_id: string
+          id: string
+          notes: string | null
+          parcel_id: string | null
+          start_date: string
+          status: string
+          total_phases: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          crop: string
+          current_phase?: number
+          expected_harvest?: string | null
+          farmer_id: string
+          id?: string
+          notes?: string | null
+          parcel_id?: string | null
+          start_date?: string
+          status?: string
+          total_phases?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          crop?: string
+          current_phase?: number
+          expected_harvest?: string | null
+          farmer_id?: string
+          id?: string
+          notes?: string | null
+          parcel_id?: string | null
+          start_date?: string
+          status?: string
+          total_phases?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "farmer_campaigns_farmer_id_fkey"
+            columns: ["farmer_id"]
+            isOneToOne: false
+            referencedRelation: "farmers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "farmer_campaigns_parcel_id_fkey"
+            columns: ["parcel_id"]
+            isOneToOne: false
+            referencedRelation: "farmer_parcels"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       farmer_data_consents: {
         Row: {
           consent_given_at: string
@@ -1582,6 +1642,168 @@ export type Database = {
             columns: ["farmer_id"]
             isOneToOne: false
             referencedRelation: "farmers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      farmer_parcels: {
+        Row: {
+          area_ha: number | null
+          commune_id: string | null
+          created_at: string
+          crops: string[] | null
+          farmer_id: string
+          id: string
+          irrigation_system: string | null
+          latitude: number | null
+          longitude: number | null
+          main_crop: string | null
+          municipality_id: string | null
+          name: string
+          province_id: string | null
+          soil_type: string | null
+          status: string
+          updated_at: string
+          water_source: string | null
+        }
+        Insert: {
+          area_ha?: number | null
+          commune_id?: string | null
+          created_at?: string
+          crops?: string[] | null
+          farmer_id: string
+          id?: string
+          irrigation_system?: string | null
+          latitude?: number | null
+          longitude?: number | null
+          main_crop?: string | null
+          municipality_id?: string | null
+          name: string
+          province_id?: string | null
+          soil_type?: string | null
+          status?: string
+          updated_at?: string
+          water_source?: string | null
+        }
+        Update: {
+          area_ha?: number | null
+          commune_id?: string | null
+          created_at?: string
+          crops?: string[] | null
+          farmer_id?: string
+          id?: string
+          irrigation_system?: string | null
+          latitude?: number | null
+          longitude?: number | null
+          main_crop?: string | null
+          municipality_id?: string | null
+          name?: string
+          province_id?: string | null
+          soil_type?: string | null
+          status?: string
+          updated_at?: string
+          water_source?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "farmer_parcels_commune_id_fkey"
+            columns: ["commune_id"]
+            isOneToOne: false
+            referencedRelation: "communes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "farmer_parcels_farmer_id_fkey"
+            columns: ["farmer_id"]
+            isOneToOne: false
+            referencedRelation: "farmers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "farmer_parcels_municipality_id_fkey"
+            columns: ["municipality_id"]
+            isOneToOne: false
+            referencedRelation: "municipalities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "farmer_parcels_province_id_fkey"
+            columns: ["province_id"]
+            isOneToOne: false
+            referencedRelation: "provinces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      farmer_representatives: {
+        Row: {
+          bi: string | null
+          created_at: string
+          farmer_id: string
+          fingerprint_complete: boolean | null
+          fingers_captured: number | null
+          id: string
+          municipality_id: string | null
+          name: string
+          phone: string | null
+          photo_url: string | null
+          province_id: string | null
+          relationship: string
+          synced: boolean | null
+          updated_at: string
+        }
+        Insert: {
+          bi?: string | null
+          created_at?: string
+          farmer_id: string
+          fingerprint_complete?: boolean | null
+          fingers_captured?: number | null
+          id?: string
+          municipality_id?: string | null
+          name: string
+          phone?: string | null
+          photo_url?: string | null
+          province_id?: string | null
+          relationship: string
+          synced?: boolean | null
+          updated_at?: string
+        }
+        Update: {
+          bi?: string | null
+          created_at?: string
+          farmer_id?: string
+          fingerprint_complete?: boolean | null
+          fingers_captured?: number | null
+          id?: string
+          municipality_id?: string | null
+          name?: string
+          phone?: string | null
+          photo_url?: string | null
+          province_id?: string | null
+          relationship?: string
+          synced?: boolean | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "farmer_representatives_farmer_id_fkey"
+            columns: ["farmer_id"]
+            isOneToOne: false
+            referencedRelation: "farmers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "farmer_representatives_municipality_id_fkey"
+            columns: ["municipality_id"]
+            isOneToOne: false
+            referencedRelation: "municipalities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "farmer_representatives_province_id_fkey"
+            columns: ["province_id"]
+            isOneToOne: false
+            referencedRelation: "provinces"
             referencedColumns: ["id"]
           },
         ]
@@ -4065,6 +4287,38 @@ export type Database = {
             columns: ["province_id"]
             isOneToOne: false
             referencedRelation: "provinces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      parcel_polygons: {
+        Row: {
+          created_at: string
+          id: string
+          parcel_id: string
+          polygon: Json
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          parcel_id: string
+          polygon?: Json
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          parcel_id?: string
+          polygon?: Json
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "parcel_polygons_parcel_id_fkey"
+            columns: ["parcel_id"]
+            isOneToOne: false
+            referencedRelation: "farmer_parcels"
             referencedColumns: ["id"]
           },
         ]
