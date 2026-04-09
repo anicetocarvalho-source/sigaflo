@@ -4142,6 +4142,150 @@ export type Database = {
           },
         ]
       }
+      mechanization_centers: {
+        Row: {
+          address: string | null
+          center_type: string
+          commune_id: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          latitude: number | null
+          longitude: number | null
+          manager_name: string | null
+          manager_phone: string | null
+          municipality_id: string | null
+          name: string
+          notes: string | null
+          operational_machines: number | null
+          province_id: string | null
+          status: string
+          total_machines: number | null
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          address?: string | null
+          center_type?: string
+          commune_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          manager_name?: string | null
+          manager_phone?: string | null
+          municipality_id?: string | null
+          name: string
+          notes?: string | null
+          operational_machines?: number | null
+          province_id?: string | null
+          status?: string
+          total_machines?: number | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          address?: string | null
+          center_type?: string
+          commune_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          manager_name?: string | null
+          manager_phone?: string | null
+          municipality_id?: string | null
+          name?: string
+          notes?: string | null
+          operational_machines?: number | null
+          province_id?: string | null
+          status?: string
+          total_machines?: number | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mechanization_centers_commune_id_fkey"
+            columns: ["commune_id"]
+            isOneToOne: false
+            referencedRelation: "communes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mechanization_centers_municipality_id_fkey"
+            columns: ["municipality_id"]
+            isOneToOne: false
+            referencedRelation: "municipalities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mechanization_centers_province_id_fkey"
+            columns: ["province_id"]
+            isOneToOne: false
+            referencedRelation: "provinces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mechanization_validations: {
+        Row: {
+          area_deviation_pct: number | null
+          calculated_area_ha: number | null
+          created_at: string
+          declared_area_ha: number | null
+          id: string
+          satellite_image_url: string | null
+          service_order_id: string
+          updated_at: string
+          validated_by: string | null
+          validation_method: string | null
+          validation_notes: string | null
+          validation_status: string | null
+          worked_polygon: Json | null
+        }
+        Insert: {
+          area_deviation_pct?: number | null
+          calculated_area_ha?: number | null
+          created_at?: string
+          declared_area_ha?: number | null
+          id?: string
+          satellite_image_url?: string | null
+          service_order_id: string
+          updated_at?: string
+          validated_by?: string | null
+          validation_method?: string | null
+          validation_notes?: string | null
+          validation_status?: string | null
+          worked_polygon?: Json | null
+        }
+        Update: {
+          area_deviation_pct?: number | null
+          calculated_area_ha?: number | null
+          created_at?: string
+          declared_area_ha?: number | null
+          id?: string
+          satellite_image_url?: string | null
+          service_order_id?: string
+          updated_at?: string
+          validated_by?: string | null
+          validation_method?: string | null
+          validation_notes?: string | null
+          validation_status?: string | null
+          worked_polygon?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mechanization_validations_service_order_id_fkey"
+            columns: ["service_order_id"]
+            isOneToOne: false
+            referencedRelation: "service_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       municipalities: {
         Row: {
           code: string | null
@@ -5241,6 +5385,116 @@ export type Database = {
           },
           {
             foreignKeyName: "rice_production_province_id_fkey"
+            columns: ["province_id"]
+            isOneToOne: false
+            referencedRelation: "provinces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      service_orders: {
+        Row: {
+          area_ha: number | null
+          center_id: string | null
+          completed_at: string | null
+          cost_aoa: number | null
+          created_at: string
+          created_by: string | null
+          farmer_id: string | null
+          id: string
+          machine_name: string | null
+          municipality_id: string | null
+          notes: string | null
+          operator_name: string | null
+          order_number: string
+          payment_method: string | null
+          payment_status: string | null
+          province_id: string | null
+          requested_date: string
+          scheduled_date: string | null
+          service_type: string
+          started_at: string | null
+          status: string
+          updated_at: string
+          updated_by: string | null
+          validated_at: string | null
+        }
+        Insert: {
+          area_ha?: number | null
+          center_id?: string | null
+          completed_at?: string | null
+          cost_aoa?: number | null
+          created_at?: string
+          created_by?: string | null
+          farmer_id?: string | null
+          id?: string
+          machine_name?: string | null
+          municipality_id?: string | null
+          notes?: string | null
+          operator_name?: string | null
+          order_number: string
+          payment_method?: string | null
+          payment_status?: string | null
+          province_id?: string | null
+          requested_date?: string
+          scheduled_date?: string | null
+          service_type?: string
+          started_at?: string | null
+          status?: string
+          updated_at?: string
+          updated_by?: string | null
+          validated_at?: string | null
+        }
+        Update: {
+          area_ha?: number | null
+          center_id?: string | null
+          completed_at?: string | null
+          cost_aoa?: number | null
+          created_at?: string
+          created_by?: string | null
+          farmer_id?: string | null
+          id?: string
+          machine_name?: string | null
+          municipality_id?: string | null
+          notes?: string | null
+          operator_name?: string | null
+          order_number?: string
+          payment_method?: string | null
+          payment_status?: string | null
+          province_id?: string | null
+          requested_date?: string
+          scheduled_date?: string | null
+          service_type?: string
+          started_at?: string | null
+          status?: string
+          updated_at?: string
+          updated_by?: string | null
+          validated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_orders_center_id_fkey"
+            columns: ["center_id"]
+            isOneToOne: false
+            referencedRelation: "mechanization_centers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_orders_farmer_id_fkey"
+            columns: ["farmer_id"]
+            isOneToOne: false
+            referencedRelation: "farmers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_orders_municipality_id_fkey"
+            columns: ["municipality_id"]
+            isOneToOne: false
+            referencedRelation: "municipalities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_orders_province_id_fkey"
             columns: ["province_id"]
             isOneToOne: false
             referencedRelation: "provinces"
