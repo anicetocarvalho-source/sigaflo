@@ -100,6 +100,8 @@ import SettingsPage from "./pages/settings/SettingsPage";
 // POS Module
 import POSPage from "./pages/pos/POSPage";
 import MechanizationPage from "./pages/mechanization/MechanizationPage";
+import TechniciansPage from "./pages/technicians/TechniciansPage";
+import TechnicianDetailPage from "./pages/technicians/TechnicianDetailPage";
 import FaturasPage from "./pages/pos/FaturasPage";
 import ComprasPage from "./pages/pos/ComprasPage";
 import PacotesComprasPage from "./pages/pos/PacotesComprasPage";
@@ -227,6 +229,10 @@ const App = () => (
             
             {/* Mechanization Module */}
             <Route path="/mecanizacao" element={<ProtectedRoute requiredRoles={TECHNICIAN_AND_ADMIN}><MechanizationPage /></ProtectedRoute>} />
+            
+            {/* Technicians Module */}
+            <Route path="/tecnicos" element={<ProtectedRoute requiredRoles={TECHNICIAN_AND_ADMIN}><TechniciansPage /></ProtectedRoute>} />
+            <Route path="/tecnicos/:id" element={<ProtectedRoute requiredRoles={TECHNICIAN_AND_ADMIN}><TechnicianDetailPage /></ProtectedRoute>} />
             
             {/* POS & Sales Module */}
             <Route path="/pos" element={<ProtectedRoute requiredRoles={TECHNICIAN_AND_ADMIN}><POSPage /></ProtectedRoute>} />
