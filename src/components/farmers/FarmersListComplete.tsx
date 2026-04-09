@@ -66,6 +66,7 @@ const getStatusBadge = (isActive: boolean | null | undefined) => {
 export const FarmersListComplete = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [provinceFilter, setProvinceFilter] = useState<string>('all');
+  const [typeFilter, setTypeFilter] = useState<string>('all');
   const [cropFilter, setCropFilter] = useState<string>('all');
   const [scoreFilter, setScoreFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -73,6 +74,8 @@ export const FarmersListComplete = () => {
   const { data: provinces } = useProvinces();
   const { data: farmers, isLoading: farmersLoading } = useFarmers({
     province_id: provinceFilter === 'all' ? undefined : provinceFilter,
+    type: typeFilter !== 'all' ? typeFilter as FarmerType : undefined,
+    excludeTypes: ['cooperative', 'field_school'] as FarmerType[],
   });
   const { data: financialProfiles, isLoading: profilesLoading } = useFinancialProfiles();
 
