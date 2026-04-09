@@ -43,6 +43,80 @@ import { useProvinces } from '@/hooks/useFarmers';
 import { usePaymentGateways, useUpdateGateway } from '@/hooks/usePOS';
 import { toast } from 'sonner';
 
+function GatewaySettings() {
+  const { data: gateways, isLoading } = usePaymentGateways();
+  const updateGateway = useUpdateGateway();
+  const [showSecrets, setShowSecrets] = useState<Record<string, boolean>>({});
+
+  const toggleSecret = (id: string) => setShowSecrets(prev => ({ ...prev, [id]: !prev[id] }));
+
+  const handleToggle = (gw: any, active: boolean) => {
+    updateGateway.mutate({ id: gw.id, is_active: active });
+  };
+
+  const handleFieldUpdate = (gw: any, field: string, value: string) => {
+    const newConfig = { ...(gw.config_data || {}), [field]: value };
+    updateGateway.mutate({ id: gw.id, config_data: newConfig });
+  };
+
+  if (isLoading) return <div className="flex justify-center py-8"><Loader2 className="h-6 w-6 animate-spin" /></div>;
+
+  return (
+    <div className="space-y-4">
+      {gateways?.map((gw: any) => (
+        <Card key={gw.id}>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <CreditCard className="h-5 w-5" />
+                {gw.display_name}
+              </CardTitle>
+              <div className="flex items-center gap-3">
+                <Badge variant={gw.is_sandbox ? 'secondary' : 'default'}>
+                  {gw.is_sandbox ? 'Sandbox' : 'Produção'}
+                </Badge>
+                <Switch checked={gw.is_active} onCheckedChange={(v) => handleToggle(gw, v)} />
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {Object.entries(gw.config_data || {}).map(([key, val]) => {
+              const isSecret = key.toLowerCase().includes('key') || key.toLowerCase().includes('token') || key.toLowerCase().includes('secret');
+              return (
+                <div key={key} className="flex items-center gap-2">
+                  <Label className="w-32 text-sm capitalize">{key.replace(/([A-Z])/g, ' $1')}</Label>
+                  <div className="flex-1 relative">
+                    <Input
+                      type={isSecret && !showSecrets[`${gw.id}-${key}`] ? 'password' : 'text'}
+                      value={val as string}
+                      onChange={e => handleFieldUpdate(gw, key, e.target.value)}
+                      className="pr-10"
+                    />
+                    {isSecret && (
+                      <button
+                        type="button"
+                        className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                        onClick={() => toggleSecret(`${gw.id}-${key}`)}
+                      >
+                        {showSecrets[`${gw.id}-${key}`] ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </button>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+            <div className="flex justify-end pt-2">
+              <Button variant="outline" size="sm" onClick={() => toast.success('Teste de conexão simulado com sucesso')}>
+                <Wifi className="h-4 w-4 mr-2" /> Testar Conexão
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  );
+}
+
 export default function SettingsPage() {
   const { user, profile, roles } = useAuth();
   const { data: preferences, isLoading: prefsLoading } = useUserPreferences();
