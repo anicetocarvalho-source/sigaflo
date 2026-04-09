@@ -62,6 +62,7 @@ import { FarmerCampaigns } from './FarmerCampaigns';
 import { FarmerAgroPay } from './FarmerAgroPay';
 import { FarmerPurchases } from './FarmerPurchases';
 import { FarmerBiometry } from './FarmerBiometry';
+import { FarmerCard } from './FarmerCard';
 import { FarmerForecast } from './FarmerForecast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
