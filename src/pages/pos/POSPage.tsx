@@ -9,7 +9,7 @@ import { CartPanel, CartItem } from '@/components/pos/CartPanel';
 import { PaymentStep } from '@/components/pos/PaymentStep';
 import { ReceiptModal } from '@/components/pos/ReceiptModal';
 import { useCreateSale } from '@/hooks/usePOS';
-import { generateFiscalHash, calculateIva, generateQRData } from '@/lib/fiscal';
+import { generateFiscalHash, calculateIva, generateQRData, formatAOA } from '@/lib/fiscal';
 import { CheckCircle, ShoppingCart, User, CreditCard, Receipt } from 'lucide-react';
 
 const STEPS = [
@@ -113,13 +113,8 @@ export default function POSPage() {
   };
 
   return (
-    <MainLayout>
+    <MainLayout title="Ponto de Venda (POS)" subtitle="Fluxo guiado de venda com compliance fiscal AGT">
       <div className="space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold">Ponto de Venda (POS)</h1>
-          <p className="text-muted-foreground">Fluxo guiado de venda com compliance fiscal AGT</p>
-        </div>
-
         {/* Stepper */}
         <div className="flex items-center gap-2 overflow-x-auto pb-2">
           {STEPS.map((s, i) => (
@@ -133,7 +128,6 @@ export default function POSPage() {
           ))}
         </div>
 
-        {/* Step content */}
         {step === 0 && <FarmerSearch onSelect={handleFarmerSelect} />}
         {step === 1 && farmer && (
           <FarmerValidation farmer={farmer} representative={representative} onContinue={() => setStep(2)} onBack={() => setStep(0)} />
@@ -179,6 +173,3 @@ export default function POSPage() {
     </MainLayout>
   );
 }
-
-// Need to import formatAOA at the top level for step 4
-import { formatAOA } from '@/lib/fiscal';
