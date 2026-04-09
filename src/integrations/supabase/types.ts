@@ -3983,6 +3983,262 @@ export type Database = {
           },
         ]
       }
+      insurance_claims: {
+        Row: {
+          affected_area_ha: number | null
+          approved_amount_aoa: number | null
+          claim_number: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          estimated_loss_aoa: number | null
+          event_date: string
+          event_type: string
+          evidence_urls: string[] | null
+          farmer_id: string
+          gps_latitude: number | null
+          gps_longitude: number | null
+          id: string
+          ndvi_at_event: number | null
+          paid_at: string | null
+          parametric_trigger: string | null
+          payment_reference: string | null
+          policy_id: string
+          review_notes: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          affected_area_ha?: number | null
+          approved_amount_aoa?: number | null
+          claim_number: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          estimated_loss_aoa?: number | null
+          event_date: string
+          event_type: string
+          evidence_urls?: string[] | null
+          farmer_id: string
+          gps_latitude?: number | null
+          gps_longitude?: number | null
+          id?: string
+          ndvi_at_event?: number | null
+          paid_at?: string | null
+          parametric_trigger?: string | null
+          payment_reference?: string | null
+          policy_id: string
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          affected_area_ha?: number | null
+          approved_amount_aoa?: number | null
+          claim_number?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          estimated_loss_aoa?: number | null
+          event_date?: string
+          event_type?: string
+          evidence_urls?: string[] | null
+          farmer_id?: string
+          gps_latitude?: number | null
+          gps_longitude?: number | null
+          id?: string
+          ndvi_at_event?: number | null
+          paid_at?: string | null
+          parametric_trigger?: string | null
+          payment_reference?: string | null
+          policy_id?: string
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "insurance_claims_farmer_id_fkey"
+            columns: ["farmer_id"]
+            isOneToOne: false
+            referencedRelation: "farmers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "insurance_claims_policy_id_fkey"
+            columns: ["policy_id"]
+            isOneToOne: false
+            referencedRelation: "insurance_policies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      insurance_policies: {
+        Row: {
+          area_ha: number
+          cancellation_reason: string | null
+          cancelled_at: string | null
+          coverage_details: Json | null
+          coverage_end: string
+          coverage_start: string
+          created_at: string
+          created_by: string | null
+          crop: string
+          farmer_id: string
+          id: string
+          municipality_id: string | null
+          policy_number: string
+          policy_type: string
+          premium_aoa: number
+          province_id: string | null
+          quote_id: string | null
+          status: string
+          sum_insured_aoa: number
+          updated_at: string
+        }
+        Insert: {
+          area_ha: number
+          cancellation_reason?: string | null
+          cancelled_at?: string | null
+          coverage_details?: Json | null
+          coverage_end: string
+          coverage_start: string
+          created_at?: string
+          created_by?: string | null
+          crop: string
+          farmer_id: string
+          id?: string
+          municipality_id?: string | null
+          policy_number: string
+          policy_type?: string
+          premium_aoa?: number
+          province_id?: string | null
+          quote_id?: string | null
+          status?: string
+          sum_insured_aoa?: number
+          updated_at?: string
+        }
+        Update: {
+          area_ha?: number
+          cancellation_reason?: string | null
+          cancelled_at?: string | null
+          coverage_details?: Json | null
+          coverage_end?: string
+          coverage_start?: string
+          created_at?: string
+          created_by?: string | null
+          crop?: string
+          farmer_id?: string
+          id?: string
+          municipality_id?: string | null
+          policy_number?: string
+          policy_type?: string
+          premium_aoa?: number
+          province_id?: string | null
+          quote_id?: string | null
+          status?: string
+          sum_insured_aoa?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "insurance_policies_farmer_id_fkey"
+            columns: ["farmer_id"]
+            isOneToOne: false
+            referencedRelation: "farmers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "insurance_policies_municipality_id_fkey"
+            columns: ["municipality_id"]
+            isOneToOne: false
+            referencedRelation: "municipalities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "insurance_policies_province_id_fkey"
+            columns: ["province_id"]
+            isOneToOne: false
+            referencedRelation: "provinces"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "insurance_policies_quote_id_fkey"
+            columns: ["quote_id"]
+            isOneToOne: false
+            referencedRelation: "insurance_quotes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      insurance_quotes: {
+        Row: {
+          area_ha: number
+          coverage_details: Json | null
+          coverage_type: string
+          created_at: string
+          created_by: string | null
+          crop: string
+          farmer_id: string
+          id: string
+          premium_aoa: number
+          premium_rate: number | null
+          quote_number: string
+          status: string
+          sum_insured_aoa: number
+          updated_at: string
+          valid_until: string | null
+        }
+        Insert: {
+          area_ha: number
+          coverage_details?: Json | null
+          coverage_type?: string
+          created_at?: string
+          created_by?: string | null
+          crop: string
+          farmer_id: string
+          id?: string
+          premium_aoa?: number
+          premium_rate?: number | null
+          quote_number: string
+          status?: string
+          sum_insured_aoa?: number
+          updated_at?: string
+          valid_until?: string | null
+        }
+        Update: {
+          area_ha?: number
+          coverage_details?: Json | null
+          coverage_type?: string
+          created_at?: string
+          created_by?: string | null
+          crop?: string
+          farmer_id?: string
+          id?: string
+          premium_aoa?: number
+          premium_rate?: number | null
+          quote_number?: string
+          status?: string
+          sum_insured_aoa?: number
+          updated_at?: string
+          valid_until?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "insurance_quotes_farmer_id_fkey"
+            columns: ["farmer_id"]
+            isOneToOne: false
+            referencedRelation: "farmers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       insurance_risk_scores: {
         Row: {
           calculated_at: string
@@ -4704,6 +4960,68 @@ export type Database = {
           },
           {
             foreignKeyName: "occurrence_surveys_province_id_fkey"
+            columns: ["province_id"]
+            isOneToOne: false
+            referencedRelation: "provinces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      parametric_rules: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          crop: string | null
+          description: string | null
+          id: string
+          is_active: boolean | null
+          monitoring_period_days: number | null
+          operator: string
+          parameter: string
+          payout_percentage: number
+          province_id: string | null
+          rule_name: string
+          rule_type: string
+          threshold_value: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          crop?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          monitoring_period_days?: number | null
+          operator?: string
+          parameter: string
+          payout_percentage?: number
+          province_id?: string | null
+          rule_name: string
+          rule_type?: string
+          threshold_value: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          crop?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          monitoring_period_days?: number | null
+          operator?: string
+          parameter?: string
+          payout_percentage?: number
+          province_id?: string | null
+          rule_name?: string
+          rule_type?: string
+          threshold_value?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "parametric_rules_province_id_fkey"
             columns: ["province_id"]
             isOneToOne: false
             referencedRelation: "provinces"
