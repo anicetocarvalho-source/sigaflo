@@ -111,6 +111,9 @@ import AlertsPage from "./pages/monitoring/AlertsPage";
 import AgriculturalScorePage from "./pages/monitoring/AgriculturalScorePage";
 import NDVIPage from "./pages/monitoring/NDVIPage";
 
+// Insurance Module
+import InsurancePage from "./pages/insurance/InsurancePage";
+
 const queryClient = new QueryClient();
 
 // Role groups for route protection
@@ -249,6 +252,9 @@ const App = () => (
             <Route path="/monitoria/alertas" element={<ProtectedRoute requiredRoles={TECHNICIAN_AND_ADMIN}><AlertsPage /></ProtectedRoute>} />
             <Route path="/monitoria/score" element={<ProtectedRoute requiredRoles={TECHNICIAN_AND_ADMIN}><AgriculturalScorePage /></ProtectedRoute>} />
             <Route path="/monitoria/ndvi" element={<ProtectedRoute requiredRoles={TECHNICIAN_AND_ADMIN}><NDVIPage /></ProtectedRoute>} />
+
+            {/* Insurance Module */}
+            <Route path="/seguros" element={<ProtectedRoute requiredRoles={TECHNICIAN_AND_ADMIN}><InsurancePage /></ProtectedRoute>} />
 
             {/* Data Lab Module - national level */}
             <Route path="/laboratorio-dados/*" element={<ProtectedRoute requiredRoles={NATIONAL_LEVEL}><DataLabPage /></ProtectedRoute>} />
