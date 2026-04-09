@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -23,11 +23,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { MapPin, User, Leaf, Building2, Users, FileText, Camera, Award, Home } from 'lucide-react';
 import { useProvinces, useMunicipalities, useCommunes, useFarmers } from '@/hooks/useFarmers';
+import { supabase } from '@/integrations/supabase/client';
 import type { Farmer, FarmerType } from '@/hooks/useFarmers';
 import { MemberSelector } from './MemberSelector';
 import { PhotoUpload } from './PhotoUpload';
 import { DocumentUpload } from './DocumentUpload';
 import { FingerprintCapture } from './FingerprintCapture';
+import { toast } from 'sonner';
 
 const farmerSchema = z.object({
   farmer_type: z.enum(['individual', 'family', 'cooperative', 'field_school', 'company']),
@@ -108,6 +110,33 @@ export const FarmerForm = ({ farmer, onSubmit, isLoading, defaultCooperativeId, 
   const [selectedProvince, setSelectedProvince] = useState<string | undefined>(farmer?.province_id || undefined);
   const [selectedMunicipality, setSelectedMunicipality] = useState<string | undefined>(farmer?.municipality_id || undefined);
   const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
+  const [biDuplicateWarning, setBiDuplicateWarning] = useState<string | null>(null);
+  const [checkingBi, setCheckingBi] = useState(false);
+
+  const checkBiDuplicate = useCallback(async (bi: string) => {
+    if (!bi || bi.length < 5) {
+      setBiDuplicateWarning(null);
+      return;
+    }
+    setCheckingBi(true);
+    try {
+      const { data } = await supabase
+        .from('farmers')
+        .select('id, name')
+        .eq('bi_nif', bi)
+        .neq('id', farmer?.id || '00000000-0000-0000-0000-000000000000')
+        .limit(1);
+      if (data && data.length > 0) {
+        setBiDuplicateWarning(`BI/NIF já registado para: ${data[0].name}`);
+      } else {
+        setBiDuplicateWarning(null);
+      }
+    } catch {
+      setBiDuplicateWarning(null);
+    } finally {
+      setCheckingBi(false);
+    }
+  }, [farmer?.id]);
 
   const { data: provinces } = useProvinces();
   const { data: municipalities } = useMunicipalities(selectedProvince);
@@ -174,6 +203,10 @@ export const FarmerForm = ({ farmer, onSubmit, isLoading, defaultCooperativeId, 
   }, [farmer]);
 
   const handleSubmit = (data: FarmerFormData) => {
+    if (biDuplicateWarning) {
+      toast.error('Não é possível submeter: BI/NIF duplicado detectado.');
+      return;
+    }
     const cleanedData: FarmerFormSubmitData = {
       ...data,
       email: data.email === '' ? null : data.email,
@@ -302,8 +335,20 @@ export const FarmerForm = ({ farmer, onSubmit, isLoading, defaultCooperativeId, 
                             : 'BI / NIF'}
                         </FormLabel>
                         <FormControl>
-                          <Input {...field} value={field.value || ''} placeholder="Número de identificação" />
+                          <Input
+                            {...field}
+                            value={field.value || ''}
+                            placeholder="Número de identificação"
+                            onBlur={(e) => {
+                              field.onBlur();
+                              checkBiDuplicate(e.target.value);
+                            }}
+                          />
                         </FormControl>
+                        {checkingBi && <p className="text-xs text-muted-foreground">A verificar duplicados…</p>}
+                        {biDuplicateWarning && (
+                          <p className="text-xs text-destructive font-medium">{biDuplicateWarning}</p>
+                        )}
                         <FormMessage />
                       </FormItem>
                     )}

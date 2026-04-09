@@ -62,6 +62,7 @@ import { FarmerCampaigns } from './FarmerCampaigns';
 import { FarmerAgroPay } from './FarmerAgroPay';
 import { FarmerPurchases } from './FarmerPurchases';
 import { FarmerBiometry } from './FarmerBiometry';
+import { FarmerCard } from './FarmerCard';
 import { FarmerForecast } from './FarmerForecast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
@@ -902,274 +903,236 @@ export const FarmerProfileComplete = () => {
 
         {/* Tab: Farmer Card */}
         <TabsContent value="card" className="space-y-6">
-          <div className="grid gap-6 lg:grid-cols-2">
-            {/* Physical Card Preview */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <CreditCard className="h-5 w-5" />
-                  {farmer.farmer_type === 'cooperative' && 'Certificado da Cooperativa'}
-                  {farmer.farmer_type === 'field_school' && 'Certificado da Escola de Campo'}
-                  {farmer.farmer_type === 'company' && 'Certificado de Produtor'}
-                  {(farmer.farmer_type === 'individual' || farmer.farmer_type === 'family') && 'Cartão do Agricultor'}
-                </CardTitle>
-                <CardDescription>
-                  {farmer.status === 'approved' || farmer.status === 'issued' 
-                    ? 'Documento emitido e válido' 
-                    : 'O documento será emitido após validação do registo'}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {/* Individual/Family Farmer Card - Green */}
-                {(farmer.farmer_type === 'individual' || farmer.farmer_type === 'family') && (
-                  <div className="relative bg-gradient-to-br from-green-600 to-green-800 rounded-xl p-6 text-white shadow-lg max-w-md mx-auto">
-                    <div className="flex items-start justify-between mb-6">
-                      <div>
-                        <p className="text-xs opacity-75">República de Angola</p>
-                        <p className="text-sm font-semibold">MINISTÉRIO DA AGRICULTURA E PESCAS</p>
-                        <p className="text-xs opacity-75">Cartão do Agricultor</p>
-                      </div>
-                      <Leaf className="h-8 w-8" />
+          {(farmer.farmer_type === 'individual' || farmer.farmer_type === 'family') ? (
+            <div className="grid gap-6 lg:grid-cols-2">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <CreditCard className="h-5 w-5" />
+                    Cartão do Agricultor
+                  </CardTitle>
+                  <CardDescription>
+                    {farmer.status === 'approved' || farmer.status === 'issued' 
+                      ? 'Cartão emitido e válido — clique para virar' 
+                      : 'O cartão será emitido após validação do registo'}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <FarmerCard farmer={farmer} />
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Informações do Documento</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div>
+                      <p className="text-sm text-muted-foreground">Número de Registo</p>
+                      <p className="font-mono font-bold">{farmer.registration_number || '—'}</p>
                     </div>
-                    <div className="flex gap-4 mb-4">
-                      <div className="w-20 h-24 bg-white/20 rounded-lg flex items-center justify-center overflow-hidden">
-                        {farmer.photo_url ? (
-                          <img src={farmer.photo_url} alt={farmer.name} className="w-full h-full object-cover" />
-                        ) : (
-                          <User className="h-10 w-10 opacity-50" />
-                        )}
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-lg font-bold">{farmer.name}</p>
-                        <p className="text-sm opacity-75">{farmer.bi_nif || '—'}</p>
-                        <p className="text-xs mt-2">{farmer.provinces?.name}, {farmer.municipalities?.name}</p>
-                      </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Status</p>
+                      <WorkflowStatusBadge status={farmer.status} />
                     </div>
-                    <div className="border-t border-white/20 pt-4">
-                      <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-muted-foreground">Data de Registo</p>
+                      <p className="font-medium">
+                        {farmer.registration_date 
+                          ? new Date(farmer.registration_date).toLocaleDateString('pt-AO')
+                          : 'Não definida'}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Tipo</p>
+                      <Badge className={getFarmerTypeColor(farmer.farmer_type)}>
+                        <FarmerTypeIcon type={farmer.farmer_type} className="mr-1 h-3 w-3" />
+                        {getFarmerTypeLabel(farmer.farmer_type)}
+                      </Badge>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          ) : (
+            <div className="grid gap-6 lg:grid-cols-2">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <CreditCard className="h-5 w-5" />
+                    {farmer.farmer_type === 'cooperative' && 'Certificado da Cooperativa'}
+                    {farmer.farmer_type === 'field_school' && 'Certificado da Escola de Campo'}
+                    {farmer.farmer_type === 'company' && 'Certificado de Produtor'}
+                  </CardTitle>
+                  <CardDescription>
+                    {farmer.status === 'approved' || farmer.status === 'issued' 
+                      ? 'Documento emitido e válido' 
+                      : 'O documento será emitido após validação do registo'}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {/* Cooperative Card - Blue */}
+                  {farmer.farmer_type === 'cooperative' && (
+                    <div className="relative bg-gradient-to-br from-blue-600 to-blue-800 rounded-xl p-6 text-white shadow-lg max-w-md mx-auto">
+                      <div className="flex items-start justify-between mb-6">
                         <div>
-                          <p className="text-xs opacity-75">Nº de Registo</p>
-                          <p className="font-mono text-lg">{farmer.registration_number || '—'}</p>
+                          <p className="text-xs opacity-75">República de Angola</p>
+                          <p className="text-sm font-semibold">MINISTÉRIO DA AGRICULTURA E PESCAS</p>
+                          <p className="text-xs opacity-75">Certificado de Cooperativa Agrícola</p>
+                        </div>
+                        <Users className="h-8 w-8" />
+                      </div>
+                      <div className="mb-4">
+                        <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mb-3 mx-auto">
+                          <Building2 className="h-8 w-8" />
+                        </div>
+                        <p className="text-xl font-bold text-center">{farmer.name}</p>
+                        {farmer.trade_name && <p className="text-sm opacity-75 text-center">{farmer.trade_name}</p>}
+                        <p className="text-sm text-center mt-2">{farmer.provinces?.name}, {farmer.municipalities?.name}</p>
+                      </div>
+                      <div className="border-t border-white/20 pt-4 grid grid-cols-2 gap-4">
+                        <div>
+                          <p className="text-xs opacity-75">NIF</p>
+                          <p className="font-mono">{farmer.bi_nif || '—'}</p>
                         </div>
                         <div className="text-right">
-                          <p className="text-xs opacity-75">Data de Emissão</p>
-                          <p className="text-sm">
-                            {farmer.registration_date ? new Date(farmer.registration_date).toLocaleDateString('pt-AO') : '—'}
-                          </p>
+                          <p className="text-xs opacity-75">Nº de Registo</p>
+                          <p className="font-mono">{farmer.registration_number || '—'}</p>
                         </div>
                       </div>
-                    </div>
-                    {farmer.status !== 'approved' && farmer.status !== 'issued' && (
-                      <div className="absolute inset-0 bg-black/50 rounded-xl flex items-center justify-center">
-                        <Badge variant="secondary" className="text-lg px-4 py-2">Aguardando Validação</Badge>
+                      <div className="mt-4 text-center">
+                        <p className="text-xs opacity-75">Membros Associados</p>
+                        <p className="text-2xl font-bold">{members?.length || 0}</p>
                       </div>
-                    )}
-                  </div>
-                )}
+                      {farmer.status !== 'approved' && farmer.status !== 'issued' && (
+                        <div className="absolute inset-0 bg-black/50 rounded-xl flex items-center justify-center">
+                          <Badge variant="secondary" className="text-lg px-4 py-2">Aguardando Validação</Badge>
+                        </div>
+                      )}
+                    </div>
+                  )}
 
-                {/* Cooperative Card - Blue */}
-                {farmer.farmer_type === 'cooperative' && (
-                  <div className="relative bg-gradient-to-br from-blue-600 to-blue-800 rounded-xl p-6 text-white shadow-lg max-w-md mx-auto">
-                    <div className="flex items-start justify-between mb-6">
-                      <div>
-                        <p className="text-xs opacity-75">República de Angola</p>
-                        <p className="text-sm font-semibold">MINISTÉRIO DA AGRICULTURA E PESCAS</p>
-                        <p className="text-xs opacity-75">Certificado de Cooperativa Agrícola</p>
+                  {/* Field School Card - Orange */}
+                  {farmer.farmer_type === 'field_school' && (
+                    <div className="relative bg-gradient-to-br from-orange-500 to-orange-700 rounded-xl p-6 text-white shadow-lg max-w-md mx-auto">
+                      <div className="flex items-start justify-between mb-6">
+                        <div>
+                          <p className="text-xs opacity-75">República de Angola</p>
+                          <p className="text-sm font-semibold">MINISTÉRIO DA AGRICULTURA E PESCAS</p>
+                          <p className="text-xs opacity-75">Certificado de Escola de Campo</p>
+                        </div>
+                        <Award className="h-8 w-8" />
                       </div>
-                      <Users className="h-8 w-8" />
+                      <div className="mb-4">
+                        <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mb-3 mx-auto">
+                          <Leaf className="h-8 w-8" />
+                        </div>
+                        <p className="text-xl font-bold text-center">{farmer.name}</p>
+                        <p className="text-sm text-center mt-2">{farmer.provinces?.name}, {farmer.municipalities?.name}</p>
+                      </div>
+                      <div className="border-t border-white/20 pt-4 grid grid-cols-2 gap-4">
+                        <div>
+                          <p className="text-xs opacity-75">Código</p>
+                          <p className="font-mono">{farmer.registration_number || '—'}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-xs opacity-75">Fundação</p>
+                          <p>{farmer.registration_date ? new Date(farmer.registration_date).toLocaleDateString('pt-AO') : '—'}</p>
+                        </div>
+                      </div>
+                      <div className="mt-4 text-center">
+                        <p className="text-xs opacity-75">Agricultores Participantes</p>
+                        <p className="text-2xl font-bold">{members?.length || 0}</p>
+                      </div>
+                      {farmer.status !== 'approved' && farmer.status !== 'issued' && (
+                        <div className="absolute inset-0 bg-black/50 rounded-xl flex items-center justify-center">
+                          <Badge variant="secondary" className="text-lg px-4 py-2">Aguardando Validação</Badge>
+                        </div>
+                      )}
                     </div>
-                    <div className="mb-4">
-                      <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mb-3 mx-auto">
+                  )}
+
+                  {/* Company Card - Purple */}
+                  {farmer.farmer_type === 'company' && (
+                    <div className="relative bg-gradient-to-br from-purple-600 to-purple-800 rounded-xl p-6 text-white shadow-lg max-w-md mx-auto">
+                      <div className="flex items-start justify-between mb-6">
+                        <div>
+                          <p className="text-xs opacity-75">República de Angola</p>
+                          <p className="text-sm font-semibold">MINISTÉRIO DA AGRICULTURA E PESCAS</p>
+                          <p className="text-xs opacity-75">Certificado de Produtor Registado</p>
+                        </div>
                         <Building2 className="h-8 w-8" />
                       </div>
-                      <p className="text-xl font-bold text-center">{farmer.name}</p>
-                      {farmer.trade_name && <p className="text-sm opacity-75 text-center">{farmer.trade_name}</p>}
-                      <p className="text-sm text-center mt-2">{farmer.provinces?.name}, {farmer.municipalities?.name}</p>
-                    </div>
-                    <div className="border-t border-white/20 pt-4 grid grid-cols-2 gap-4">
-                      <div>
-                        <p className="text-xs opacity-75">NIF</p>
-                        <p className="font-mono">{farmer.bi_nif || '—'}</p>
+                      <div className="mb-4">
+                        <p className="text-xl font-bold text-center">{farmer.name}</p>
+                        {farmer.trade_name && <p className="text-sm opacity-75 text-center">{farmer.trade_name}</p>}
+                        <p className="text-sm text-center mt-2">{farmer.provinces?.name}, {farmer.municipalities?.name}</p>
                       </div>
-                      <div className="text-right">
-                        <p className="text-xs opacity-75">Nº de Registo</p>
-                        <p className="font-mono">{farmer.registration_number || '—'}</p>
+                      <div className="border-t border-white/20 pt-4 grid grid-cols-2 gap-4">
+                        <div>
+                          <p className="text-xs opacity-75">NIF</p>
+                          <p className="font-mono">{farmer.bi_nif || '—'}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-xs opacity-75">Nº de Registo</p>
+                          <p className="font-mono">{farmer.registration_number || '—'}</p>
+                        </div>
                       </div>
-                    </div>
-                    <div className="mt-4 text-center">
-                      <p className="text-xs opacity-75">Membros Associados</p>
-                      <p className="text-2xl font-bold">{members?.length || 0}</p>
-                    </div>
-                    {farmer.status !== 'approved' && farmer.status !== 'issued' && (
-                      <div className="absolute inset-0 bg-black/50 rounded-xl flex items-center justify-center">
-                        <Badge variant="secondary" className="text-lg px-4 py-2">Aguardando Validação</Badge>
+                      <div className="mt-4 grid grid-cols-2 gap-4 text-center">
+                        <div>
+                          <p className="text-xs opacity-75">Área Total</p>
+                          <p className="text-lg font-bold">{farmer.total_area_ha?.toFixed(0) || 0} ha</p>
+                        </div>
+                        <div>
+                          <p className="text-xs opacity-75">Área Cultivada</p>
+                          <p className="text-lg font-bold">{farmer.cultivated_area_ha?.toFixed(0) || 0} ha</p>
+                        </div>
                       </div>
-                    )}
-                  </div>
-                )}
+                      {farmer.status !== 'approved' && farmer.status !== 'issued' && (
+                        <div className="absolute inset-0 bg-black/50 rounded-xl flex items-center justify-center">
+                          <Badge variant="secondary" className="text-lg px-4 py-2">Aguardando Validação</Badge>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
 
-                {/* Field School Card - Orange */}
-                {farmer.farmer_type === 'field_school' && (
-                  <div className="relative bg-gradient-to-br from-orange-500 to-orange-700 rounded-xl p-6 text-white shadow-lg max-w-md mx-auto">
-                    <div className="flex items-start justify-between mb-6">
-                      <div>
-                        <p className="text-xs opacity-75">República de Angola</p>
-                        <p className="text-sm font-semibold">MINISTÉRIO DA AGRICULTURA E PESCAS</p>
-                        <p className="text-xs opacity-75">Certificado de Escola de Campo</p>
-                      </div>
-                      <Award className="h-8 w-8" />
+              <Card>
+                <CardHeader>
+                  <CardTitle>Informações do Documento</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div>
+                      <p className="text-sm text-muted-foreground">Número de Registo</p>
+                      <p className="font-mono font-bold">{farmer.registration_number || '—'}</p>
                     </div>
-                    <div className="mb-4">
-                      <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mb-3 mx-auto">
-                        <Leaf className="h-8 w-8" />
-                      </div>
-                      <p className="text-xl font-bold text-center">{farmer.name}</p>
-                      <p className="text-sm text-center mt-2">{farmer.provinces?.name}, {farmer.municipalities?.name}</p>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Status</p>
+                      <WorkflowStatusBadge status={farmer.status} />
                     </div>
-                    <div className="border-t border-white/20 pt-4 grid grid-cols-2 gap-4">
-                      <div>
-                        <p className="text-xs opacity-75">Código</p>
-                        <p className="font-mono">{farmer.registration_number || '—'}</p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-xs opacity-75">Fundação</p>
-                        <p>{farmer.registration_date ? new Date(farmer.registration_date).toLocaleDateString('pt-AO') : '—'}</p>
-                      </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Data de Registo</p>
+                      <p className="font-medium">
+                        {farmer.registration_date 
+                          ? new Date(farmer.registration_date).toLocaleDateString('pt-AO')
+                          : 'Não definida'}
+                      </p>
                     </div>
-                    <div className="mt-4 text-center">
-                      <p className="text-xs opacity-75">Agricultores Participantes</p>
-                      <p className="text-2xl font-bold">{members?.length || 0}</p>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Tipo</p>
+                      <Badge className={getFarmerTypeColor(farmer.farmer_type)}>
+                        <FarmerTypeIcon type={farmer.farmer_type} className="mr-1 h-3 w-3" />
+                        {getFarmerTypeLabel(farmer.farmer_type)}
+                      </Badge>
                     </div>
-                    {farmer.status !== 'approved' && farmer.status !== 'issued' && (
-                      <div className="absolute inset-0 bg-black/50 rounded-xl flex items-center justify-center">
-                        <Badge variant="secondary" className="text-lg px-4 py-2">Aguardando Validação</Badge>
-                      </div>
-                    )}
                   </div>
-                )}
-
-                {/* Company Card - Purple */}
-                {farmer.farmer_type === 'company' && (
-                  <div className="relative bg-gradient-to-br from-purple-600 to-purple-800 rounded-xl p-6 text-white shadow-lg max-w-md mx-auto">
-                    <div className="flex items-start justify-between mb-6">
-                      <div>
-                        <p className="text-xs opacity-75">República de Angola</p>
-                        <p className="text-sm font-semibold">MINISTÉRIO DA AGRICULTURA E PESCAS</p>
-                        <p className="text-xs opacity-75">Certificado de Produtor Registado</p>
-                      </div>
-                      <Building2 className="h-8 w-8" />
-                    </div>
-                    <div className="mb-4">
-                      <p className="text-xl font-bold text-center">{farmer.name}</p>
-                      {farmer.trade_name && <p className="text-sm opacity-75 text-center">{farmer.trade_name}</p>}
-                      <p className="text-sm text-center mt-2">{farmer.provinces?.name}, {farmer.municipalities?.name}</p>
-                    </div>
-                    <div className="border-t border-white/20 pt-4 grid grid-cols-2 gap-4">
-                      <div>
-                        <p className="text-xs opacity-75">NIF</p>
-                        <p className="font-mono">{farmer.bi_nif || '—'}</p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-xs opacity-75">Nº de Registo</p>
-                        <p className="font-mono">{farmer.registration_number || '—'}</p>
-                      </div>
-                    </div>
-                    <div className="mt-4 grid grid-cols-2 gap-4 text-center">
-                      <div>
-                        <p className="text-xs opacity-75">Área Total</p>
-                        <p className="text-lg font-bold">{farmer.total_area_ha?.toFixed(0) || 0} ha</p>
-                      </div>
-                      <div>
-                        <p className="text-xs opacity-75">Área Cultivada</p>
-                        <p className="text-lg font-bold">{farmer.cultivated_area_ha?.toFixed(0) || 0} ha</p>
-                      </div>
-                    </div>
-                    {farmer.status !== 'approved' && farmer.status !== 'issued' && (
-                      <div className="absolute inset-0 bg-black/50 rounded-xl flex items-center justify-center">
-                        <Badge variant="secondary" className="text-lg px-4 py-2">Aguardando Validação</Badge>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* QR Code */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <QrCode className="h-5 w-5" />
-                  Código QR de Verificação
-                </CardTitle>
-                <CardDescription>
-                  Escaneie este código para verificar a autenticidade do registo
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-col items-center">
-                  <div className="p-4 bg-white rounded-lg shadow-sm border">
-                    <QRCodeSVG 
-                      value={`${window.location.origin}/verificar/agricultor/${farmer.id}`}
-                      size={200}
-                      level="H"
-                      includeMargin
-                    />
-                  </div>
-                  <p className="text-sm text-muted-foreground mt-4 text-center">
-                    URL de Verificação:
-                  </p>
-                  <code className="text-xs bg-muted px-2 py-1 rounded mt-1 break-all">
-                    {window.location.origin}/verificar/agricultor/{farmer.id}
-                  </code>
-
-                  <div className="flex gap-2 mt-6">
-                    <Button variant="outline" size="sm">
-                      <Download className="mr-2 h-4 w-4" />
-                      Baixar {farmer.farmer_type === 'individual' || farmer.farmer_type === 'family' ? 'Cartão' : 'Certificado'} PDF
-                    </Button>
-                    <Button variant="outline" size="sm">
-                      <Download className="mr-2 h-4 w-4" />
-                      Baixar QR Code
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Card Info */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Informações do Documento</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid gap-4 md:grid-cols-4">
-                <div>
-                  <p className="text-sm text-muted-foreground">Número de Registo</p>
-                  <p className="font-mono font-bold">{farmer.registration_number || '—'}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Status</p>
-                  <WorkflowStatusBadge status={farmer.status} />
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Data de Registo</p>
-                  <p className="font-medium">
-                    {farmer.registration_date 
-                      ? new Date(farmer.registration_date).toLocaleDateString('pt-AO')
-                      : 'Não definida'}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Tipo</p>
-                  <Badge className={getFarmerTypeColor(farmer.farmer_type)}>
-                    <FarmerTypeIcon type={farmer.farmer_type} className="mr-1 h-3 w-3" />
-                    {getFarmerTypeLabel(farmer.farmer_type)}
-                  </Badge>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+                </CardContent>
+              </Card>
+            </div>
+          )}
         </TabsContent>
 
         {/* Tab 2: Production History */}
