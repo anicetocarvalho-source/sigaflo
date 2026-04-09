@@ -347,74 +347,74 @@ export const FarmerProfileComplete = () => {
       {/* Main Content Tabs */}
       <Tabs defaultValue="identification" className="w-full">
         <TabsList className="flex w-full overflow-x-auto flex-nowrap gap-1 scrollbar-thin scrollbar-thumb-muted">
-          <TabsTrigger value="identification" className="flex items-center gap-1">
+          <TabsTrigger value="identification" className="flex items-center gap-1 flex-shrink-0">
             <User className="h-4 w-4" />
             <span className="hidden sm:inline">Identificação</span>
           </TabsTrigger>
           {(farmer.farmer_type === 'individual') && (
-            <TabsTrigger value="household" className="flex items-center gap-1">
+            <TabsTrigger value="household" className="flex items-center gap-1 flex-shrink-0">
               <Home className="h-4 w-4" />
               <span className="hidden sm:inline">Agregado</span>
             </TabsTrigger>
           )}
-          <TabsTrigger value="documents" className="flex items-center gap-1">
+          <TabsTrigger value="documents" className="flex items-center gap-1 flex-shrink-0">
             <FileText className="h-4 w-4" />
             <span className="hidden sm:inline">Documentos</span>
           </TabsTrigger>
-          <TabsTrigger value="card" className="flex items-center gap-1">
+          <TabsTrigger value="card" className="flex items-center gap-1 flex-shrink-0">
             <CreditCard className="h-4 w-4" />
             <span className="hidden sm:inline">Cartão</span>
           </TabsTrigger>
-          <TabsTrigger value="production" className="flex items-center gap-1">
+          <TabsTrigger value="production" className="flex items-center gap-1 flex-shrink-0">
             <Calendar className="h-4 w-4" />
             <span className="hidden sm:inline">Produção</span>
           </TabsTrigger>
-          <TabsTrigger value="certificates" className="flex items-center gap-1">
+          <TabsTrigger value="certificates" className="flex items-center gap-1 flex-shrink-0">
             <Award className="h-4 w-4" />
             <span className="hidden sm:inline">Certificados</span>
           </TabsTrigger>
-          <TabsTrigger value="occurrences" className="flex items-center gap-1">
+          <TabsTrigger value="occurrences" className="flex items-center gap-1 flex-shrink-0">
             <CloudRain className="h-4 w-4" />
             <span className="hidden sm:inline">Ocorrências</span>
           </TabsTrigger>
-          <TabsTrigger value="incentives" className="flex items-center gap-1">
+          <TabsTrigger value="incentives" className="flex items-center gap-1 flex-shrink-0">
             <Wallet className="h-4 w-4" />
             <span className="hidden sm:inline">Incentivos</span>
           </TabsTrigger>
-          <TabsTrigger value="scores" className="flex items-center gap-1">
+          <TabsTrigger value="scores" className="flex items-center gap-1 flex-shrink-0">
             <BarChart3 className="h-4 w-4" />
             <span className="hidden sm:inline">Scores</span>
           </TabsTrigger>
-          <TabsTrigger value="representatives" className="flex items-center gap-1">
+          <TabsTrigger value="representatives" className="flex items-center gap-1 flex-shrink-0">
             <Users className="h-4 w-4" />
             <span className="hidden sm:inline">Representantes</span>
           </TabsTrigger>
-          <TabsTrigger value="parcels" className="flex items-center gap-1">
+          <TabsTrigger value="parcels" className="flex items-center gap-1 flex-shrink-0">
             <LandPlot className="h-4 w-4" />
             <span className="hidden sm:inline">Parcelas</span>
           </TabsTrigger>
-          <TabsTrigger value="campaigns" className="flex items-center gap-1">
+          <TabsTrigger value="campaigns" className="flex items-center gap-1 flex-shrink-0">
             <Calendar className="h-4 w-4" />
             <span className="hidden sm:inline">Campanhas</span>
           </TabsTrigger>
-          <TabsTrigger value="agropay" className="flex items-center gap-1">
+          <TabsTrigger value="agropay" className="flex items-center gap-1 flex-shrink-0">
             <Wallet className="h-4 w-4" />
             <span className="hidden sm:inline">AgroPay</span>
           </TabsTrigger>
-          <TabsTrigger value="purchases" className="flex items-center gap-1">
+          <TabsTrigger value="purchases" className="flex items-center gap-1 flex-shrink-0">
             <ShoppingCart className="h-4 w-4" />
             <span className="hidden sm:inline">Compras</span>
           </TabsTrigger>
-          <TabsTrigger value="biometry" className="flex items-center gap-1">
+          <TabsTrigger value="biometry" className="flex items-center gap-1 flex-shrink-0">
             <Fingerprint className="h-4 w-4" />
             <span className="hidden sm:inline">Biometria</span>
           </TabsTrigger>
-          <TabsTrigger value="forecast" className="flex items-center gap-1">
+          <TabsTrigger value="forecast" className="flex items-center gap-1 flex-shrink-0">
             <Eye className="h-4 w-4" />
             <span className="hidden sm:inline">Previsão</span>
           </TabsTrigger>
           {(farmer.farmer_type === 'cooperative' || farmer.farmer_type === 'field_school') && (
-            <TabsTrigger value="members" className="flex items-center gap-1">
+            <TabsTrigger value="members" className="flex items-center gap-1 flex-shrink-0">
               <Users className="h-4 w-4" />
               <span className="hidden sm:inline">Membros</span>
               <Badge variant="secondary" className="ml-1 text-xs">{members.length}</Badge>
