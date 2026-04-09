@@ -92,6 +92,7 @@ export const useFarmers = (filters?: {
   type?: FarmerType;
   province_id?: string;
   status?: WorkflowStatus;
+  excludeTypes?: FarmerType[];
 }) => {
   return useQuery({
     queryKey: ['farmers', filters],
@@ -108,6 +109,11 @@ export const useFarmers = (filters?: {
 
       if (filters?.type) {
         query = query.eq('farmer_type', filters.type);
+      }
+      if (filters?.excludeTypes && filters.excludeTypes.length > 0) {
+        filters.excludeTypes.forEach(t => {
+          query = query.neq('farmer_type', t);
+        });
       }
       if (filters?.province_id) {
         query = query.eq('province_id', filters.province_id);

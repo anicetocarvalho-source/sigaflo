@@ -34,8 +34,9 @@ import {
   Users,
   Plus
 } from 'lucide-react';
-import { useFarmers, useProvinces, type Farmer } from '@/hooks/useFarmers';
+import { useFarmers, useProvinces, type Farmer, type FarmerType } from '@/hooks/useFarmers';
 import { useFinancialProfiles, type FarmerFinancialProfile } from '@/hooks/useCreditInsurance';
+import { FarmerTypeIcon, getFarmerTypeLabel, getFarmerTypeColor } from '@/components/farmers/FarmerTypeIcon';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 
@@ -65,6 +66,7 @@ const getStatusBadge = (isActive: boolean | null | undefined) => {
 export const FarmersListComplete = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [provinceFilter, setProvinceFilter] = useState<string>('all');
+  const [typeFilter, setTypeFilter] = useState<string>('all');
   const [cropFilter, setCropFilter] = useState<string>('all');
   const [scoreFilter, setScoreFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -72,6 +74,8 @@ export const FarmersListComplete = () => {
   const { data: provinces } = useProvinces();
   const { data: farmers, isLoading: farmersLoading } = useFarmers({
     province_id: provinceFilter === 'all' ? undefined : provinceFilter,
+    type: typeFilter !== 'all' ? typeFilter as FarmerType : undefined,
+    excludeTypes: ['cooperative', 'field_school'] as FarmerType[],
   });
   const { data: financialProfiles, isLoading: profilesLoading } = useFinancialProfiles();
 
@@ -326,6 +330,19 @@ export const FarmersListComplete = () => {
               </SelectContent>
             </Select>
 
+            {/* Type Filter */}
+            <Select value={typeFilter} onValueChange={setTypeFilter}>
+              <SelectTrigger>
+                <SelectValue placeholder="Tipo" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos os Tipos</SelectItem>
+                <SelectItem value="individual">Pequeno Agricultor</SelectItem>
+                <SelectItem value="family">Agricultura Familiar</SelectItem>
+                <SelectItem value="company">Empresa/Grande Produtor</SelectItem>
+              </SelectContent>
+            </Select>
+
             {/* Crop Filter */}
             <Select value={cropFilter} onValueChange={setCropFilter}>
               <SelectTrigger>
@@ -403,6 +420,7 @@ export const FarmersListComplete = () => {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Nome do Agricultor</TableHead>
+                    <TableHead>Tipo</TableHead>
                     <TableHead>Localização</TableHead>
                     <TableHead>Cultura Principal</TableHead>
                     <TableHead className="text-right">Área (ha)</TableHead>
@@ -414,7 +432,7 @@ export const FarmersListComplete = () => {
                 <TableBody>
                   {filteredFarmers.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                      <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
                         Nenhum agricultor encontrado com os filtros aplicados
                       </TableCell>
                     </TableRow>
@@ -432,6 +450,12 @@ export const FarmersListComplete = () => {
                                 </p>
                               )}
                             </div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge className={`${getFarmerTypeColor(farmer.farmer_type)} border-0 text-xs`}>
+                              <FarmerTypeIcon type={farmer.farmer_type} className="h-3 w-3 mr-1" />
+                              {getFarmerTypeLabel(farmer.farmer_type)}
+                            </Badge>
                           </TableCell>
                           <TableCell>
                             {farmer.provinces ? (
