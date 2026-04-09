@@ -51,6 +51,7 @@ import { useAllocations } from '@/hooks/useIncentives';
 import { useOccurrences } from '@/hooks/useOccurrences';
 import { FarmerTypeIcon, getFarmerTypeLabel, getFarmerTypeColor } from './FarmerTypeIcon';
 import { WorkflowStatusBadge } from './WorkflowStatusBadge';
+import { WorkflowActions } from './WorkflowActions';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 import mapboxgl from 'mapbox-gl';
