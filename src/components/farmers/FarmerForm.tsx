@@ -29,6 +29,7 @@ import { MemberSelector } from './MemberSelector';
 import { PhotoUpload } from './PhotoUpload';
 import { DocumentUpload } from './DocumentUpload';
 import { FingerprintCapture } from './FingerprintCapture';
+import { toast } from 'sonner';
 
 const farmerSchema = z.object({
   farmer_type: z.enum(['individual', 'family', 'cooperative', 'field_school', 'company']),
