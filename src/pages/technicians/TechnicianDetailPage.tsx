@@ -26,6 +26,41 @@ export default function TechnicianDetailPage() {
   const tech = technicians.find(t => t.id === id);
   const farmersQuery = useTechnicianFarmers(id || null);
   const farmers = farmersQuery.data || [];
+  const farmerIds = farmers.map((f: any) => f.id);
+
+  // Production history for assigned farmers
+  const productionQuery = useQuery({
+    queryKey: ['tech-production', id],
+    queryFn: async () => {
+      if (!farmerIds.length) return [];
+      const { data, error } = await supabase
+        .from('production_history')
+        .select('*, farmers(name)')
+        .in('farmer_id', farmerIds)
+        .order('created_at', { ascending: false })
+        .limit(50);
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: farmerIds.length > 0,
+  });
+
+  // Monitoring alerts for the technician's province
+  const alertsQuery = useQuery({
+    queryKey: ['tech-alerts', tech?.province_id],
+    queryFn: async () => {
+      if (!tech?.province_id) return [];
+      const { data, error } = await supabase
+        .from('monitoring_alerts')
+        .select('*')
+        .eq('province_id', tech.province_id)
+        .order('created_at', { ascending: false })
+        .limit(20);
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!tech?.province_id,
+  });
 
   if (isLoading) {
     return <MainLayout title="Técnico de Campo"><div className="flex items-center justify-center h-64 text-muted-foreground">A carregar...</div></MainLayout>;
