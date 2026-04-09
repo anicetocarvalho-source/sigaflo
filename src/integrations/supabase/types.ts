@@ -1892,6 +1892,7 @@ export type Database = {
           spouse_bi_nif: string | null
           spouse_name: string | null
           status: Database["public"]["Enums"]["workflow_status"] | null
+          technician_id: string | null
           total_area_ha: number | null
           trade_name: string | null
           updated_at: string
@@ -1943,6 +1944,7 @@ export type Database = {
           spouse_bi_nif?: string | null
           spouse_name?: string | null
           status?: Database["public"]["Enums"]["workflow_status"] | null
+          technician_id?: string | null
           total_area_ha?: number | null
           trade_name?: string | null
           updated_at?: string
@@ -1994,6 +1996,7 @@ export type Database = {
           spouse_bi_nif?: string | null
           spouse_name?: string | null
           status?: Database["public"]["Enums"]["workflow_status"] | null
+          technician_id?: string | null
           total_area_ha?: number | null
           trade_name?: string | null
           updated_at?: string
@@ -2031,6 +2034,82 @@ export type Database = {
           },
           {
             foreignKeyName: "farmers_province_id_fkey"
+            columns: ["province_id"]
+            isOneToOne: false
+            referencedRelation: "provinces"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "farmers_technician_id_fkey"
+            columns: ["technician_id"]
+            isOneToOne: false
+            referencedRelation: "field_technicians"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      field_technicians: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          email: string | null
+          employee_number: string
+          full_name: string
+          id: string
+          max_farmers: number | null
+          municipality_id: string | null
+          notes: string | null
+          phone: string | null
+          photo_url: string | null
+          province_id: string | null
+          specialization: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          email?: string | null
+          employee_number: string
+          full_name: string
+          id?: string
+          max_farmers?: number | null
+          municipality_id?: string | null
+          notes?: string | null
+          phone?: string | null
+          photo_url?: string | null
+          province_id?: string | null
+          specialization?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          email?: string | null
+          employee_number?: string
+          full_name?: string
+          id?: string
+          max_farmers?: number | null
+          municipality_id?: string | null
+          notes?: string | null
+          phone?: string | null
+          photo_url?: string | null
+          province_id?: string | null
+          specialization?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "field_technicians_municipality_id_fkey"
+            columns: ["municipality_id"]
+            isOneToOne: false
+            referencedRelation: "municipalities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "field_technicians_province_id_fkey"
             columns: ["province_id"]
             isOneToOne: false
             referencedRelation: "provinces"
