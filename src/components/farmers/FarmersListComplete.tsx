@@ -434,13 +434,7 @@ export const FarmersListComplete = () => {
                     <TableRow>
                       <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
                         Nenhum agricultor encontrado com os filtros aplicados
-                          </TableCell>
-                          <TableCell>
-                            <Badge className={`${getFarmerTypeColor(farmer.farmer_type)} border-0 text-xs`}>
-                              <FarmerTypeIcon type={farmer.farmer_type} className="h-3 w-3 mr-1" />
-                              {getFarmerTypeLabel(farmer.farmer_type)}
-                            </Badge>
-                          </TableCell>
+                      </TableCell>
                     </TableRow>
                   ) : (
                     filteredFarmers.map((farmer) => {
@@ -456,6 +450,12 @@ export const FarmersListComplete = () => {
                                 </p>
                               )}
                             </div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge className={`${getFarmerTypeColor(farmer.farmer_type)} border-0 text-xs`}>
+                              <FarmerTypeIcon type={farmer.farmer_type} className="h-3 w-3 mr-1" />
+                              {getFarmerTypeLabel(farmer.farmer_type)}
+                            </Badge>
                           </TableCell>
                           <TableCell>
                             {farmer.provinces ? (
