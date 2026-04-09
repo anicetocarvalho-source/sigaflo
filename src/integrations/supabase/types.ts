@@ -228,6 +228,65 @@ export type Database = {
           },
         ]
       }
+      agricultural_scores: {
+        Row: {
+          calculated_at: string
+          calculated_by: string | null
+          compliance_level: string | null
+          created_at: string
+          farmer_id: string
+          id: string
+          mechanization_score: number | null
+          notes: string | null
+          package_score: number | null
+          planting_score: number | null
+          production_score: number | null
+          season: string
+          total_score: number | null
+          updated_at: string
+        }
+        Insert: {
+          calculated_at?: string
+          calculated_by?: string | null
+          compliance_level?: string | null
+          created_at?: string
+          farmer_id: string
+          id?: string
+          mechanization_score?: number | null
+          notes?: string | null
+          package_score?: number | null
+          planting_score?: number | null
+          production_score?: number | null
+          season: string
+          total_score?: number | null
+          updated_at?: string
+        }
+        Update: {
+          calculated_at?: string
+          calculated_by?: string | null
+          compliance_level?: string | null
+          created_at?: string
+          farmer_id?: string
+          id?: string
+          mechanization_score?: number | null
+          notes?: string | null
+          package_score?: number | null
+          planting_score?: number | null
+          production_score?: number | null
+          season?: string
+          total_score?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agricultural_scores_farmer_id_fkey"
+            columns: ["farmer_id"]
+            isOneToOne: false
+            referencedRelation: "farmers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       alternative_guarantees: {
         Row: {
           created_at: string
@@ -4365,6 +4424,103 @@ export type Database = {
           },
         ]
       }
+      monitoring_alerts: {
+        Row: {
+          affected_area_ha: number | null
+          affected_farmers_count: number | null
+          alert_number: string
+          alert_type: string
+          assigned_to: string | null
+          commune_id: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          latitude: number | null
+          longitude: number | null
+          municipality_id: string | null
+          province_id: string | null
+          resolution_notes: string | null
+          resolved_at: string | null
+          response_status: string
+          severity: string
+          source: string
+          source_phone: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          affected_area_ha?: number | null
+          affected_farmers_count?: number | null
+          alert_number: string
+          alert_type?: string
+          assigned_to?: string | null
+          commune_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          municipality_id?: string | null
+          province_id?: string | null
+          resolution_notes?: string | null
+          resolved_at?: string | null
+          response_status?: string
+          severity?: string
+          source?: string
+          source_phone?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          affected_area_ha?: number | null
+          affected_farmers_count?: number | null
+          alert_number?: string
+          alert_type?: string
+          assigned_to?: string | null
+          commune_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          municipality_id?: string | null
+          province_id?: string | null
+          resolution_notes?: string | null
+          resolved_at?: string | null
+          response_status?: string
+          severity?: string
+          source?: string
+          source_phone?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "monitoring_alerts_commune_id_fkey"
+            columns: ["commune_id"]
+            isOneToOne: false
+            referencedRelation: "communes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "monitoring_alerts_municipality_id_fkey"
+            columns: ["municipality_id"]
+            isOneToOne: false
+            referencedRelation: "municipalities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "monitoring_alerts_province_id_fkey"
+            columns: ["province_id"]
+            isOneToOne: false
+            referencedRelation: "provinces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       municipalities: {
         Row: {
           code: string | null
@@ -4393,6 +4549,47 @@ export type Database = {
             columns: ["province_id"]
             isOneToOne: false
             referencedRelation: "provinces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ndvi_readings: {
+        Row: {
+          created_at: string
+          farmer_id: string | null
+          id: string
+          metadata: Json | null
+          ndvi_value: number
+          reading_date: string
+          source: string | null
+          stress_level: string | null
+        }
+        Insert: {
+          created_at?: string
+          farmer_id?: string | null
+          id?: string
+          metadata?: Json | null
+          ndvi_value: number
+          reading_date: string
+          source?: string | null
+          stress_level?: string | null
+        }
+        Update: {
+          created_at?: string
+          farmer_id?: string | null
+          id?: string
+          metadata?: Json | null
+          ndvi_value?: number
+          reading_date?: string
+          source?: string | null
+          stress_level?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ndvi_readings_farmer_id_fkey"
+            columns: ["farmer_id"]
+            isOneToOne: false
+            referencedRelation: "farmers"
             referencedColumns: ["id"]
           },
         ]
@@ -5574,6 +5771,114 @@ export type Database = {
           },
           {
             foreignKeyName: "service_orders_province_id_fkey"
+            columns: ["province_id"]
+            isOneToOne: false
+            referencedRelation: "provinces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sms_received: {
+        Row: {
+          ai_interpretation: string | null
+          alert_id: string | null
+          id: string
+          parsed_data: Json | null
+          processed: boolean | null
+          processed_at: string | null
+          province_id: string | null
+          raw_message: string
+          received_at: string
+          sender_phone: string
+        }
+        Insert: {
+          ai_interpretation?: string | null
+          alert_id?: string | null
+          id?: string
+          parsed_data?: Json | null
+          processed?: boolean | null
+          processed_at?: string | null
+          province_id?: string | null
+          raw_message: string
+          received_at?: string
+          sender_phone: string
+        }
+        Update: {
+          ai_interpretation?: string | null
+          alert_id?: string | null
+          id?: string
+          parsed_data?: Json | null
+          processed?: boolean | null
+          processed_at?: string | null
+          province_id?: string | null
+          raw_message?: string
+          received_at?: string
+          sender_phone?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sms_received_alert_id_fkey"
+            columns: ["alert_id"]
+            isOneToOne: false
+            referencedRelation: "monitoring_alerts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sms_received_province_id_fkey"
+            columns: ["province_id"]
+            isOneToOne: false
+            referencedRelation: "provinces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sms_sent: {
+        Row: {
+          delivery_status: string | null
+          id: string
+          message_text: string
+          municipality_id: string | null
+          province_id: string | null
+          recipient_phone: string
+          sent_at: string
+          sent_by: string | null
+          target_zone: string | null
+          template_code: string | null
+        }
+        Insert: {
+          delivery_status?: string | null
+          id?: string
+          message_text: string
+          municipality_id?: string | null
+          province_id?: string | null
+          recipient_phone: string
+          sent_at?: string
+          sent_by?: string | null
+          target_zone?: string | null
+          template_code?: string | null
+        }
+        Update: {
+          delivery_status?: string | null
+          id?: string
+          message_text?: string
+          municipality_id?: string | null
+          province_id?: string | null
+          recipient_phone?: string
+          sent_at?: string
+          sent_by?: string | null
+          target_zone?: string | null
+          template_code?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sms_sent_municipality_id_fkey"
+            columns: ["municipality_id"]
+            isOneToOne: false
+            referencedRelation: "municipalities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sms_sent_province_id_fkey"
             columns: ["province_id"]
             isOneToOne: false
             referencedRelation: "provinces"
