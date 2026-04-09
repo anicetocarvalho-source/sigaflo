@@ -23,6 +23,9 @@ import FarmerEditPage from "./pages/farmers/FarmerEditPage";
 import AddMembersPage from "./pages/farmers/AddMembersPage";
 import FieldSchoolsPage from "./pages/farmers/FieldSchoolsPage";
 import CooperativesPage from "./pages/farmers/CooperativesPage";
+import FieldRegistrationPage from "./pages/farmers/FieldRegistrationPage";
+import ExternalAccessPage from "./pages/farmers/ExternalAccessPage";
+import ParcelsListPage from "./pages/farmers/ParcelsListPage";
 import CertificatesPage from "./pages/certificates/CertificatesPage";
 import CertificateNewPage from "./pages/certificates/CertificateNewPage";
 import CertificateDetailPage from "./pages/certificates/CertificateDetailPage";
@@ -143,6 +146,9 @@ const App = () => (
             <Route path="/agricultores/:id" element={<ProtectedRoute requiredRoles={ALL_INTERNAL}><FarmerDetailPage /></ProtectedRoute>} />
             <Route path="/agricultores/:id/editar" element={<ProtectedRoute requiredRoles={TECHNICIAN_AND_ADMIN}><FarmerEditPage /></ProtectedRoute>} />
             <Route path="/agricultores/:id/membros" element={<ProtectedRoute requiredRoles={TECHNICIAN_AND_ADMIN}><AddMembersPage /></ProtectedRoute>} />
+            <Route path="/cadastro-campo" element={<ProtectedRoute requiredRoles={TECHNICIAN_AND_ADMIN}><FieldRegistrationPage /></ProtectedRoute>} />
+            <Route path="/cadastro-externo" element={<ProtectedRoute requiredRoles={ADMIN_ROLES}><ExternalAccessPage /></ProtectedRoute>} />
+            <Route path="/parcelas" element={<ProtectedRoute requiredRoles={ALL_INTERNAL}><ParcelsListPage /></ProtectedRoute>} />
             
             {/* Certificates Module */}
             <Route path="/certificados" element={<ProtectedRoute requiredRoles={TECHNICIAN_AND_ADMIN}><CertificatesPage /></ProtectedRoute>} />
