@@ -9,6 +9,7 @@ import { CartPanel, CartItem } from '@/components/pos/CartPanel';
 import { PaymentStep } from '@/components/pos/PaymentStep';
 import { ReceiptModal } from '@/components/pos/ReceiptModal';
 import { useCreateSale } from '@/hooks/usePOS';
+import { useCreateServiceOrder } from '@/hooks/useMechanization';
 import { generateFiscalHash, calculateIva, generateQRData, formatAOA } from '@/lib/fiscal';
 import { CheckCircle, ShoppingCart, User, CreditCard, Receipt } from 'lucide-react';
 
@@ -28,6 +29,7 @@ export default function POSPage() {
   const [saleResult, setSaleResult] = useState<any>(null);
   const [showReceipt, setShowReceipt] = useState(false);
   const createSale = useCreateSale();
+  const createServiceOrder = useCreateServiceOrder();
 
   const handleFarmerSelect = (f: any, rep?: any) => {
     setFarmer(f);
