@@ -161,8 +161,8 @@ export function useMonitoring() {
       const mechScore = orders?.filter(o => o.status === 'completed' || o.status === 'validated').length
         ? Math.min(25, (orders.filter(o => o.status === 'completed' || o.status === 'validated').length) * 12)
         : 0;
-      const prodScore = production?.reduce((s, p) => s + (p.quantity_kg || 0), 0) > 0
-        ? Math.min(25, Math.round((production.reduce((s, p) => s + (p.quantity_kg || 0), 0) / 1000) * 5))
+      const prodScore = production?.reduce((s, p) => s + (p.actual_yield_kg || 0), 0) > 0
+        ? Math.min(25, Math.round((production.reduce((s, p) => s + (p.actual_yield_kg || 0), 0) / 1000) * 5))
         : 0;
       const totalScore = plantingScore + packageScore + mechScore + prodScore;
       const complianceLevel = totalScore >= 70 ? 'high' : totalScore >= 40 ? 'medium' : 'low';
