@@ -431,6 +431,15 @@ export const FarmerProfileComplete = () => {
             <Eye className="h-4 w-4" />
             <span className="hidden sm:inline">Previsão</span>
           </TabsTrigger>
+          <TabsTrigger value="mechanization" className="flex items-center gap-1 flex-shrink-0">
+            <Tractor className="h-4 w-4" />
+            <span className="hidden sm:inline">Mecanização</span>
+            {farmerOrders.length > 0 && <Badge variant="secondary" className="ml-1 text-xs">{farmerOrders.length}</Badge>}
+          </TabsTrigger>
+          <TabsTrigger value="monitoring" className="flex items-center gap-1 flex-shrink-0">
+            <Activity className="h-4 w-4" />
+            <span className="hidden sm:inline">Monitoria</span>
+          </TabsTrigger>
           {(farmer.farmer_type === 'cooperative' || farmer.farmer_type === 'field_school') && (
             <TabsTrigger value="members" className="flex items-center gap-1 flex-shrink-0">
               <Users className="h-4 w-4" />
