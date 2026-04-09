@@ -40,6 +40,7 @@ import {
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserPreferences, useUpdateUserPreferences } from '@/hooks/useSettings';
 import { useProvinces } from '@/hooks/useFarmers';
+import { usePaymentGateways, useUpdateGateway } from '@/hooks/usePOS';
 import { toast } from 'sonner';
 
 export default function SettingsPage() {
