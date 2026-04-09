@@ -31,6 +31,7 @@ import {
   FlaskConical,
   Landmark,
   ShoppingCart,
+  Tractor,
 } from 'lucide-react';
 
 type UserRole = 'admin_national' | 'admin_provincial' | 'admin_municipal' | 'technician_national' | 'technician_provincial' | 'technician_municipal' | 'private_entity' | 'viewer';
@@ -173,6 +174,12 @@ const navigation: NavItem[] = [
     label: 'Crédito e Seguro',
     href: '/credito-seguro',
     icon: Landmark,
+    allowedRoles: TECH_AND_ADMIN,
+  },
+  {
+    label: 'Mecanização Agrícola',
+    href: '/mecanizacao',
+    icon: Tractor,
     allowedRoles: TECH_AND_ADMIN,
   },
   {

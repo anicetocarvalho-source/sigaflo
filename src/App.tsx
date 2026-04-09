@@ -99,6 +99,7 @@ import SettingsPage from "./pages/settings/SettingsPage";
 
 // POS Module
 import POSPage from "./pages/pos/POSPage";
+import MechanizationPage from "./pages/mechanization/MechanizationPage";
 import FaturasPage from "./pages/pos/FaturasPage";
 import ComprasPage from "./pages/pos/ComprasPage";
 import PacotesComprasPage from "./pages/pos/PacotesComprasPage";
@@ -223,6 +224,9 @@ const App = () => (
             
             {/* Credit & Insurance Module */}
             <Route path="/credito-seguro/*" element={<ProtectedRoute requiredRoles={TECHNICIAN_AND_ADMIN}><CreditInsurancePage /></ProtectedRoute>} />
+            
+            {/* Mechanization Module */}
+            <Route path="/mecanizacao" element={<ProtectedRoute requiredRoles={TECHNICIAN_AND_ADMIN}><MechanizationPage /></ProtectedRoute>} />
             
             {/* POS & Sales Module */}
             <Route path="/pos" element={<ProtectedRoute requiredRoles={TECHNICIAN_AND_ADMIN}><POSPage /></ProtectedRoute>} />
