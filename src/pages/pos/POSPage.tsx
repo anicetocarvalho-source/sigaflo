@@ -9,6 +9,7 @@ import { CartPanel, CartItem } from '@/components/pos/CartPanel';
 import { PaymentStep } from '@/components/pos/PaymentStep';
 import { ReceiptModal } from '@/components/pos/ReceiptModal';
 import { useCreateSale } from '@/hooks/usePOS';
+import { useCreateServiceOrder } from '@/hooks/useMechanization';
 import { generateFiscalHash, calculateIva, generateQRData, formatAOA } from '@/lib/fiscal';
 import { CheckCircle, ShoppingCart, User, CreditCard, Receipt } from 'lucide-react';
 
@@ -28,6 +29,7 @@ export default function POSPage() {
   const [saleResult, setSaleResult] = useState<any>(null);
   const [showReceipt, setShowReceipt] = useState(false);
   const createSale = useCreateSale();
+  const createServiceOrder = useCreateServiceOrder();
 
   const handleFarmerSelect = (f: any, rep?: any) => {
     setFarmer(f);
@@ -99,6 +101,27 @@ export default function POSPage() {
       items,
     });
     setSaleResult(result);
+    
+    // Auto-create service orders for mechanization items
+    if (hasMechanization && farmer) {
+      const mechItems = cartItems.filter(i => i.product_name?.toLowerCase().includes('mecanização'));
+      for (const item of mechItems) {
+        try {
+          await createServiceOrder.mutateAsync({
+            farmer_id: farmer.id,
+            service_type: 'ploughing',
+            area_ha: farmer.cultivated_area_ha || 1,
+            cost_aoa: item.unit_price_aoa * item.quantity,
+            payment_method: method === 'agropay' ? 'deferred' : method,
+            payment_status: method === 'agropay' ? 'pending' : 'paid',
+            requested_date: new Date().toISOString().split('T')[0],
+            status: 'requested',
+            notes: `Gerado automaticamente via POS — Factura ${result?.invoice?.invoice_number || ''}`,
+          } as any);
+        } catch { /* ignore individual failures */ }
+      }
+    }
+    
     setStep(4);
     setShowReceipt(true);
   };

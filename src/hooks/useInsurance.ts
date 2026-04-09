@@ -2,11 +2,23 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
-export function useInsurance() {
-  const queryClient = useQueryClient();
+export function useInsurancePolicies() {
+  return useQuery({
+    queryKey: ['insurance-policies'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('insurance_policies')
+        .select('*, farmers(name, registration_number)')
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      return data || [];
+    },
+  });
+}
 
-  const quotesQuery = useQuery({
-    queryKey: ['insurance_quotes'],
+export function useInsuranceQuotes() {
+  return useQuery({
+    queryKey: ['insurance-quotes'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('insurance_quotes')
@@ -16,129 +28,148 @@ export function useInsurance() {
       return data || [];
     },
   });
+}
 
-  const policiesQuery = useQuery({
-    queryKey: ['insurance_policies'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('insurance_policies')
-        .select('*, farmers(name, registration_number), provinces(name)')
-        .order('created_at', { ascending: false });
-      if (error) throw error;
-      return data || [];
-    },
-  });
-
-  const claimsQuery = useQuery({
-    queryKey: ['insurance_claims'],
+export function useInsuranceClaims() {
+  return useQuery({
+    queryKey: ['insurance-claims'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('insurance_claims')
-        .select('*, farmers(name, registration_number), insurance_policies(policy_number)')
+        .select('*, insurance_policies(policy_number, farmers(name))')
         .order('created_at', { ascending: false });
       if (error) throw error;
       return data || [];
     },
   });
+}
 
-  const rulesQuery = useQuery({
-    queryKey: ['parametric_rules'],
+export function useParametricRules() {
+  return useQuery({
+    queryKey: ['parametric-rules'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('parametric_rules')
-        .select('*, provinces(name)')
+        .select('*')
         .order('created_at', { ascending: false });
       if (error) throw error;
       return data || [];
     },
   });
+}
 
-  const createQuote = useMutation({
+export function useCreateQuote() {
+  const qc = useQueryClient();
+  return useMutation({
     mutationFn: async (quote: any) => {
-      const { data, error } = await supabase.from('insurance_quotes').insert({ ...quote, quote_number: '' }).select().single();
+      const { data, error } = await supabase
+        .from('insurance_quotes')
+        .insert({ ...quote, quote_number: '' })
+        .select()
+        .single();
       if (error) throw error;
       return data;
     },
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['insurance_quotes'] }); toast.success('Cotação criada'); },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['insurance-quotes'] });
+      toast.success('Cotação criada com sucesso');
+    },
     onError: () => toast.error('Erro ao criar cotação'),
   });
+}
 
-  const createPolicy = useMutation({
+export function useCreatePolicy() {
+  const qc = useQueryClient();
+  return useMutation({
     mutationFn: async (policy: any) => {
-      const { data, error } = await supabase.from('insurance_policies').insert({ ...policy, policy_number: '' }).select().single();
+      const { data, error } = await supabase
+        .from('insurance_policies')
+        .insert({ ...policy, policy_number: '' })
+        .select()
+        .single();
       if (error) throw error;
       return data;
     },
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['insurance_policies'] }); toast.success('Apólice criada'); },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['insurance-policies'] });
+      toast.success('Apólice criada com sucesso');
+    },
     onError: () => toast.error('Erro ao criar apólice'),
   });
+}
 
-  const createClaim = useMutation({
+export function useCreateClaim() {
+  const qc = useQueryClient();
+  return useMutation({
     mutationFn: async (claim: any) => {
-      const { data, error } = await supabase.from('insurance_claims').insert({ ...claim, claim_number: '' }).select().single();
+      const { data, error } = await supabase
+        .from('insurance_claims')
+        .insert({ ...claim, claim_number: '' })
+        .select()
+        .single();
       if (error) throw error;
       return data;
     },
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['insurance_claims'] }); toast.success('Sinistro registado'); },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['insurance-claims'] });
+      toast.success('Sinistro registado com sucesso');
+    },
     onError: () => toast.error('Erro ao registar sinistro'),
   });
+}
 
-  const updateClaim = useMutation({
-    mutationFn: async ({ id, ...data }: any) => {
-      const { error } = await supabase.from('insurance_claims').update(data).eq('id', id);
+export function useUpdateClaimStatus() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, status, payment_amount_aoa }: { id: string; status: string; payment_amount_aoa?: number }) => {
+      const updates: any = { status };
+      if (status === 'approved') updates.approved_at = new Date().toISOString();
+      if (status === 'paid') {
+        updates.paid_at = new Date().toISOString();
+        if (payment_amount_aoa) updates.payment_amount_aoa = payment_amount_aoa;
+      }
+      if (status === 'rejected') updates.rejected_at = new Date().toISOString();
+      const { error } = await supabase.from('insurance_claims').update(updates).eq('id', id);
       if (error) throw error;
     },
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['insurance_claims'] }); toast.success('Sinistro actualizado'); },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['insurance-claims'] });
+      toast.success('Estado do sinistro actualizado');
+    },
     onError: () => toast.error('Erro ao actualizar sinistro'),
   });
+}
 
-  const createRule = useMutation({
+export function useCreateParametricRule() {
+  const qc = useQueryClient();
+  return useMutation({
     mutationFn: async (rule: any) => {
-      const { data, error } = await supabase.from('parametric_rules').insert(rule).select().single();
+      const { data, error } = await supabase
+        .from('parametric_rules')
+        .insert(rule)
+        .select()
+        .single();
       if (error) throw error;
       return data;
     },
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['parametric_rules'] }); toast.success('Regra criada'); },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['parametric-rules'] });
+      toast.success('Regra paramétrica criada');
+    },
     onError: () => toast.error('Erro ao criar regra'),
   });
+}
 
-  const updateRule = useMutation({
-    mutationFn: async ({ id, ...data }: any) => {
-      const { error } = await supabase.from('parametric_rules').update(data).eq('id', id);
-      if (error) throw error;
-    },
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['parametric_rules'] }); toast.success('Regra actualizada'); },
-    onError: () => toast.error('Erro ao actualizar regra'),
-  });
+export function useInsuranceStats() {
+  const { data: policies } = useInsurancePolicies();
+  const { data: claims } = useInsuranceClaims();
+  const { data: quotes } = useInsuranceQuotes();
 
-  const deleteRule = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase.from('parametric_rules').delete().eq('id', id);
-      if (error) throw error;
-    },
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['parametric_rules'] }); toast.success('Regra eliminada'); },
-    onError: () => toast.error('Erro ao eliminar regra'),
-  });
+  const activePolicies = policies?.filter((p: any) => p.status === 'active').length || 0;
+  const totalInsuredValue = policies?.filter((p: any) => p.status === 'active').reduce((s: number, p: any) => s + (p.insured_value_aoa || 0), 0) || 0;
+  const pendingClaims = claims?.filter((c: any) => c.status === 'pending' || c.status === 'under_review').length || 0;
+  const totalClaimsPaid = claims?.filter((c: any) => c.status === 'paid').reduce((s: number, c: any) => s + (c.payment_amount_aoa || 0), 0) || 0;
+  const pendingQuotes = quotes?.filter((q: any) => q.status === 'pending').length || 0;
 
-  const formatCurrency = (value: number) => new Intl.NumberFormat('pt-AO', { style: 'currency', currency: 'AOA', minimumFractionDigits: 0 }).format(value);
-
-  const stats = {
-    totalPolicies: policiesQuery.data?.length || 0,
-    activePolicies: policiesQuery.data?.filter((p: any) => p.status === 'active').length || 0,
-    totalClaims: claimsQuery.data?.length || 0,
-    pendingClaims: claimsQuery.data?.filter((c: any) => c.status === 'submitted' || c.status === 'under_review').length || 0,
-    totalInsuredAoa: policiesQuery.data?.filter((p: any) => p.status === 'active').reduce((s: number, p: any) => s + Number(p.sum_insured_aoa || 0), 0) || 0,
-    totalPremiumAoa: policiesQuery.data?.filter((p: any) => p.status === 'active').reduce((s: number, p: any) => s + Number(p.premium_aoa || 0), 0) || 0,
-    totalApprovedAoa: claimsQuery.data?.reduce((s: number, c: any) => s + Number(c.approved_amount_aoa || 0), 0) || 0,
-    activeRules: rulesQuery.data?.filter((r: any) => r.is_active).length || 0,
-  };
-
-  return {
-    quotes: quotesQuery.data || [], quotesLoading: quotesQuery.isLoading,
-    policies: policiesQuery.data || [], policiesLoading: policiesQuery.isLoading,
-    claims: claimsQuery.data || [], claimsLoading: claimsQuery.isLoading,
-    rules: rulesQuery.data || [], rulesLoading: rulesQuery.isLoading,
-    createQuote, createPolicy, createClaim, updateClaim, createRule, updateRule, deleteRule,
-    stats, formatCurrency,
-  };
+  return { activePolicies, totalInsuredValue, pendingClaims, totalClaimsPaid, pendingQuotes };
 }

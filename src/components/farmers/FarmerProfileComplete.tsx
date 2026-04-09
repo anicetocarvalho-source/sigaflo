@@ -14,7 +14,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { 
+import {
   Edit, 
   MapPin, 
   Phone, 
@@ -46,6 +46,10 @@ import {
   ShoppingCart,
   Eye,
   LandPlot,
+  Tractor,
+  Satellite,
+  Activity,
+  UserCog,
 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { useFarmer, useFarmers } from '@/hooks/useFarmers';
@@ -53,6 +57,9 @@ import { useProductionHistory, useCertificates } from '@/hooks/useCertificates';
 import { useFinancialProfile, useCreditSimulations, useProductionCertificates, useCreditDossiers, useInsuranceRiskScores } from '@/hooks/useCreditInsurance';
 import { useAllocations } from '@/hooks/useIncentives';
 import { useOccurrences } from '@/hooks/useOccurrences';
+import { useTechnicians } from '@/hooks/useTechnicians';
+import { useServiceOrders } from '@/hooks/useMechanization';
+import { useMonitoring } from '@/hooks/useMonitoring';
 import { FarmerTypeIcon, getFarmerTypeLabel, getFarmerTypeColor } from './FarmerTypeIcon';
 import { WorkflowStatusBadge } from './WorkflowStatusBadge';
 import { WorkflowActions } from './WorkflowActions';
@@ -119,6 +126,16 @@ export const FarmerProfileComplete = () => {
   const { data: allocations } = useAllocations(undefined, undefined);
   const { data: allOccurrences } = useOccurrences();
   const { data: allFarmers } = useFarmers();
+  const { technicians } = useTechnicians();
+  const { data: serviceOrders } = useServiceOrders();
+  const { scores, ndviReadings, alerts: monitoringAlerts } = useMonitoring();
+
+  // Filter data for this farmer
+  const farmerTechnician = technicians.find(t => t.id === farmer?.technician_id);
+  const farmerOrders = serviceOrders?.filter((o: any) => o.farmer_id === id) || [];
+  const farmerScores = scores?.filter((s: any) => s.farmer_id === id) || [];
+  const farmerNdvi = ndviReadings?.filter((n: any) => n.farmer_id === id) || [];
+  const farmerMonitoringAlerts = monitoringAlerts?.filter((a: any) => a.province_id === farmer?.province_id) || [];
 
   // Get members for cooperatives and field schools
   const members = allFarmers?.filter(f => 
@@ -413,6 +430,15 @@ export const FarmerProfileComplete = () => {
           <TabsTrigger value="forecast" className="flex items-center gap-1 flex-shrink-0">
             <Eye className="h-4 w-4" />
             <span className="hidden sm:inline">Previsão</span>
+          </TabsTrigger>
+          <TabsTrigger value="mechanization" className="flex items-center gap-1 flex-shrink-0">
+            <Tractor className="h-4 w-4" />
+            <span className="hidden sm:inline">Mecanização</span>
+            {farmerOrders.length > 0 && <Badge variant="secondary" className="ml-1 text-xs">{farmerOrders.length}</Badge>}
+          </TabsTrigger>
+          <TabsTrigger value="monitoring" className="flex items-center gap-1 flex-shrink-0">
+            <Activity className="h-4 w-4" />
+            <span className="hidden sm:inline">Monitoria</span>
           </TabsTrigger>
           {(farmer.farmer_type === 'cooperative' || farmer.farmer_type === 'field_school') && (
             <TabsTrigger value="members" className="flex items-center gap-1 flex-shrink-0">
@@ -1904,6 +1930,155 @@ export const FarmerProfileComplete = () => {
             province={farmer.provinces?.name} 
             areaHa={farmer.cultivated_area_ha} 
           />
+        </TabsContent>
+
+        {/* Mechanization Tab */}
+        <TabsContent value="mechanization">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2"><Tractor className="h-5 w-5" />Ordens de Mecanização</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {farmerOrders.length === 0 ? (
+                <p className="text-muted-foreground text-center py-8">Sem ordens de mecanização registadas</p>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Nº Ordem</TableHead>
+                      <TableHead>Serviço</TableHead>
+                      <TableHead>Área (ha)</TableHead>
+                      <TableHead>Custo (AOA)</TableHead>
+                      <TableHead>Estado</TableHead>
+                      <TableHead>Data</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {farmerOrders.map((o: any) => (
+                      <TableRow key={o.id}>
+                        <TableCell className="font-mono text-xs">{o.order_number}</TableCell>
+                        <TableCell>{o.service_type}</TableCell>
+                        <TableCell>{o.area_ha || '—'}</TableCell>
+                        <TableCell>{(o.cost_aoa || 0).toLocaleString()}</TableCell>
+                        <TableCell><Badge variant="outline">{o.status}</Badge></TableCell>
+                        <TableCell>{new Date(o.requested_date).toLocaleDateString('pt-AO')}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Monitoring Tab */}
+        <TabsContent value="monitoring">
+          <div className="space-y-6">
+            {/* Technician */}
+            {farmerTechnician && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2"><UserCog className="h-5 w-5" />Técnico Atribuído</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center gap-4">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
+                      <UserCog className="h-6 w-6" />
+                    </div>
+                    <div>
+                      <p className="font-medium">{farmerTechnician.full_name}</p>
+                      <p className="text-sm text-muted-foreground">{farmerTechnician.employee_number} · {farmerTechnician.phone || '—'}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Score Agrícola */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2"><BarChart3 className="h-5 w-5" />Score Agrícola</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {farmerScores.length === 0 ? (
+                  <p className="text-muted-foreground text-center py-4">Sem scores calculados</p>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Campanha</TableHead>
+                        <TableHead>Plantio</TableHead>
+                        <TableHead>Pacote</TableHead>
+                        <TableHead>Mecanização</TableHead>
+                        <TableHead>Produção</TableHead>
+                        <TableHead>Total</TableHead>
+                        <TableHead>Nível</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {farmerScores.map((s: any) => (
+                        <TableRow key={s.id}>
+                          <TableCell>{s.season}</TableCell>
+                          <TableCell>{s.planting_score ?? '—'}</TableCell>
+                          <TableCell>{s.package_score ?? '—'}</TableCell>
+                          <TableCell>{s.mechanization_score ?? '—'}</TableCell>
+                          <TableCell>{s.production_score ?? '—'}</TableCell>
+                          <TableCell className="font-bold">{s.total_score ?? '—'}</TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className={s.compliance_level === 'high' ? 'border-green-500 text-green-700' : s.compliance_level === 'medium' ? 'border-yellow-500 text-yellow-700' : 'border-red-500 text-red-700'}>
+                              {s.compliance_level === 'high' ? 'Alto' : s.compliance_level === 'medium' ? 'Médio' : 'Baixo'}
+                            </Badge>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* NDVI */}
+            {farmerNdvi.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2"><Satellite className="h-5 w-5" />Leituras NDVI</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid gap-2 sm:grid-cols-3">
+                    {farmerNdvi.slice(0, 6).map((n: any) => (
+                      <div key={n.id} className="p-3 border rounded-lg">
+                        <p className="text-xs text-muted-foreground">{new Date(n.reading_date).toLocaleDateString('pt-AO')}</p>
+                        <p className="text-lg font-bold">{(n.ndvi_value || 0).toFixed(3)}</p>
+                        <p className="text-xs text-muted-foreground">Stress: {n.water_stress_level || '—'}</p>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Monitoring Alerts */}
+            {farmerMonitoringAlerts.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2"><AlertTriangle className="h-5 w-5" />Alertas de Monitoria</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2">
+                    {farmerMonitoringAlerts.slice(0, 5).map((a: any) => (
+                      <div key={a.id} className="flex items-center justify-between p-3 border rounded-lg">
+                        <div>
+                          <p className="font-medium text-sm">{a.alert_number}</p>
+                          <p className="text-xs text-muted-foreground">{a.alert_type} — {a.description?.slice(0, 80)}</p>
+                        </div>
+                        <Badge variant="outline">{a.severity}</Badge>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </div>
         </TabsContent>
       </Tabs>
     </div>

@@ -202,6 +202,12 @@ const navigation: NavItem[] = [
     ],
   },
   {
+    label: 'Seguros Agrícolas',
+    href: '/seguros',
+    icon: Shield,
+    allowedRoles: TECH_AND_ADMIN,
+  },
+  {
     label: 'Monitoria',
     icon: Activity,
     allowedRoles: TECH_AND_ADMIN,
@@ -210,12 +216,6 @@ const navigation: NavItem[] = [
       { label: 'Score Agrícola', href: '/monitoria/score' },
       { label: 'NDVI Satélite', href: '/monitoria/ndvi' },
     ],
-  },
-  {
-    label: 'Seguros Agrícolas',
-    href: '/seguros',
-    icon: Shield,
-    allowedRoles: TECH_AND_ADMIN,
   },
   {
     label: 'Laboratório de Dados',

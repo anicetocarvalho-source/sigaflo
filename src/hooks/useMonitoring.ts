@@ -1,9 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useAuth } from '@/contexts/AuthContext';
 
 export function useMonitoring() {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
 
   // Alerts
   const alertsQuery = useQuery({
@@ -131,6 +133,66 @@ export function useMonitoring() {
       : 0,
   };
 
+  // Calculate score for a farmer based on production, packages and mechanization
+  const calculateScore = useMutation({
+    mutationFn: async ({ farmerId, season }: { farmerId: string; season: string }) => {
+      // Fetch production data
+      const { data: production } = await supabase
+        .from('production_history')
+        .select('*')
+        .eq('farmer_id', farmerId)
+        .eq('season', season);
+
+      // Fetch service orders
+      const { data: orders } = await supabase
+        .from('service_orders')
+        .select('*')
+        .eq('farmer_id', farmerId);
+
+      // Fetch sales (packages)
+      const { data: sales } = await supabase
+        .from('pos_sales')
+        .select('*')
+        .eq('farmer_id', farmerId);
+
+      // Calculate scores (0-25 each, total 0-100)
+      const plantingScore = production?.length ? Math.min(25, production.length * 8) : 0;
+      const packageScore = sales?.length ? Math.min(25, sales.length * 10) : 0;
+      const mechScore = orders?.filter(o => o.status === 'completed' || o.status === 'validated').length
+        ? Math.min(25, (orders.filter(o => o.status === 'completed' || o.status === 'validated').length) * 12)
+        : 0;
+      const prodScore = production?.reduce((s, p) => s + (p.actual_yield_kg || 0), 0) > 0
+        ? Math.min(25, Math.round((production.reduce((s, p) => s + (p.actual_yield_kg || 0), 0) / 1000) * 5))
+        : 0;
+      const totalScore = plantingScore + packageScore + mechScore + prodScore;
+      const complianceLevel = totalScore >= 70 ? 'high' : totalScore >= 40 ? 'medium' : 'low';
+
+      const { data, error } = await supabase
+        .from('agricultural_scores')
+        .upsert({
+          farmer_id: farmerId,
+          season,
+          planting_score: plantingScore,
+          package_score: packageScore,
+          mechanization_score: mechScore,
+          production_score: prodScore,
+          total_score: totalScore,
+          compliance_level: complianceLevel,
+          calculated_at: new Date().toISOString(),
+          calculated_by: user?.id || null,
+        }, { onConflict: 'farmer_id,season' })
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['agricultural_scores'] });
+      toast.success('Score recalculado com sucesso');
+    },
+    onError: () => toast.error('Erro ao calcular score'),
+  });
+
   return {
     alerts: alertsQuery.data || [],
     alertsLoading: alertsQuery.isLoading,
@@ -147,5 +209,6 @@ export function useMonitoring() {
     scoreStats,
     ndviReadings: ndviQuery.data || [],
     ndviLoading: ndviQuery.isLoading,
+    calculateScore,
   };
 }
