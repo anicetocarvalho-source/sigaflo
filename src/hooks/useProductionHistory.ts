@@ -136,6 +136,29 @@ export const useUpdateProductionRecord = () => {
   });
 };
 
+export const useDeleteProductionRecord = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from('production_history')
+        .delete()
+        .eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['production-records'] });
+      queryClient.invalidateQueries({ queryKey: ['production-stats'] });
+      queryClient.invalidateQueries({ queryKey: ['production-history-paginated'] });
+      toast.success('Registo de produção eliminado com sucesso');
+    },
+    onError: (error) => {
+      toast.error(getCrudErrorMessage('delete', 'registo de produção', error));
+    },
+  });
+};
+
 export const useProductionStats = () => {
   return useQuery({
     queryKey: ['production-stats'],

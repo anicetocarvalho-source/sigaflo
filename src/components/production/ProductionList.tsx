@@ -1,13 +1,14 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useDistinctCrops, useDistinctYears } from '@/hooks/useProductionHistory';
+import { useDistinctCrops, useDistinctYears, useDeleteProductionRecord } from '@/hooks/useProductionHistory';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Search, Eye, Edit, Loader2, Filter, X } from 'lucide-react';
+import { Plus, Search, Eye, Edit, Loader2, Filter, X, Trash2 } from 'lucide-react';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { usePaginatedQuery } from '@/hooks/usePagination';
 import { PaginationControls } from '@/components/ui/pagination-controls';
 
@@ -46,6 +47,7 @@ export const ProductionList = () => {
 
   const { data: crops } = useDistinctCrops();
   const { data: years } = useDistinctYears();
+  const { mutate: deleteRecord } = useDeleteProductionRecord();
   
   // Server-side pagination
   const {
@@ -238,6 +240,27 @@ export const ProductionList = () => {
                               <Edit className="h-4 w-4" />
                             </Link>
                           </Button>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button variant="ghost" size="icon">
+                                <Trash2 className="h-4 w-4 text-destructive" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Eliminar registo?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Esta acção é irreversível. O registo será permanentemente eliminado.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                <AlertDialogAction onClick={() => deleteRecord(record.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                                  Eliminar
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
                         </div>
                       </TableCell>
                     </TableRow>
