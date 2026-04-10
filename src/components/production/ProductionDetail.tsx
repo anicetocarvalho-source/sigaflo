@@ -1,10 +1,15 @@
-import { Link } from 'react-router-dom';
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Edit, ArrowLeft, User, Wheat, Calendar, MapPin, Scale, TrendingUp, Star, FileText } from 'lucide-react';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { Edit, ArrowLeft, User, Wheat, Calendar, MapPin, Scale, TrendingUp, Star, FileText, Trash2, Loader2 } from 'lucide-react';
 import type { ProductionRecord } from '@/hooks/useProductionHistory';
+import { useDeleteProductionRecord } from '@/hooks/useProductionHistory';
+import { format } from 'date-fns';
+import { pt } from 'date-fns/locale';
 import { format } from 'date-fns';
 import { pt } from 'date-fns/locale';
 
@@ -40,9 +45,17 @@ interface ProductionDetailProps {
 }
 
 export const ProductionDetail = ({ record }: ProductionDetailProps) => {
+  const navigate = useNavigate();
+  const { mutate: deleteRecord, isPending: isDeleting } = useDeleteProductionRecord();
   const yieldVariance = record.expected_yield_kg && record.actual_yield_kg
     ? ((record.actual_yield_kg - record.expected_yield_kg) / record.expected_yield_kg) * 100
     : null;
+
+  const handleDelete = () => {
+    deleteRecord(record.id, {
+      onSuccess: () => navigate('/producao'),
+    });
+  };
 
   return (
     <div className="space-y-6">
@@ -53,12 +66,36 @@ export const ProductionDetail = ({ record }: ProductionDetailProps) => {
             Voltar à Lista
           </Link>
         </Button>
-        <Button asChild>
-          <Link to={`/producao/${record.id}/editar`}>
-            <Edit className="h-4 w-4 mr-2" />
-            Editar
-          </Link>
-        </Button>
+        <div className="flex gap-2">
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="destructive" disabled={isDeleting}>
+                {isDeleting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Trash2 className="h-4 w-4 mr-2" />}
+                Eliminar
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Eliminar registo de produção?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Esta acção é irreversível. O registo de {CROP_LABELS[record.crop_type] || record.crop_type} - {record.season} {record.year} será permanentemente eliminado.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                  Eliminar
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+          <Button asChild>
+            <Link to={`/producao/${record.id}/editar`}>
+              <Edit className="h-4 w-4 mr-2" />
+              Editar
+            </Link>
+          </Button>
+        </div>
       </div>
 
       <div className="grid gap-6 md:grid-cols-3">
