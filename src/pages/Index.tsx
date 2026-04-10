@@ -143,6 +143,19 @@ export default function Index() {
     ? Math.max(0, riceConsumption[0].total_consumption_tonnes - totalRiceProduction) 
     : 0;
 
+  // Build alerts from real occurrences data
+  const alerts = (occurrences || [])
+    .filter(o => o.status !== 'resolved')
+    .slice(0, 8)
+    .map(o => ({
+      id: o.id,
+      type: severityToType(o.severity),
+      category: occurrenceToCategory(o.occurrence_type),
+      title: o.title,
+      location: undefined as string | undefined,
+      time: formatDistanceToNow(new Date(o.report_date), { addSuffix: true, locale: pt }),
+    }));
+
   const formatNumber = (num: number) => {
     if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
     if (num >= 1000) return `${(num / 1000).toFixed(1)}K`;
