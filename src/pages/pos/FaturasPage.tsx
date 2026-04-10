@@ -25,7 +25,7 @@ export default function FaturasPage() {
 
   const filtered = invoices?.filter((inv: any) =>
     inv.invoice_number?.toLowerCase().includes(search.toLowerCase()) ||
-    (inv as any).farmers?.full_name?.toLowerCase().includes(search.toLowerCase())
+    (inv as any).farmers?.name?.toLowerCase().includes(search.toLowerCase())
   ) || [];
 
   const totalEmitido = filtered.reduce((s: number, i: any) => s + (i.total_aoa || 0), 0);
