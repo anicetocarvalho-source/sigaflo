@@ -9,6 +9,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Search, ClipboardList, MoreHorizontal, Play, CheckCircle, XCircle, Satellite } from 'lucide-react';
 import { useServiceOrders, useUpdateOrderStatus, SERVICE_TYPES, ORDER_STATUSES } from '@/hooks/useMechanization';
 import { format } from 'date-fns';
+import { TableSkeleton } from '@/components/ui/skeletons';
 
 export function ServiceOrdersList() {
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -59,7 +60,7 @@ export function ServiceOrdersList() {
       </CardHeader>
       <CardContent>
         {isLoading ? (
-          <p className="text-center py-8 text-muted-foreground">A carregar...</p>
+          <TableSkeleton rows={5} cols={7} />
         ) : filtered.length === 0 ? (
           <p className="text-center py-8 text-muted-foreground">Nenhuma ordem de serviço encontrada</p>
         ) : (

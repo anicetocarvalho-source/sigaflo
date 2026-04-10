@@ -51,7 +51,7 @@ export function ComplaintsCharts({
   complaintsByMonth,
   complaintsByProvince,
 }: ComplaintsChartsProps) {
-  // Mock data if empty
+  // Dados de exemplo quando não há dados reais
   const typeData = complaintsByType.length > 0 ? complaintsByType : [
     { type: 'illegal_logging', count: 45 },
     { type: 'illegal_transport', count: 28 },

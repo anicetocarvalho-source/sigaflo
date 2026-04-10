@@ -15,7 +15,7 @@ export function ReforestationDashboard() {
   const [selectedProject, setSelectedProject] = useState<any>(null);
   const [isEditing, setIsEditing] = useState(false);
 
-  // Mock data for reforestation projects (table doesn't exist yet)
+  // Dados de exemplo (tabela de reflorestamento ainda não existe)
   const projects: any[] = [
     {
       id: '1',

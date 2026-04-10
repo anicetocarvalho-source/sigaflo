@@ -142,7 +142,7 @@ export function useCreateCenter() {
       qc.invalidateQueries({ queryKey: ['mechanization-centers'] });
       toast({ title: 'Centro criado com sucesso' });
     },
-    onError: (e: any) => toast({ title: 'Erro', description: e.message, variant: 'destructive' }),
+    onError: (e: any) => toast({ title: 'Erro ao criar centro', description: e.message || 'Verifique os dados e tente novamente', variant: 'destructive' }),
   });
 }
 
@@ -162,7 +162,7 @@ export function useCreateServiceOrder() {
       qc.invalidateQueries({ queryKey: ['service-orders'] });
       toast({ title: 'Ordem de serviço criada' });
     },
-    onError: (e: any) => toast({ title: 'Erro', description: e.message, variant: 'destructive' }),
+    onError: (e: any) => toast({ title: 'Erro ao criar ordem de serviço', description: e.message || 'Verifique os dados e tente novamente', variant: 'destructive' }),
   });
 }
 
@@ -182,7 +182,7 @@ export function useUpdateOrderStatus() {
       qc.invalidateQueries({ queryKey: ['service-orders'] });
       toast({ title: 'Estado actualizado' });
     },
-    onError: (e: any) => toast({ title: 'Erro', description: e.message, variant: 'destructive' }),
+    onError: (e: any) => toast({ title: 'Erro ao actualizar estado', description: e.message || 'Tente novamente', variant: 'destructive' }),
   });
 }
 
