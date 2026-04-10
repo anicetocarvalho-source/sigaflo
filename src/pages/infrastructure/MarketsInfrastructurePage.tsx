@@ -30,13 +30,16 @@ import {
   XCircle,
   Warehouse,
   Loader2,
+  Trash2,
 } from 'lucide-react';
 import { useLocationCascade } from '@/hooks/useLocationCascade';
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { 
   useMarketInfrastructure, 
   useMarketInfrastructureStats,
   useCreateMarketInfrastructure,
+  useDeleteMarketInfrastructure,
   MarketInfrastructure 
 } from '@/hooks/useInfrastructure';
 import { toast } from 'sonner';
@@ -146,6 +149,7 @@ export default function MarketsInfrastructurePage() {
 
   const { data: stats } = useMarketInfrastructureStats();
   const createMarket = useCreateMarketInfrastructure();
+  const deleteMarket = useDeleteMarketInfrastructure();
 
   // Form state
   const [formData, setFormData] = useState({
@@ -571,6 +575,27 @@ export default function MarketsInfrastructurePage() {
                                 <Button variant="ghost" size="icon">
                                   <Edit className="h-4 w-4" />
                                 </Button>
+                                <AlertDialog>
+                                  <AlertDialogTrigger asChild>
+                                    <Button variant="ghost" size="icon">
+                                      <Trash2 className="h-4 w-4 text-destructive" />
+                                    </Button>
+                                  </AlertDialogTrigger>
+                                  <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                      <AlertDialogTitle>Eliminar mercado?</AlertDialogTitle>
+                                      <AlertDialogDescription>
+                                        Esta acção é irreversível. "{market.name}" será permanentemente eliminado.
+                                      </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                      <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                      <AlertDialogAction onClick={() => deleteMarket.mutate(market.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                                        Eliminar
+                                      </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                  </AlertDialogContent>
+                                </AlertDialog>
                               </div>
                             </TableCell>
                           </TableRow>

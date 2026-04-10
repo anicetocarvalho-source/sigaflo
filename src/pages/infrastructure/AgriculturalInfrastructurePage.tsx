@@ -29,6 +29,7 @@ import {
   Edit,
   Ruler,
   Loader2,
+  Trash2,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -37,11 +38,13 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useLocationCascade } from '@/hooks/useLocationCascade';
 import { 
   useAgriculturalInfrastructure, 
   useAgriculturalInfrastructureStats,
   useCreateAgriculturalInfrastructure,
+  useDeleteAgriculturalInfrastructure,
   AgriculturalInfrastructure 
 } from '@/hooks/useInfrastructure';
 import { toast } from 'sonner';
@@ -138,6 +141,7 @@ export default function AgriculturalInfrastructurePage() {
   
   const { data: stats } = useAgriculturalInfrastructureStats();
   const createInfrastructure = useCreateAgriculturalInfrastructure();
+  const deleteInfrastructure = useDeleteAgriculturalInfrastructure();
 
   // Form state
   const [formData, setFormData] = useState({
@@ -591,13 +595,34 @@ export default function AgriculturalInfrastructurePage() {
                               <TableCell>{getStatusBadge(item.status)}</TableCell>
                               <TableCell>{item.condition ? getConditionBadge(item.condition) : '-'}</TableCell>
                               <TableCell>
-                                <div className="flex justify-end gap-1">
+                              <div className="flex justify-end gap-1">
                                   <Button variant="ghost" size="icon">
                                     <Eye className="h-4 w-4" />
                                   </Button>
                                   <Button variant="ghost" size="icon">
                                     <Edit className="h-4 w-4" />
                                   </Button>
+                                  <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                      <Button variant="ghost" size="icon">
+                                        <Trash2 className="h-4 w-4 text-destructive" />
+                                      </Button>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent>
+                                      <AlertDialogHeader>
+                                        <AlertDialogTitle>Eliminar infraestrutura?</AlertDialogTitle>
+                                        <AlertDialogDescription>
+                                          Esta acção é irreversível. "{item.name}" será permanentemente eliminada.
+                                        </AlertDialogDescription>
+                                      </AlertDialogHeader>
+                                      <AlertDialogFooter>
+                                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                        <AlertDialogAction onClick={() => deleteInfrastructure.mutate(item.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                                          Eliminar
+                                        </AlertDialogAction>
+                                      </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                  </AlertDialog>
                                 </div>
                               </TableCell>
                             </TableRow>
