@@ -140,6 +140,28 @@ export function useUpdateAgriculturalInfrastructure() {
   });
 }
 
+export function useDeleteAgriculturalInfrastructure() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from('agricultural_infrastructure')
+        .delete()
+        .eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['agricultural-infrastructure'] });
+      queryClient.invalidateQueries({ queryKey: ['agricultural-infrastructure-stats'] });
+      toast.success('Infraestrutura eliminada com sucesso');
+    },
+    onError: (error) => {
+      toast.error(getCrudErrorMessage('delete', 'infraestrutura', error));
+    },
+  });
+}
+
 // Market Infrastructure Hooks
 export function useMarketInfrastructure(filters?: {
   type?: string;
@@ -218,6 +240,28 @@ export function useUpdateMarketInfrastructure() {
     },
     onError: (error) => {
       toast.error(getCrudErrorMessage('update', 'mercado', error));
+    },
+  });
+}
+
+export function useDeleteMarketInfrastructure() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from('market_infrastructure')
+        .delete()
+        .eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['market-infrastructure'] });
+      queryClient.invalidateQueries({ queryKey: ['market-infrastructure-stats'] });
+      toast.success('Mercado eliminado com sucesso');
+    },
+    onError: (error) => {
+      toast.error(getCrudErrorMessage('delete', 'mercado', error));
     },
   });
 }
