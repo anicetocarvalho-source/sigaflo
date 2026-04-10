@@ -87,7 +87,7 @@ export function CentersList() {
       </CardHeader>
       <CardContent>
         {isLoading ? (
-          <p className="text-center py-8 text-muted-foreground">A carregar...</p>
+          <TableSkeleton rows={4} cols={5} />
         ) : filtered.length === 0 ? (
           <p className="text-center py-8 text-muted-foreground">Nenhum centro registado</p>
         ) : (

@@ -60,7 +60,7 @@ export function ServiceOrdersList() {
       </CardHeader>
       <CardContent>
         {isLoading ? (
-          <p className="text-center py-8 text-muted-foreground">A carregar...</p>
+          <TableSkeleton rows={5} cols={7} />
         ) : filtered.length === 0 ? (
           <p className="text-center py-8 text-muted-foreground">Nenhuma ordem de serviço encontrada</p>
         ) : (

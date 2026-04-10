@@ -78,7 +78,7 @@ export function NurseriesManager({ nurseries = [], isLoading }: NurseriesManager
     },
   });
 
-  // Mock data if none provided
+  // Dados de exemplo quando não há dados reais
   const displayNurseries: Nursery[] = nurseries.length > 0 ? nurseries : [
     {
       id: '1',

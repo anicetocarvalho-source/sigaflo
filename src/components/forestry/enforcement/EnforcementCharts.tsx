@@ -48,7 +48,7 @@ export function EnforcementCharts({
   infractionsByMonth,
   infractionsByProvince,
 }: EnforcementChartsProps) {
-  // Mock data if empty
+  // Dados de exemplo quando não há dados reais
   const typeData = infractionsByType.length > 0 ? infractionsByType : [
     { type: 'illegal_logging', count: 45 },
     { type: 'transport_violation', count: 32 },

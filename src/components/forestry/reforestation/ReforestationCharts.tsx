@@ -41,7 +41,7 @@ export function ReforestationCharts({
   progressByMonth,
   survivalBySpecies,
 }: ReforestationChartsProps) {
-  // Mock data if empty
+  // Dados de exemplo quando não há dados reais
   const typeData = projectsByType.length > 0 ? projectsByType : [
     { type: 'restoration', count: 12, area: 850 },
     { type: 'community', count: 8, area: 420 },
