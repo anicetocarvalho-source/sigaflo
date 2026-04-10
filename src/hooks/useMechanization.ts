@@ -142,7 +142,7 @@ export function useCreateCenter() {
       qc.invalidateQueries({ queryKey: ['mechanization-centers'] });
       toast({ title: 'Centro criado com sucesso' });
     },
-    onError: (e: any) => toast({ title: 'Erro', description: e.message, variant: 'destructive' }),
+    onError: (e: any) => toast({ title: 'Erro ao criar centro', description: e.message || 'Verifique os dados e tente novamente', variant: 'destructive' }),
   });
 }
 
