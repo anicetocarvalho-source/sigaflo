@@ -182,7 +182,7 @@ export function useUpdateOrderStatus() {
       qc.invalidateQueries({ queryKey: ['service-orders'] });
       toast({ title: 'Estado actualizado' });
     },
-    onError: (e: any) => toast({ title: 'Erro', description: e.message, variant: 'destructive' }),
+    onError: (e: any) => toast({ title: 'Erro ao actualizar estado', description: e.message || 'Tente novamente', variant: 'destructive' }),
   });
 }
 
