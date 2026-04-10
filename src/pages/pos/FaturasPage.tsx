@@ -108,7 +108,7 @@ export default function FaturasPage() {
                   <TableRow key={inv.id} className="cursor-pointer hover:bg-muted/50" onClick={() => setSelectedInvoice(inv)}>
                     <TableCell className="font-mono text-sm">{inv.invoice_number}</TableCell>
                     <TableCell><Badge variant="outline">{inv.series_code}</Badge></TableCell>
-                    <TableCell>{(inv as any).farmers?.full_name || 'N/A'}</TableCell>
+                    <TableCell>{(inv as any).farmers?.name || 'N/A'}</TableCell>
                     <TableCell className="font-medium">{formatAOA(inv.total_aoa)}</TableCell>
                     <TableCell>{formatAOA(inv.iva_total_aoa)}</TableCell>
                     <TableCell>

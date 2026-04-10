@@ -24,7 +24,7 @@ export function usePOSSales() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('pos_sales')
-        .select('*, farmers(full_name, registration_number)')
+        .select('*, farmers(name, registration_number)')
         .order('created_at', { ascending: false })
         .limit(100);
       if (error) throw error;
@@ -116,7 +116,7 @@ export function useInvoices() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('invoices')
-        .select('*, farmers(full_name)')
+        .select('*, farmers(name)')
         .order('created_at', { ascending: false })
         .limit(200);
       if (error) throw error;
@@ -131,7 +131,7 @@ export function useSubsidizedPurchases() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('subsidized_purchases')
-        .select('*, farmers(full_name, registration_number)')
+        .select('*, farmers(name, registration_number)')
         .order('created_at', { ascending: false })
         .limit(200);
       if (error) throw error;
@@ -193,7 +193,7 @@ export function usePurchasePackages() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('purchase_packages')
-        .select('*, farmers(full_name), provinces(name), municipalities(name), purchase_package_items(*)')
+        .select('*, farmers(name), provinces(name), municipalities(name), purchase_package_items(*)')
         .order('created_at', { ascending: false })
         .limit(200);
       if (error) throw error;
