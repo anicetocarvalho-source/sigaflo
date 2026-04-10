@@ -41,42 +41,19 @@ import { useForestLicenses } from '@/hooks/useForestry';
 import { useCoffeeLots } from '@/hooks/useCoffee';
 import { useOccurrences } from '@/hooks/useOccurrences';
 import { useRiceProduction, useRiceImports, useRiceConsumption } from '@/hooks/useRice';
+import { formatDistanceToNow } from 'date-fns';
+import { pt } from 'date-fns/locale';
 
-// Mock data for alerts
-const alerts = [
-  {
-    id: '1',
-    type: 'critical' as const,
-    category: 'climate' as const,
-    title: 'Seca severa detectada - Risco de perda de colheita',
-    location: 'Huíla, Matala',
-    time: 'Há 2 horas',
-  },
-  {
-    id: '2',
-    type: 'warning' as const,
-    category: 'pest' as const,
-    title: 'Surto de lagarta-do-cartucho identificado',
-    location: 'Malanje, Cacuso',
-    time: 'Há 5 horas',
-  },
-  {
-    id: '3',
-    type: 'warning' as const,
-    category: 'production' as const,
-    title: 'Produção de arroz abaixo da meta provincial',
-    location: 'Cuanza Sul',
-    time: 'Há 8 horas',
-  },
-  {
-    id: '4',
-    type: 'info' as const,
-    category: 'system' as const,
-    title: 'Novo lote de café aprovado para exportação',
-    location: 'Uíge',
-    time: 'Há 12 horas',
-  },
-];
+const severityToType = (severity: string): 'critical' | 'warning' | 'info' => {
+  if (severity === 'critical' || severity === 'high') return 'critical';
+  if (severity === 'medium') return 'warning';
+  return 'info';
+};
+
+const occurrenceToCategory = (type: string): 'climate' | 'pest' | 'production' | 'market' | 'system' => {
+  if (type === 'pest' || type === 'disease') return 'pest';
+  return 'climate';
+};
 
 const activities = [
   {
