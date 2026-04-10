@@ -162,7 +162,7 @@ export function useCreateServiceOrder() {
       qc.invalidateQueries({ queryKey: ['service-orders'] });
       toast({ title: 'Ordem de serviço criada' });
     },
-    onError: (e: any) => toast({ title: 'Erro', description: e.message, variant: 'destructive' }),
+    onError: (e: any) => toast({ title: 'Erro ao criar ordem de serviço', description: e.message || 'Verifique os dados e tente novamente', variant: 'destructive' }),
   });
 }
 
