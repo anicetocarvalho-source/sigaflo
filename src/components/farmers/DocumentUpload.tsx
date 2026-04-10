@@ -4,6 +4,13 @@ import { Upload, X, FileText, Eye } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
+const ALLOWED_TYPES = [
+  'image/jpeg', 'image/png', 'image/webp', 'image/gif',
+  'application/pdf',
+];
+const ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'webp', 'gif', 'pdf'];
+const MAX_SIZE_BYTES = 5 * 1024 * 1024; // 5 MB
+
 interface DocumentUploadProps {
   label: string;
   value?: string | null;
@@ -21,6 +28,20 @@ export const DocumentUpload = ({
 }: DocumentUploadProps) => {
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const validateFile = (file: File): string | null => {
+    if (file.size > MAX_SIZE_BYTES) {
+      return `Ficheiro muito grande (${(file.size / 1024 / 1024).toFixed(1)} MB). Máximo permitido: 5 MB.`;
+    }
+    const ext = file.name.split('.').pop()?.toLowerCase();
+    if (!ext || !ALLOWED_EXTENSIONS.includes(ext)) {
+      return `Formato "${ext || 'desconhecido'}" não suportado. Use: JPG, PNG, WEBP, GIF ou PDF.`;
+    }
+    if (!ALLOWED_TYPES.includes(file.type) && file.type !== '') {
+      return `Tipo de ficheiro "${file.type}" não permitido.`;
+    }
+    return null;
+  };
 
   const uploadFile = async (file: File) => {
     setIsUploading(true);
@@ -50,13 +71,16 @@ export const DocumentUpload = ({
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        toast.error('Ficheiro muito grande. Máximo 5MB.');
-        return;
-      }
-      uploadFile(file);
+    if (!file) return;
+
+    const validationError = validateFile(file);
+    if (validationError) {
+      toast.error(validationError);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      return;
     }
+
+    uploadFile(file);
   };
 
   const removeDocument = () => {
