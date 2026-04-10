@@ -10,8 +10,6 @@ import type { ProductionRecord } from '@/hooks/useProductionHistory';
 import { useDeleteProductionRecord } from '@/hooks/useProductionHistory';
 import { format } from 'date-fns';
 import { pt } from 'date-fns/locale';
-import { format } from 'date-fns';
-import { pt } from 'date-fns/locale';
 
 const CROP_LABELS: Record<string, string> = {
   arroz: 'Arroz',
