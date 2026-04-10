@@ -29,7 +29,7 @@ export default function ComprasPage() {
 
   const filtered = purchases?.filter((p: any) =>
     p.product_name?.toLowerCase().includes(search.toLowerCase()) ||
-    (p as any).farmers?.full_name?.toLowerCase().includes(search.toLowerCase())
+    (p as any).farmers?.name?.toLowerCase().includes(search.toLowerCase())
   ) || [];
 
   const totalCompras = filtered.reduce((s: number, p: any) => s + (p.total_value_aoa || 0), 0);
@@ -83,7 +83,7 @@ export default function ComprasPage() {
                   <TableRow><TableCell colSpan={8} className="text-center py-8 text-muted-foreground">Nenhuma compra encontrada</TableCell></TableRow>
                 ) : filtered.map((p: any) => (
                   <TableRow key={p.id}>
-                    <TableCell>{(p as any).farmers?.full_name || 'N/A'}</TableCell>
+                    <TableCell>{(p as any).farmers?.name || 'N/A'}</TableCell>
                     <TableCell>{p.product_name}</TableCell>
                     <TableCell>{p.quantity}</TableCell>
                     <TableCell className="font-medium">{formatAOA(p.total_value_aoa)}</TableCell>

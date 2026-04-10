@@ -21,7 +21,7 @@ export default function PacotesComprasPage() {
 
   const filtered = packages?.filter((p: any) =>
     p.campaign?.toLowerCase().includes(search.toLowerCase()) ||
-    (p as any).farmers?.full_name?.toLowerCase().includes(search.toLowerCase())
+    (p as any).farmers?.name?.toLowerCase().includes(search.toLowerCase())
   ) || [];
 
   const addItem = () => setNewItems(prev => [...prev, { product_name: '', max_quantity: 0 }]);
@@ -72,7 +72,7 @@ export default function PacotesComprasPage() {
                 ) : filtered.map((pkg: any) => (
                   <TableRow key={pkg.id}>
                     <TableCell className="font-medium">{pkg.campaign}</TableCell>
-                    <TableCell>{(pkg as any).farmers?.full_name || 'Geral'}</TableCell>
+                    <TableCell>{(pkg as any).farmers?.name || 'Geral'}</TableCell>
                     <TableCell>{pkg.crop_type || 'N/A'}</TableCell>
                     <TableCell><Badge variant={pkg.status === 'active' ? 'default' : 'secondary'}>{pkg.status}</Badge></TableCell>
                     <TableCell>{pkg.purchase_package_items?.length || 0}</TableCell>
