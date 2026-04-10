@@ -10,6 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Plus, Search, MapPin, Wrench } from 'lucide-react';
 import { useMechanizationCenters, useCreateCenter, CENTER_TYPES, type MechanizationCenter } from '@/hooks/useMechanization';
 import { useLocationCascade } from '@/hooks/useLocationCascade';
+import { TableSkeleton } from '@/components/ui/skeletons';
 
 export function CentersList() {
   const { data: centers, isLoading } = useMechanizationCenters();
