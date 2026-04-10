@@ -27,8 +27,8 @@ export function FarmerSearch({ onSelect }: FarmerSearchProps) {
     try {
       const { data, error } = await supabase
         .from('farmers')
-        .select('id, full_name, registration_number, bi_number, phone, status, province_id, provinces(name)')
-        .or(`full_name.ilike.%${query}%,bi_number.ilike.%${query}%,registration_number.ilike.%${query}%`)
+        .select('id, name, registration_number, bi_number, phone, status, province_id, provinces(name)')
+        .or(`name.ilike.%${query}%,bi_number.ilike.%${query}%,registration_number.ilike.%${query}%`)
         .limit(10);
       if (error) throw error;
       setResults(data || []);
@@ -107,7 +107,7 @@ export function FarmerSearch({ onSelect }: FarmerSearchProps) {
                   <div className="flex items-center gap-3">
                     <Users className="h-5 w-5 text-muted-foreground" />
                     <div>
-                      <p className="font-medium">{farmer.full_name}</p>
+                      <p className="font-medium">{farmer.name}</p>
                       <p className="text-sm text-muted-foreground">
                         {farmer.registration_number} • BI: {farmer.bi_number || 'N/A'} • {(farmer as any).provinces?.name || ''}
                       </p>

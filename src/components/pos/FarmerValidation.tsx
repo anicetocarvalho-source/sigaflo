@@ -21,7 +21,7 @@ export function FarmerValidation({ farmer, representative, onContinue, onBack }:
             <User className={`h-8 w-8 ${isValid ? 'text-green-600' : 'text-red-600'}`} />
           </div>
           <div>
-            <h3 className="text-xl font-semibold">{farmer.full_name}</h3>
+            <h3 className="text-xl font-semibold">{farmer.name}</h3>
             <p className="text-muted-foreground">{farmer.registration_number}</p>
           </div>
           <div className="ml-auto">
