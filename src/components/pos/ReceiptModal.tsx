@@ -36,7 +36,7 @@ export function ReceiptModal({ open, onClose, sale, invoice, farmer, walletBalan
           <div className="space-y-1">
             <div className="flex justify-between"><span className="text-muted-foreground">Factura:</span><span className="font-medium">{invoice?.invoice_number || 'N/A'}</span></div>
             <div className="flex justify-between"><span className="text-muted-foreground">Data:</span><span>{new Date().toLocaleDateString('pt-AO')}</span></div>
-            <div className="flex justify-between"><span className="text-muted-foreground">Agricultor:</span><span>{farmer?.full_name}</span></div>
+            <div className="flex justify-between"><span className="text-muted-foreground">Agricultor:</span><span>{farmer?.name}</span></div>
             <div className="flex justify-between"><span className="text-muted-foreground">Nº Registo:</span><span>{farmer?.registration_number}</span></div>
             {sale?.representative_name && (
               <div className="flex justify-between"><span className="text-muted-foreground">Representante:</span><span>{sale.representative_name}</span></div>
