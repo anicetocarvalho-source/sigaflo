@@ -34,6 +34,7 @@ import { useCoffeeLots, useCoffeeExporters } from '@/hooks/useCoffee';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
+import { QueryError } from '@/components/ui/query-state';
 
 const statusConfig: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline'; icon: React.ElementType }> = {
   registered: { label: 'Registado', variant: 'outline', icon: Package },
@@ -60,7 +61,7 @@ export function CoffeeLotsTable() {
 
   const { data: exporters } = useCoffeeExporters();
 
-  const { data: lots, isLoading } = useCoffeeLots({
+  const { data: lots, isLoading, isError, error, refetch } = useCoffeeLots({
     provinceId: provinceFilter || undefined,
     exporterName: exporterFilter || undefined,
     status: statusFilter || undefined,

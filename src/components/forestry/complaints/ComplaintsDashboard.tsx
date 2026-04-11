@@ -19,7 +19,7 @@ export function ComplaintsDashboard() {
   const queryClient = useQueryClient();
 
   // Fetch complaints
-  const { data: complaints = [], isLoading } = useQuery({
+  const { data: complaints = [], isLoading, isError, error, refetch } = useQuery({
     queryKey: ['forest-complaints'],
     queryFn: async () => {
       const { data, error } = await supabase

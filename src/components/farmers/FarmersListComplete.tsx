@@ -38,6 +38,7 @@ import { useFarmers, useProvinces, type Farmer, type FarmerType } from '@/hooks/
 import { useFinancialProfiles, type FarmerFinancialProfile } from '@/hooks/useCreditInsurance';
 import { FarmerTypeIcon, getFarmerTypeLabel, getFarmerTypeColor } from '@/components/farmers/FarmerTypeIcon';
 import { Skeleton } from '@/components/ui/skeleton';
+import { QueryError } from '@/components/ui/query-state';
 import { toast } from 'sonner';
 
 interface EnhancedFarmer extends Farmer {
@@ -72,7 +73,7 @@ export const FarmersListComplete = () => {
   const [statusFilter, setStatusFilter] = useState<string>('all');
 
   const { data: provinces } = useProvinces();
-  const { data: farmers, isLoading: farmersLoading } = useFarmers({
+  const { data: farmers, isLoading: farmersLoading, isError: farmersError, error: farmersErr, refetch: refetchFarmers } = useFarmers({
     province_id: provinceFilter === 'all' ? undefined : provinceFilter,
     type: typeFilter !== 'all' ? typeFilter as FarmerType : undefined,
     excludeTypes: ['cooperative', 'field_school'] as FarmerType[],
