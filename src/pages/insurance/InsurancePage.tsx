@@ -362,7 +362,9 @@ export default function InsurancePage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {rulesLoading ? (
+                    {rulesError ? (
+                      <TableRow><TableCell colSpan={7}><QueryError error={rulesErr as Error} onRetry={() => refetchRules()} /></TableCell></TableRow>
+                    ) : rulesLoading ? (
                       <TableRow><TableCell colSpan={7} className="text-center py-8">A carregar...</TableCell></TableRow>
                     ) : !rules?.length ? (
                       <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">Sem regras</TableCell></TableRow>
