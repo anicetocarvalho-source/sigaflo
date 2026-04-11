@@ -54,6 +54,9 @@ export const ProductionList = () => {
   const {
     data: paginatedData,
     isLoading,
+    isError,
+    error,
+    refetch,
     pagination,
     goToPage,
     setPageSize,
@@ -175,8 +178,8 @@ export const ProductionList = () => {
 
       <Card>
         <CardContent className="p-0">
-          {paginatedData?.error ? (
-            <QueryError error={paginatedData.error as Error} onRetry={() => window.location.reload()} />
+          {isError ? (
+            <QueryError error={error as Error} onRetry={() => refetch()} />
           ) : isLoading ? (
             <div className="flex items-center justify-center py-12">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
