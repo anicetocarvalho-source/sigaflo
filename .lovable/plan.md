@@ -1,56 +1,39 @@
 
 
-# Plano: Correcção de Validações e Documentação de Testes de Limites
+# Plano: Correcção de Problemas de Navegação e Rotas
 
-## Resumo
-Corrigir os 7 problemas de validação identificados na auditoria anterior (que permanecem no código) e gerar um relatório PDF actualizado documentando todos os testes de limites e casos extremos.
+## Problemas Encontrados
 
-## Parte 1 — Correcções de Código (7 ficheiros)
+### 1. Página 404 em inglês (Severidade: Média)
+A página `NotFound.tsx` mostra "Oops! Page not found" e "Return to Home" em vez de português.
 
-### 1. OccurrenceForm.tsx (linha 23-25)
-Adicionar `.min(0, 'O valor deve ser positivo')` a `affected_area_ha`, `affected_farmers_count` e `estimated_loss_aoa`.
+### 2. Sub-rotas inexistentes do portal sem contexto (Severidade: Média)
+Ao aceder `/portal/pagina-inexistente`, o utilizador vê o 404 genérico sem a navegação do portal. Deveria mostrar um 404 dentro do `PublicLayout`.
 
-### 2. LicenseForm.tsx (linha 38-42)
-- `concession_area_ha`: adicionar `.min(0, 'O valor deve ser positivo')`
-- `latitude`: adicionar `.min(-90).max(90)` com mensagem PT
-- `longitude`: adicionar `.min(-180).max(180)` com mensagem PT
-- `authorized_volume_m3`: adicionar `.min(0)`
+### 3. Rota legada `/verificar` sem navegação do portal (Severidade: Baixa)
+A rota `/verificar` renderiza `VerificationPortal` diretamente, sem o header do portal público (Início, Sectores, etc.).
 
-### 3. LogForm.tsx (linha 39-40)
-- `length_m`: adicionar `.min(0, 'Comprimento deve ser positivo')`
-- `diameter_cm`: adicionar `.min(0, 'Diâmetro deve ser positivo')`
+### 4. Papéis do utilizador demo não carregados (Severidade: Alta)
+O utilizador `admin.nacional@demo.sigaflo.ao` autentica-se com sucesso mas é redirecionado para "Acesso Negado" em todas as rotas protegidas — a tabela `user_roles` não contém os papéis correspondentes. Isto é um problema de dados/seeding, não de código de rotas.
 
-### 4. CoffeeProductionForm.tsx (linha 57)
-- `altitude_m`: adicionar `.min(0, 'Altitude deve ser positiva').max(5000, 'Altitude máxima: 5000m')`
+## Correcções Propostas
 
-### 5. ProgramForm.tsx (linha 55)
-- `rule_name`: adicionar mensagem PT: `.min(3, 'Nome da regra deve ter pelo menos 3 caracteres')`
-- `rule_type`, `operator`, `value`: adicionar mensagens PT
+### Ficheiro 1: `src/pages/NotFound.tsx`
+- Traduzir textos para português: "Página não encontrada", "Voltar ao Início"
 
-### 6. AuthPage.tsx (linha 26)
-- `full_name`: mudar `.min(2)` para `.min(3, 'Nome completo deve ter pelo menos 3 caracteres')` para consistência com o padrão centralizado
+### Ficheiro 2: `src/App.tsx`
+- Adicionar rota catch-all `*` dentro do bloco `<Route path="/portal">` para mostrar 404 dentro do `PublicLayout`
+- Alterar rotas legadas `/verificar` e `/verificar/*` para redirecionar para `/portal/verificar` com `<Navigate>`
 
-### 7. TreeForm.tsx (linhas 40-42)
-- `diameter_cm`: adicionar `.min(0, 'Diâmetro deve ser positivo')`
-- `height_m`: adicionar `.min(0, 'Altura deve ser positiva')`
-- `estimated_volume_m3`: adicionar `.min(0, 'Volume deve ser positivo')`
+### Ficheiro 3: Novo componente `src/pages/public/PortalNotFound.tsx`
+- Página 404 estilizada dentro do portal, com navegação intacta e link para `/portal`
 
-## Parte 2 — Relatório PDF
+### Ficheiro 4: Verificação de seeding de papéis
+- Verificar a edge function `seed-demo-users` para garantir que insere os papéis na tabela `user_roles`
 
-Gerar `/mnt/documents/SIGAFLO_Teste_Limites_v2.pdf` com:
-- Tabela módulo-a-módulo: campo, regra, caso testado, resultado, severidade
-- Secção "Problemas Corrigidos" (os 7 acima)
-- Resumo executivo com métricas (total de campos, % com validação, gaps restantes)
-
-## Ficheiros Alterados
-1. `src/components/occurrences/OccurrenceForm.tsx`
-2. `src/components/forestry/LicenseForm.tsx`
-3. `src/components/forestry/LogForm.tsx`
-4. `src/components/forestry/TreeForm.tsx`
-5. `src/components/coffee/CoffeeProductionForm.tsx`
-6. `src/components/incentives/ProgramForm.tsx`
-7. `src/pages/auth/AuthPage.tsx`
-
-## Artefacto Gerado
-- `/mnt/documents/SIGAFLO_Teste_Limites_v2.pdf`
+## Ficheiros a Alterar
+1. `src/pages/NotFound.tsx` — tradução PT
+2. `src/App.tsx` — portal catch-all + redirect legado
+3. `src/pages/public/PortalNotFound.tsx` — novo componente
+4. `supabase/functions/seed-demo-users/index.ts` — verificar seeding de roles
 
