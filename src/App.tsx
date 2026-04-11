@@ -91,6 +91,7 @@ import QRScanner from "./pages/public/QRScanner";
 import VerifyCertificate from "./pages/public/VerifyCertificate";
 import VerifyLicense from "./pages/public/VerifyLicense";
 import VerifyCoffee from "./pages/public/VerifyCoffee";
+import PortalNotFound from "./pages/public/PortalNotFound";
 import ReportsPage from "./pages/reports/ReportsPage";
 import MapsPage from "./pages/maps/MapsPage";
 import DocumentationPage from "./pages/docs/DocumentationPage";
@@ -291,11 +292,12 @@ const App = () => (
               <Route path="verificar/licenca/:code" element={<VerifyLicense />} />
               <Route path="verificar/cafe" element={<VerifyCoffee />} />
               <Route path="verificar/cafe/:code" element={<VerifyCoffee />} />
+              <Route path="*" element={<PortalNotFound />} />
             </Route>
 
             {/* Legacy redirects */}
-            <Route path="/verificar" element={<VerificationPortal />} />
-            <Route path="/verificar/*" element={<VerificationPortal />} />
+            <Route path="/verificar" element={<Navigate to="/portal/verificar" replace />} />
+            <Route path="/verificar/*" element={<Navigate to="/portal/verificar" replace />} />
             
             {/* Catch-all */}
             <Route path="*" element={<NotFound />} />
