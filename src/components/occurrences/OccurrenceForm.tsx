@@ -20,9 +20,9 @@ const formSchema = z.object({
   province_id: z.string().optional(),
   municipality_id: z.string().optional(),
   commune_id: z.string().optional(),
-  affected_area_ha: z.number().optional(),
-  affected_farmers_count: z.number().optional(),
-  estimated_loss_aoa: z.number().optional(),
+  affected_area_ha: z.number().min(0, 'O valor deve ser positivo').optional(),
+  affected_farmers_count: z.number().min(0, 'O valor deve ser positivo').optional(),
+  estimated_loss_aoa: z.number().min(0, 'O valor deve ser positivo').optional(),
   latitude: z.number().optional(),
   longitude: z.number().optional(),
 });
