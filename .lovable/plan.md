@@ -1,39 +1,15 @@
 
 
-# Plano: Correcção de Problemas de Navegação e Rotas
+# Correcção: Remover Header/Footer Duplicado do Portal de Verificação
 
-## Problemas Encontrados
+## Problema
+A página `/portal/verificar` é renderizada dentro do `PublicLayout` (que já tem header e footer), mas o componente `VerificationPortal.tsx` inclui o seu próprio header (com logo SIGAFLO + "Portal de Verificação Pública") e footer — resultando em duas barras de navegação visíveis.
 
-### 1. Página 404 em inglês (Severidade: Média)
-A página `NotFound.tsx` mostra "Oops! Page not found" e "Return to Home" em vez de português.
+## Solução
+Remover o `<header>` e o `<footer>` do `VerificationPortal.tsx`, mantendo apenas o conteúdo central (hero, tipos de verificação, verificações recentes). O `PublicLayout` já fornece a navegação e o rodapé.
 
-### 2. Sub-rotas inexistentes do portal sem contexto (Severidade: Média)
-Ao aceder `/portal/pagina-inexistente`, o utilizador vê o 404 genérico sem a navegação do portal. Deveria mostrar um 404 dentro do `PublicLayout`.
+Também actualizar os links internos de `/verificar/...` para `/portal/verificar/...` para consistência com a estrutura de rotas.
 
-### 3. Rota legada `/verificar` sem navegação do portal (Severidade: Baixa)
-A rota `/verificar` renderiza `VerificationPortal` diretamente, sem o header do portal público (Início, Sectores, etc.).
-
-### 4. Papéis do utilizador demo não carregados (Severidade: Alta)
-O utilizador `admin.nacional@demo.sigaflo.ao` autentica-se com sucesso mas é redirecionado para "Acesso Negado" em todas as rotas protegidas — a tabela `user_roles` não contém os papéis correspondentes. Isto é um problema de dados/seeding, não de código de rotas.
-
-## Correcções Propostas
-
-### Ficheiro 1: `src/pages/NotFound.tsx`
-- Traduzir textos para português: "Página não encontrada", "Voltar ao Início"
-
-### Ficheiro 2: `src/App.tsx`
-- Adicionar rota catch-all `*` dentro do bloco `<Route path="/portal">` para mostrar 404 dentro do `PublicLayout`
-- Alterar rotas legadas `/verificar` e `/verificar/*` para redirecionar para `/portal/verificar` com `<Navigate>`
-
-### Ficheiro 3: Novo componente `src/pages/public/PortalNotFound.tsx`
-- Página 404 estilizada dentro do portal, com navegação intacta e link para `/portal`
-
-### Ficheiro 4: Verificação de seeding de papéis
-- Verificar a edge function `seed-demo-users` para garantir que insere os papéis na tabela `user_roles`
-
-## Ficheiros a Alterar
-1. `src/pages/NotFound.tsx` — tradução PT
-2. `src/App.tsx` — portal catch-all + redirect legado
-3. `src/pages/public/PortalNotFound.tsx` — novo componente
-4. `supabase/functions/seed-demo-users/index.ts` — verificar seeding de roles
+## Ficheiro Alterado
+- `src/pages/public/VerificationPortal.tsx` — remover linhas do header (62-80) e footer (189-201), manter secções hero + conteúdo
 
