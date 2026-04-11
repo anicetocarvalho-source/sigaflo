@@ -1,86 +1,56 @@
 
 
-# Plano: Relatório de Testes de Limites e Casos Extremos — SIGAFLO
+# Plano: Correcção de Validações e Documentação de Testes de Limites
 
-## Objectivo
-Gerar um documento PDF com os resultados detalhados da análise estática de todos os formulários do sistema, documentando como a plataforma reage a cada caso extremo.
+## Resumo
+Corrigir os 7 problemas de validação identificados na auditoria anterior (que permanecem no código) e gerar um relatório PDF actualizado documentando todos os testes de limites e casos extremos.
 
-## Metodologia
-Análise estática dos 26 formulários com `zodResolver` e dos componentes de upload, cruzando esquemas Zod, limites em `constants.ts` e mensagens de erro em `errorMessages.ts`.
+## Parte 1 — Correcções de Código (7 ficheiros)
 
-## Módulos a Documentar (por formulário)
+### 1. OccurrenceForm.tsx (linha 23-25)
+Adicionar `.min(0, 'O valor deve ser positivo')` a `affected_area_ha`, `affected_farmers_count` e `estimated_loss_aoa`.
 
-### 1. Autenticação (`AuthPage`)
-- Login: email vazio, formato inválido, password < 6 chars
-- Registo: passwords não coincidem, nome < 2 chars, full_name obrigatório
+### 2. LicenseForm.tsx (linha 38-42)
+- `concession_area_ha`: adicionar `.min(0, 'O valor deve ser positivo')`
+- `latitude`: adicionar `.min(-90).max(90)` com mensagem PT
+- `longitude`: adicionar `.min(-180).max(180)` com mensagem PT
+- `authorized_volume_m3`: adicionar `.min(0)`
 
-### 2. Agricultores (`FarmerForm`)
-- name obrigatório (min 3, max 100), farmer_type obrigatório (enum)
-- bi_nif max 20, phone max 20, email validado, village max 100, address max 255
-- latitude [-90,90], longitude [-180,180], áreas ≥ 0
-- Campos familiares: household_members_count ≥ 0, spouse_name max 100
+### 3. LogForm.tsx (linha 39-40)
+- `length_m`: adicionar `.min(0, 'Comprimento deve ser positivo')`
+- `diameter_cm`: adicionar `.min(0, 'Diâmetro deve ser positivo')`
 
-### 3. Produção (`ProductionForm`)
-- farmer_id, crop_type, season obrigatórios (min 1)
-- year [2000, currentYear+1], area/yield ≥ 0
+### 4. CoffeeProductionForm.tsx (linha 57)
+- `altitude_m`: adicionar `.min(0, 'Altitude deve ser positiva').max(5000, 'Altitude máxima: 5000m')`
 
-### 4. Arroz (3 formulários)
-- RiceProduction: province, year, season obrigatórios; áreas e produção ≥ 0
-- RiceImport: month [1-12], volumes e preços ≥ 0, importer_name min 3
-- RicePrice: recorded_date obrigatório, preços ≥ 0
+### 5. ProgramForm.tsx (linha 55)
+- `rule_name`: adicionar mensagem PT: `.min(3, 'Nome da regra deve ter pelo menos 3 caracteres')`
+- `rule_type`, `operator`, `value`: adicionar mensagens PT
 
-### 5. Ocorrências (2 formulários)
-- Climática: title min 5, description min 10, tipo obrigatório; affected_area sem max
-- Fitossanitária: province obrigatória, tipo enum [pest, disease]
+### 6. AuthPage.tsx (linha 26)
+- `full_name`: mudar `.min(2)` para `.min(3, 'Nome completo deve ter pelo menos 3 caracteres')` para consistência com o padrão centralizado
 
-### 6. Florestal (2 formulários)
-- LicenseForm: operator_id obrigatório, license_type enum; latitude/longitude sem limites (gap)
-- LogForm: log_code, species obrigatórios, volume ≥ 0.01
+### 7. TreeForm.tsx (linhas 40-42)
+- `diameter_cm`: adicionar `.min(0, 'Diâmetro deve ser positivo')`
+- `height_m`: adicionar `.min(0, 'Altura deve ser positiva')`
+- `estimated_volume_m3`: adicionar `.min(0, 'Volume deve ser positivo')`
 
-### 7. Café (`CoffeeProductionForm`)
-- farmer_id obrigatório, áreas > 0.01, harvest_year [2020-2030]
+## Parte 2 — Relatório PDF
 
-### 8. Incentivos (`ProgramForm`)
-- code min 3, name min 5, budget ≥ 0, start_date obrigatória
+Gerar `/mnt/documents/SIGAFLO_Teste_Limites_v2.pdf` com:
+- Tabela módulo-a-módulo: campo, regra, caso testado, resultado, severidade
+- Secção "Problemas Corrigidos" (os 7 acima)
+- Resumo executivo com métricas (total de campos, % com validação, gaps restantes)
 
-### 9. Certificados (`certificateFormSchema`)
-- farmer_id, type, year, season obrigatórios; crops array min 1
+## Ficheiros Alterados
+1. `src/components/occurrences/OccurrenceForm.tsx`
+2. `src/components/forestry/LicenseForm.tsx`
+3. `src/components/forestry/LogForm.tsx`
+4. `src/components/forestry/TreeForm.tsx`
+5. `src/components/coffee/CoffeeProductionForm.tsx`
+6. `src/components/incentives/ProgramForm.tsx`
+7. `src/pages/auth/AuthPage.tsx`
 
-### 10. Utilizadores (`createUserFormSchema`)
-- email, password min 6, full_name min 3
+## Artefacto Gerado
+- `/mnt/documents/SIGAFLO_Teste_Limites_v2.pdf`
 
-### 11. Upload de Ficheiros
-- DocumentUpload: max 5MB, formatos JPG/PNG/WEBP/GIF/PDF, validação por extensão + MIME
-- PhotoUpload: max 5MB, apenas imagens, validação idêntica
-
-## Casos Extremos Transversais a Documentar
-
-| Caso | Comportamento Esperado |
-|------|----------------------|
-| Campos obrigatórios em branco | Zod bloqueia submissão, mensagem em PT |
-| Caracteres especiais (XSS `<script>`) | React escapa; Supabase parametriza |
-| Números negativos | `.min(0)` rejeita com "O valor deve ser positivo" |
-| Strings 500+ caracteres | `.max()` bloqueia (100, 255, 500, 2000 conforme campo) |
-| Upload .exe/.zip | Rejeitado com toast "Formato não suportado" |
-| Upload > 5MB | Rejeitado com toast indicando tamanho |
-| SQL injection em campos texto | Parametrização do Supabase SDK impede |
-
-## Problemas Identificados
-
-1. **OccurrenceForm**: `affected_area_ha`, `affected_farmers_count`, `estimated_loss_aoa` — sem `.min(0)`, aceita negativos
-2. **LicenseForm**: `latitude`/`longitude` sem limites [-90,90]/[-180,180]
-3. **LicenseForm**: `concession_area_ha` sem `.min(0)`, aceita negativos
-4. **LogForm**: `length_m`, `diameter_cm` sem `.min(0)`
-5. **CoffeeProductionForm**: `altitude_m` sem limites, aceita negativos
-6. **ProgramForm (rules)**: `rule_name` min 3 mas sem mensagem customizada em PT — usa default Zod em inglês
-7. **SignupSchema**: `full_name` min apenas 2 (vs 3 no padrão centralizado)
-
-## Entregável
-Script Node.js gera `/mnt/documents/SIGAFLO_Teste_Limites_Extremos.pdf` com:
-- Capa institucional
-- Tabela por módulo: campo, regra, caso testado, resultado, severidade
-- Secção de problemas encontrados com recomendações
-- Resumo executivo
-
-## Ficheiros do Projecto
-Nenhum ficheiro será alterado. Apenas leitura + geração de artefacto.
