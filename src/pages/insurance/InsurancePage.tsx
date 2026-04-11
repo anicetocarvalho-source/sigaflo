@@ -273,7 +273,9 @@ export default function InsurancePage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {claimsLoading ? (
+                    {claimsError ? (
+                      <TableRow><TableCell colSpan={7}><QueryError error={claimsErr as Error} onRetry={() => refetchClaims()} /></TableCell></TableRow>
+                    ) : claimsLoading ? (
                       <TableRow><TableCell colSpan={7} className="text-center py-8">A carregar...</TableCell></TableRow>
                     ) : !claims?.length ? (
                       <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">Sem sinistros</TableCell></TableRow>
