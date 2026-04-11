@@ -27,6 +27,7 @@ import {
 } from '@/components/ui/select';
 import { useTransportPermits, type ForestTransportPermit } from '@/hooks/useForestry';
 import { Truck, Plus, Search, QrCode, Eye, ArrowRight, Calendar, Package } from 'lucide-react';
+import { QueryError } from '@/components/ui/query-state';
 import { format, isAfter, isBefore } from 'date-fns';
 import { pt } from 'date-fns/locale';
 
@@ -48,7 +49,7 @@ export function TransportPermitsList({ onAddNew, onView }: TransportPermitsListP
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [qrDialogPermit, setQrDialogPermit] = useState<ForestTransportPermit | null>(null);
 
-  const { data: permits = [], isLoading } = useTransportPermits();
+  const { data: permits = [], isLoading, isError, error, refetch } = useTransportPermits();
 
   const filteredPermits = permits.filter((permit) => {
     const matchesSearch = 
@@ -116,7 +117,9 @@ export function TransportPermitsList({ onAddNew, onView }: TransportPermitsListP
             </Select>
           </div>
 
-          {isLoading ? (
+          {isError ? (
+            <QueryError error={error as Error} onRetry={() => refetch()} />
+          ) : isLoading ? (
             <div className="flex justify-center py-8">
               <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
             </div>

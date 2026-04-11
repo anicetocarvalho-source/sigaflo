@@ -10,11 +10,12 @@ import { Search, ClipboardList, MoreHorizontal, Play, CheckCircle, XCircle, Sate
 import { useServiceOrders, useUpdateOrderStatus, SERVICE_TYPES, ORDER_STATUSES } from '@/hooks/useMechanization';
 import { format } from 'date-fns';
 import { TableSkeleton } from '@/components/ui/skeletons';
+import { QueryError } from '@/components/ui/query-state';
 
 export function ServiceOrdersList() {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [search, setSearch] = useState('');
-  const { data: orders, isLoading } = useServiceOrders(statusFilter !== 'all' ? { status: statusFilter } : undefined);
+  const { data: orders, isLoading, isError, error, refetch } = useServiceOrders(statusFilter !== 'all' ? { status: statusFilter } : undefined);
   const updateStatus = useUpdateOrderStatus();
 
   const filtered = (orders || []).filter(o =>
@@ -59,7 +60,9 @@ export function ServiceOrdersList() {
         </div>
       </CardHeader>
       <CardContent>
-        {isLoading ? (
+        {isError ? (
+          <QueryError error={error as Error} onRetry={() => refetch()} />
+        ) : isLoading ? (
           <TableSkeleton rows={5} cols={7} />
         ) : filtered.length === 0 ? (
           <p className="text-center py-8 text-muted-foreground">Nenhuma ordem de serviço encontrada</p>
