@@ -11,6 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { pt } from 'date-fns/locale';
 import { Search, Filter, MapPin, Calendar, AlertTriangle } from 'lucide-react';
+import { QueryError } from '@/components/ui/query-state';
 
 export function ClimateEventsHistory() {
   const [search, setSearch] = useState('');
@@ -26,7 +27,7 @@ export function ClimateEventsHistory() {
     },
   });
 
-  const { data: events, isLoading } = useClimateEvents({
+  const { data: events, isLoading, isError, error, refetch } = useClimateEvents({
     provinceId: provinceFilter !== 'all' ? provinceFilter : undefined,
     severity: severityFilter !== 'all' ? severityFilter : undefined,
     eventType: typeFilter !== 'all' ? typeFilter : undefined,
@@ -145,7 +146,13 @@ export function ClimateEventsHistory() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {isLoading ? (
+              {isError ? (
+                <TableRow>
+                  <TableCell colSpan={8}>
+                    <QueryError error={error as Error} onRetry={() => refetch()} />
+                  </TableCell>
+                </TableRow>
+              ) : isLoading ? (
                 <TableRow>
                   <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
                     Carregando eventos...

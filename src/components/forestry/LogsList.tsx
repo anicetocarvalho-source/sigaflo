@@ -27,6 +27,7 @@ import {
 } from '@/components/ui/select';
 import { useForestLogs, useForestLicenses, type ForestLog } from '@/hooks/useForestry';
 import { Logs, Plus, Search, QrCode, Eye, ArrowRight } from 'lucide-react';
+import { QueryError } from '@/components/ui/query-state';
 import { format } from 'date-fns';
 import { pt } from 'date-fns/locale';
 
@@ -56,7 +57,7 @@ export function LogsList({ onAddNew, onView, selectedLicenseId }: LogsListProps)
   const [filterLicense, setFilterLicense] = useState(selectedLicenseId || 'all');
   const [qrDialogLog, setQrDialogLog] = useState<ForestLog | null>(null);
 
-  const { data: logs = [], isLoading } = useForestLogs(filterLicense === 'all' ? undefined : filterLicense);
+  const { data: logs = [], isLoading, isError, error, refetch } = useForestLogs(filterLicense === 'all' ? undefined : filterLicense);
   const { data: licenses = [] } = useForestLicenses({ status: 'active' });
 
   const filteredLogs = logs.filter((log) =>
@@ -110,7 +111,9 @@ export function LogsList({ onAddNew, onView, selectedLicenseId }: LogsListProps)
             </Select>
           </div>
 
-          {isLoading ? (
+          {isError ? (
+            <QueryError error={error as Error} onRetry={() => refetch()} />
+          ) : isLoading ? (
             <div className="flex justify-center py-8">
               <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
             </div>

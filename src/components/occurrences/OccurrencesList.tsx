@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
+import { QueryError } from '@/components/ui/query-state';
 import { 
   AlertTriangle, 
   Search, 
@@ -56,7 +57,7 @@ export function OccurrencesList({ onSelectOccurrence }: OccurrencesListProps) {
   const [typeFilter, setTypeFilter] = useState('all');
   const [severityFilter, setSeverityFilter] = useState('all');
 
-  const { data: occurrences, isLoading } = useOccurrences();
+  const { data: occurrences, isLoading, isError, error, refetch } = useOccurrences();
 
   const filteredOccurrences = occurrences?.filter((occurrence) => {
     const matchesSearch = 
@@ -66,6 +67,10 @@ export function OccurrencesList({ onSelectOccurrence }: OccurrencesListProps) {
     const matchesSeverity = severityFilter === 'all' || occurrence.severity === severityFilter;
     return matchesSearch && matchesType && matchesSeverity;
   });
+
+  if (isError) {
+    return <QueryError error={error as Error} onRetry={() => refetch()} />;
+  }
 
   if (isLoading) {
     return (

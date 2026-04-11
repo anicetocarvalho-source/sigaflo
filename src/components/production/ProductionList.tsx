@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Plus, Search, Eye, Edit, Loader2, Filter, X, Trash2 } from 'lucide-react';
+import { QueryError } from '@/components/ui/query-state';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { usePaginatedQuery } from '@/hooks/usePagination';
 import { PaginationControls } from '@/components/ui/pagination-controls';
@@ -53,6 +54,9 @@ export const ProductionList = () => {
   const {
     data: paginatedData,
     isLoading,
+    isError,
+    error,
+    refetch,
     pagination,
     goToPage,
     setPageSize,
@@ -174,7 +178,9 @@ export const ProductionList = () => {
 
       <Card>
         <CardContent className="p-0">
-          {isLoading ? (
+          {isError ? (
+            <QueryError error={error as Error} onRetry={() => refetch()} />
+          ) : isLoading ? (
             <div className="flex items-center justify-center py-12">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>

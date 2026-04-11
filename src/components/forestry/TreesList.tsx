@@ -27,6 +27,7 @@ import {
 } from '@/components/ui/select';
 import { useForestTrees, useForestLicenses, type ForestTree } from '@/hooks/useForestry';
 import { TreePine, Plus, Search, QrCode, MapPin, Eye } from 'lucide-react';
+import { QueryError } from '@/components/ui/query-state';
 import { format } from 'date-fns';
 import { pt } from 'date-fns/locale';
 
@@ -56,7 +57,7 @@ export function TreesList({ onAddNew, onView, selectedLicenseId, onLicenseChange
   const [filterLicense, setFilterLicense] = useState(selectedLicenseId || 'all');
   const [qrDialogTree, setQrDialogTree] = useState<ForestTree | null>(null);
 
-  const { data: trees = [], isLoading } = useForestTrees(filterLicense === 'all' ? undefined : filterLicense);
+  const { data: trees = [], isLoading, isError, error, refetch } = useForestTrees(filterLicense === 'all' ? undefined : filterLicense);
   const { data: licenses = [] } = useForestLicenses({ status: 'active' });
 
   const filteredTrees = trees.filter((tree) =>
@@ -108,7 +109,9 @@ export function TreesList({ onAddNew, onView, selectedLicenseId, onLicenseChange
             </Select>
           </div>
 
-          {isLoading ? (
+          {isError ? (
+            <QueryError error={error as Error} onRetry={() => refetch()} />
+          ) : isLoading ? (
             <div className="flex justify-center py-8">
               <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
             </div>

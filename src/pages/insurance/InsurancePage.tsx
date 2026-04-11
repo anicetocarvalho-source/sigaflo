@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
+import { QueryError } from '@/components/ui/query-state';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -36,10 +37,10 @@ const statusLabels: Record<string, string> = {
 };
 
 export default function InsurancePage() {
-  const { data: policies, isLoading: policiesLoading } = useInsurancePolicies();
-  const { data: quotes, isLoading: quotesLoading } = useInsuranceQuotes();
-  const { data: claims, isLoading: claimsLoading } = useInsuranceClaims();
-  const { data: rules, isLoading: rulesLoading } = useParametricRules();
+  const { data: policies, isLoading: policiesLoading, isError: policiesError, error: policiesErr, refetch: refetchPolicies } = useInsurancePolicies();
+  const { data: quotes, isLoading: quotesLoading, isError: quotesError, error: quotesErr, refetch: refetchQuotes } = useInsuranceQuotes();
+  const { data: claims, isLoading: claimsLoading, isError: claimsError, error: claimsErr, refetch: refetchClaims } = useInsuranceClaims();
+  const { data: rules, isLoading: rulesLoading, isError: rulesError, error: rulesErr, refetch: refetchRules } = useParametricRules();
   const { data: farmers } = useFarmers();
   const stats = useInsuranceStats();
   const createQuote = useCreateQuote();
@@ -129,9 +130,11 @@ export default function InsurancePage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {policiesLoading ? (
-                      <TableRow><TableCell colSpan={7} className="text-center py-8">A carregar...</TableCell></TableRow>
-                    ) : !policies?.length ? (
+                {policiesError ? (
+                  <TableRow><TableCell colSpan={7}><QueryError error={policiesErr as Error} onRetry={() => refetchPolicies()} /></TableCell></TableRow>
+                ) : policiesLoading ? (
+                  <TableRow><TableCell colSpan={7} className="text-center py-8">A carregar...</TableCell></TableRow>
+                ) : !policies?.length ? (
                       <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">Sem apólices registadas</TableCell></TableRow>
                     ) : policies.map((p: any) => (
                       <TableRow key={p.id}>
@@ -198,7 +201,9 @@ export default function InsurancePage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {quotesLoading ? (
+                    {quotesError ? (
+                      <TableRow><TableCell colSpan={6}><QueryError error={quotesErr as Error} onRetry={() => refetchQuotes()} /></TableCell></TableRow>
+                    ) : quotesLoading ? (
                       <TableRow><TableCell colSpan={6} className="text-center py-8">A carregar...</TableCell></TableRow>
                     ) : !quotes?.length ? (
                       <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">Sem cotações</TableCell></TableRow>
@@ -268,7 +273,9 @@ export default function InsurancePage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {claimsLoading ? (
+                    {claimsError ? (
+                      <TableRow><TableCell colSpan={7}><QueryError error={claimsErr as Error} onRetry={() => refetchClaims()} /></TableCell></TableRow>
+                    ) : claimsLoading ? (
                       <TableRow><TableCell colSpan={7} className="text-center py-8">A carregar...</TableCell></TableRow>
                     ) : !claims?.length ? (
                       <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">Sem sinistros</TableCell></TableRow>
@@ -355,7 +362,9 @@ export default function InsurancePage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {rulesLoading ? (
+                    {rulesError ? (
+                      <TableRow><TableCell colSpan={7}><QueryError error={rulesErr as Error} onRetry={() => refetchRules()} /></TableCell></TableRow>
+                    ) : rulesLoading ? (
                       <TableRow><TableCell colSpan={7} className="text-center py-8">A carregar...</TableCell></TableRow>
                     ) : !rules?.length ? (
                       <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">Sem regras</TableCell></TableRow>
