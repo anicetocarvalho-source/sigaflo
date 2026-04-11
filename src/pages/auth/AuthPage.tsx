@@ -23,7 +23,7 @@ const signupSchema = z.object({
   email: z.string().email('Email inválido'),
   password: z.string().min(6, 'Palavra-passe deve ter pelo menos 6 caracteres'),
   confirmPassword: z.string().min(6, 'Confirme a palavra-passe'),
-  full_name: z.string().min(2, 'Nome completo é obrigatório'),
+  full_name: z.string().min(3, 'Nome completo deve ter pelo menos 3 caracteres'),
   phone: z.string().optional(),
 }).refine((data) => data.password === data.confirmPassword, {
   message: 'As palavras-passe não coincidem',

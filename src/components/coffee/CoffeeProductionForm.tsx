@@ -54,7 +54,7 @@ const formSchema = z.object({
   annual_production_kg: z.coerce.number().min(0, 'Produção deve ser maior ou igual a 0'),
   harvest_year: z.coerce.number().min(2020).max(2030),
   variety: z.string().optional(),
-  altitude_m: z.coerce.number().optional(),
+  altitude_m: z.coerce.number().min(0, 'Altitude deve ser positiva').max(5000, 'Altitude máxima: 5000m').optional(),
   agricultural_practices: z.array(z.string()).default([]),
   sensory_profile: z.array(z.string()).default([]),
   notes: z.string().optional(),

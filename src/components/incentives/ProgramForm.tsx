@@ -52,12 +52,12 @@ const programSchema = z.object({
 });
 
 const ruleSchema = z.object({
-  rule_name: z.string().min(3),
-  rule_type: z.string(),
-  operator: z.string(),
-  value: z.string(),
+  rule_name: z.string().min(3, 'Nome da regra deve ter pelo menos 3 caracteres'),
+  rule_type: z.string().min(1, 'Selecione o tipo de regra'),
+  operator: z.string().min(1, 'Selecione o operador'),
+  value: z.string().min(1, 'Valor é obrigatório'),
   is_mandatory: z.boolean(),
-  weight: z.number().min(1).max(10),
+  weight: z.number().min(1, 'Peso mínimo: 1').max(10, 'Peso máximo: 10'),
 });
 
 interface ProgramFormProps {
