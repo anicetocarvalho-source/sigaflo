@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Search, QrCode, FileCheck, TreePine, Coffee, ArrowRight, Shield, CheckCircle, XCircle, AlertTriangle } from "lucide-react";
+import { Search, QrCode, FileCheck, TreePine, Coffee, ArrowRight, CheckCircle, XCircle, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,7 +13,7 @@ const VerificationPortal = () => {
       title: "Certificados Agrícolas",
       description: "Verifique a autenticidade de certificados de produção agrícola emitidos pelo MINAGRIF",
       icon: FileCheck,
-      path: "/verificar/certificado",
+      path: "/portal/verificar/certificado",
       color: "bg-success/10 text-success",
       count: "12.450 certificados activos"
     },
@@ -21,7 +21,7 @@ const VerificationPortal = () => {
       title: "Licenças Florestais",
       description: "Consulte licenças de exploração, transporte e exportação de madeira",
       icon: TreePine,
-      path: "/verificar/licenca",
+      path: "/portal/verificar/licenca",
       color: "bg-primary/10 text-primary",
       count: "3.280 licenças válidas"
     },
@@ -29,7 +29,7 @@ const VerificationPortal = () => {
       title: "Lotes de Café",
       description: "Rastreie lotes de café certificados com o sistema de semaforização INCA",
       icon: Coffee,
-      path: "/verificar/cafe",
+      path: "/portal/verificar/cafe",
       color: "bg-accent/20 text-accent-foreground",
       count: "8.920 lotes rastreados"
     }
@@ -68,29 +68,7 @@ const VerificationPortal = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b border-border bg-card">
-        <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg gradient-primary">
-                <Shield className="h-5 w-5 text-primary-foreground" />
-              </div>
-              <div>
-                <h1 className="text-lg font-bold text-foreground">SIGAFLO</h1>
-                <p className="text-xs text-muted-foreground">Portal de Verificação Pública</p>
-              </div>
-            </div>
-            <Link to="/">
-              <Button variant="outline" size="sm">
-                Ir para o Sistema
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </header>
-
+    <div className="bg-background">
       {/* Hero Section */}
       <section className="gradient-hero py-16 text-primary-foreground">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -120,7 +98,7 @@ const VerificationPortal = () => {
                 </Button>
               </div>
               <div className="mt-3 flex items-center justify-center gap-4 text-sm text-primary-foreground/70">
-                <Link to="/verificar/scanner" className="flex items-center gap-1 hover:text-primary-foreground transition-colors">
+                <Link to="/portal/verificar/scanner" className="flex items-center gap-1 hover:text-primary-foreground transition-colors">
                   <QrCode className="h-4 w-4" />
                   Escanear QR Code
                 </Link>
@@ -193,19 +171,6 @@ const VerificationPortal = () => {
           </Card>
         </div>
       </section>
-
-      {/* Footer */}
-      <footer className="border-t border-border bg-card py-8">
-        <div className="mx-auto max-w-7xl px-4 text-center sm:px-6 lg:px-8">
-          <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
-            <Shield className="h-4 w-4" />
-            <span>SIGAFLO — Sistema Integrado de Gestão Agropecuária e Florestal</span>
-          </div>
-          <p className="mt-2 text-xs text-muted-foreground">
-            República de Angola • Ministério da Agricultura e Florestas
-          </p>
-        </div>
-      </footer>
     </div>
   );
 };
