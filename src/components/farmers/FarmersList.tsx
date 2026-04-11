@@ -24,6 +24,7 @@ import { useFarmers, useProvinces, type FarmerType, type WorkflowStatus } from '
 import { FarmerTypeIcon, getFarmerTypeLabel, getFarmerTypeColor } from './FarmerTypeIcon';
 import { WorkflowStatusBadge } from './WorkflowStatusBadge';
 import { Skeleton } from '@/components/ui/skeleton';
+import { QueryError } from '@/components/ui/query-state';
 
 const farmerTypes: { value: FarmerType | 'all'; label: string }[] = [
   { value: 'all', label: 'Todos os Tipos' },
@@ -40,7 +41,7 @@ export const FarmersList = () => {
   const [provinceFilter, setProvinceFilter] = useState<string>('all');
 
   const { data: provinces } = useProvinces();
-  const { data: farmers, isLoading } = useFarmers({
+  const { data: farmers, isLoading, isError, error, refetch } = useFarmers({
     type: typeFilter === 'all' ? undefined : typeFilter,
     province_id: provinceFilter === 'all' ? undefined : provinceFilter,
   });
@@ -108,7 +109,9 @@ export const FarmersList = () => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {isLoading ? (
+          {isError ? (
+            <QueryError error={error as Error} onRetry={() => refetch()} />
+          ) : isLoading ? (
             <div className="space-y-4">
               {[...Array(5)].map((_, i) => (
                 <Skeleton key={i} className="h-16 w-full" />
