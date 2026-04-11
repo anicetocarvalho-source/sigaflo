@@ -13,7 +13,7 @@ const VerificationPortal = () => {
       title: "Certificados Agrícolas",
       description: "Verifique a autenticidade de certificados de produção agrícola emitidos pelo MINAGRIF",
       icon: FileCheck,
-      path: "/verificar/certificado",
+      path: "/portal/verificar/certificado",
       color: "bg-success/10 text-success",
       count: "12.450 certificados activos"
     },
@@ -21,7 +21,7 @@ const VerificationPortal = () => {
       title: "Licenças Florestais",
       description: "Consulte licenças de exploração, transporte e exportação de madeira",
       icon: TreePine,
-      path: "/verificar/licenca",
+      path: "/portal/verificar/licenca",
       color: "bg-primary/10 text-primary",
       count: "3.280 licenças válidas"
     },
@@ -29,7 +29,7 @@ const VerificationPortal = () => {
       title: "Lotes de Café",
       description: "Rastreie lotes de café certificados com o sistema de semaforização INCA",
       icon: Coffee,
-      path: "/verificar/cafe",
+      path: "/portal/verificar/cafe",
       color: "bg-accent/20 text-accent-foreground",
       count: "8.920 lotes rastreados"
     }
