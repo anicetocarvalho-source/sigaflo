@@ -29,6 +29,7 @@ import {
   FileCheck,
   Loader2,
 } from 'lucide-react';
+import { QueryError } from '@/components/ui/query-state';
 import { useForestLicenses, type ForestLicense } from '@/hooks/useForestry';
 import { format } from 'date-fns';
 import { pt } from 'date-fns/locale';
@@ -85,7 +86,7 @@ export function LicensesList({ onAddNew, onView, onEdit }: LicensesListProps) {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [typeFilter, setTypeFilter] = useState<string>('all');
 
-  const { data: licenses, isLoading } = useForestLicenses({
+  const { data: licenses, isLoading, isError, error, refetch } = useForestLicenses({
     status: statusFilter !== 'all' ? statusFilter : undefined,
     type: typeFilter !== 'all' ? typeFilter : undefined,
   });
@@ -155,7 +156,9 @@ export function LicensesList({ onAddNew, onView, onEdit }: LicensesListProps) {
 
       {/* Table */}
       <div className="card-elevated overflow-hidden">
-        {isLoading ? (
+        {isError ? (
+          <QueryError error={error as Error} onRetry={() => refetch()} />
+        ) : isLoading ? (
           <div className="flex items-center justify-center py-12">
             <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
           </div>
