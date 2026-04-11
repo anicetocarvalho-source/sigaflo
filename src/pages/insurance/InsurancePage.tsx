@@ -201,7 +201,9 @@ export default function InsurancePage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {quotesLoading ? (
+                    {quotesError ? (
+                      <TableRow><TableCell colSpan={6}><QueryError error={quotesErr as Error} onRetry={() => refetchQuotes()} /></TableCell></TableRow>
+                    ) : quotesLoading ? (
                       <TableRow><TableCell colSpan={6} className="text-center py-8">A carregar...</TableCell></TableRow>
                     ) : !quotes?.length ? (
                       <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">Sem cotações</TableCell></TableRow>
