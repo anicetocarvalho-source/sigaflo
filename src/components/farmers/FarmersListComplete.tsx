@@ -409,7 +409,9 @@ export const FarmersListComplete = () => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {isLoading ? (
+          {farmersError ? (
+            <QueryError error={farmersErr as Error} onRetry={() => refetchFarmers()} />
+          ) : isLoading ? (
             <div className="space-y-4">
               {[...Array(5)].map((_, i) => (
                 <Skeleton key={i} className="h-16 w-full" />
