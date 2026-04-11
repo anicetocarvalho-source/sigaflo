@@ -1,52 +1,37 @@
 
 
-# Plano: Documento DOCX — Descrição Completa da Plataforma SIGAFLO
+# Plano: PPTX com Capturas das Principais Telas do SIGAFLO
 
 ## Objectivo
-Gerar um documento Word (.docx) profissional com a descrição completa da plataforma SIGAFLO, estruturado para inclusão directa numa proposta técnica e comercial.
+Gerar uma apresentação PowerPoint com capturas de ecrã das principais telas do sistema, uma por slide, com título e descrição em cada slide.
 
-## Estrutura do Documento
+## Telas a Capturar (~15 slides)
 
-1. **Capa** — Logo placeholder, título "SIGAFLO — Sistema Integrado de Gestão Agropecuária e Florestal", subtítulo "Proposta Técnica e Comercial", data
-2. **Sumário Executivo** — Visão geral da plataforma, contexto angolano, objectivos estratégicos
-3. **Arquitectura e Stack Tecnológico** — React 18, Vite, Supabase, Edge Functions, Leaflet, Recharts, IA integrada
-4. **Módulos Funcionais** (tabela detalhada para cada um dos 22+ módulos):
-   - Painel Principal (Dashboard)
-   - Registo Nacional de Agricultores (6 sub-módulos)
-   - Histórico de Produção
-   - Certificados Agrícolas
-   - Ocorrências Climáticas e Fitossanitárias
-   - Infra-estruturas (Agropecuárias + Mercados)
-   - Gestão Florestal (6 sub-módulos)
-   - Cadeia do Café (4 sub-módulos)
-   - Produção de Arroz (6 sub-módulos)
-   - Observatório Nacional (ONAF)
-   - Identidade Produtiva Nacional (IPN)
-   - Gestão de Incentivos + Analytics
-   - Risco Climático + Analytics
-   - Crédito e Seguro Agrícola
-   - Mecanização Agrícola
-   - Técnicos de Campo
-   - Vendas & POS (4 sub-módulos)
-   - Seguros Agrícolas
-   - Monitoria (Alertas, Score, NDVI)
-   - Laboratório de Dados
-   - Gestão de Utilizadores
-5. **Portal Público** — 14 páginas públicas, verificação QR, transparência
-6. **Segurança e Controlo de Acessos** — 8 perfis, RLS, workflow hierárquico, auditoria
-7. **Integrações Externas** — Mapbox, NASA MODIS, IA (Gemini/GPT), SMS
-8. **Indicadores de Escala** — Tabela com métricas (55 rotas, 60+ tabelas, 10 Edge Functions, etc.)
+1. **Login** — `/auth`
+2. **Dashboard Principal** — `/` (Index)
+3. **Lista de Agricultores** — `/farmers/list`
+4. **Registo de Agricultor** — `/farmers/new`
+5. **Histórico de Produção** — `/production`
+6. **Certificados** — `/certificates`
+7. **Gestão Florestal** — `/forestry`
+8. **Cadeia do Café** — `/coffee`
+9. **Produção de Arroz** — `/rice`
+10. **Ocorrências Climáticas** — `/occurrences`
+11. **Observatório ONAF** — `/onaf`
+12. **Identidade Produtiva (IPN)** — `/ipn`
+13. **Incentivos** — `/incentives`
+14. **Risco Climático** — `/climate-risk`
+15. **Portal Público** — `/portal`
 
-## Implementação Técnica
+## Abordagem
 
-- Gerar o DOCX com `docx-js` (Node.js) usando formatação profissional
-- Cores institucionais verdes (sector agropecuário angolano)
-- Tabelas formatadas com bordas e sombreamento para cabeçalhos
-- Cabeçalho e rodapé com paginação
-- Saída em `/mnt/documents/SIGAFLO_Proposta_Tecnica.docx`
-- QA visual: converter a PDF e depois a imagens para verificar todas as páginas
+1. Navegar a cada rota no browser, aguardar carregamento e tirar screenshot
+2. Gerar o PPTX com `pptxgenjs`:
+   - Slide de capa com título "SIGAFLO — Principais Telas do Sistema" e data
+   - Um slide por captura: imagem a ocupar ~90% do slide, título do módulo no topo
+   - Paleta verde institucional (Forest & Moss)
+3. QA visual: converter a PDF → imagens, inspeccionar
 
-## Ficheiros Envolvidos
-- Nenhum ficheiro do projecto será alterado
-- Apenas será criado um script temporário em `/tmp/` e o artefacto final em `/mnt/documents/`
+## Resultado
+`/mnt/documents/SIGAFLO_Telas_Principais.pptx`
 
