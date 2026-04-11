@@ -11,9 +11,10 @@ import { Plus, Search, MapPin, Wrench } from 'lucide-react';
 import { useMechanizationCenters, useCreateCenter, CENTER_TYPES, type MechanizationCenter } from '@/hooks/useMechanization';
 import { useLocationCascade } from '@/hooks/useLocationCascade';
 import { TableSkeleton } from '@/components/ui/skeletons';
+import { QueryError } from '@/components/ui/query-state';
 
 export function CentersList() {
-  const { data: centers, isLoading } = useMechanizationCenters();
+  const { data: centers, isLoading, isError, error, refetch } = useMechanizationCenters();
   const createCenter = useCreateCenter();
   const [search, setSearch] = useState('');
   const [open, setOpen] = useState(false);
@@ -86,7 +87,9 @@ export function CentersList() {
         </div>
       </CardHeader>
       <CardContent>
-        {isLoading ? (
+        {isError ? (
+          <QueryError error={error as Error} onRetry={() => refetch()} />
+        ) : isLoading ? (
           <TableSkeleton rows={4} cols={5} />
         ) : filtered.length === 0 ? (
           <p className="text-center py-8 text-muted-foreground">Nenhum centro registado</p>
