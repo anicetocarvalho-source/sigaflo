@@ -3,6 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { QueryError } from '@/components/ui/query-state';
 import { ComplaintsKPIs } from './ComplaintsKPIs';
 import { ComplaintsList } from './ComplaintsList';
 import { ComplaintForm } from './ComplaintForm';
@@ -141,12 +142,16 @@ export function ComplaintsDashboard() {
         </TabsList>
 
         <TabsContent value="list" className="mt-4">
-          <ComplaintsList
-            complaints={complaints}
-            isLoading={isLoading}
-            onAddNew={handleAddNew}
-            onView={handleView}
-          />
+          {isError ? (
+            <QueryError error={error as Error} onRetry={() => refetch()} />
+          ) : (
+            <ComplaintsList
+              complaints={complaints}
+              isLoading={isLoading}
+              onAddNew={handleAddNew}
+              onView={handleView}
+            />
+          )}
         </TabsContent>
 
         <TabsContent value="analytics" className="mt-4">
