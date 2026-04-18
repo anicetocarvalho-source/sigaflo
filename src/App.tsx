@@ -143,6 +143,7 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
+          <ScrollToTop />
           <Routes>
             {/* Auth Routes */}
             <Route path="/auth" element={<AuthPage />} />
