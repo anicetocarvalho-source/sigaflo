@@ -11,7 +11,8 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Download, Printer, CreditCard, FileDown, Loader2, Eye } from 'lucide-react';
+import { Download, Printer, CreditCard, FileDown, Loader2, Eye, Wand2 } from 'lucide-react';
+import { DuplexAlignmentWizard } from './DuplexAlignmentWizard';
 import { toast } from 'sonner';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
