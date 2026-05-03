@@ -77,11 +77,44 @@ const GuillocheBg = () => (
   </svg>
 );
 
+type DuplexMode = 'long-edge' | 'short-edge' | 'simplex';
+const DUPLEX_KEY = 'sigaflo.card.duplex';
+const OFFSET_KEY = 'sigaflo.card.offset';
+
 export const FarmerCard = ({ farmer, onPrint, showActions = true }: FarmerCardProps) => {
   const [flipped, setFlipped] = useState(false);
   const [printDialogOpen, setPrintDialogOpen] = useState(false);
   const [exporting, setExporting] = useState<null | 'pvc' | 'a4'>(null);
   const [previewMode, setPreviewMode] = useState<null | 'pvc' | 'a4'>(null);
+  const [duplexMode, setDuplexMode] = useState<DuplexMode>('long-edge');
+  const [offsetX, setOffsetX] = useState(0); // mm — ajuste fino do verso
+  const [offsetY, setOffsetY] = useState(0); // mm
+
+  // Carrega preferências e auto-detecta duplex (heurística pela user-agent / impressora padrão)
+  useEffect(() => {
+    try {
+      const d = localStorage.getItem(DUPLEX_KEY) as DuplexMode | null;
+      if (d) setDuplexMode(d);
+      const o = localStorage.getItem(OFFSET_KEY);
+      if (o) {
+        const parsed = JSON.parse(o);
+        setOffsetX(parsed.x ?? 0);
+        setOffsetY(parsed.y ?? 0);
+      }
+    } catch {}
+  }, []);
+
+  useEffect(() => {
+    try { localStorage.setItem(DUPLEX_KEY, duplexMode); } catch {}
+  }, [duplexMode]);
+  useEffect(() => {
+    try { localStorage.setItem(OFFSET_KEY, JSON.stringify({ x: offsetX, y: offsetY })); } catch {}
+  }, [offsetX, offsetY]);
+
+  // Para impressoras de cartão CR-80 com duplex pela borda curta (padrão Zebra/Evolis),
+  // o verso precisa ser rodado 180° para ficar alinhado com a frente após o flip.
+  // Long-edge → verso na orientação natural. Simplex → utilizador imprime 2 páginas separadas.
+  const backRotation = duplexMode === 'short-edge' ? 180 : 0;
 
   const qrPayload = JSON.stringify({
     plataforma: 'SIGAFLO',
