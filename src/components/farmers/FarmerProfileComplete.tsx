@@ -156,6 +156,8 @@ export const FarmerProfileComplete = () => {
     }
   }, [searchParams]);
 
+  const { data: farmer, isLoading } = useFarmer(id!);
+
   // Auto-adjust activeTab when farmer_type changes so it remains visible/consistent
   useEffect(() => {
     const type = farmer?.farmer_type as ProfileFarmerType | undefined;
@@ -165,7 +167,6 @@ export const FarmerProfileComplete = () => {
     const visibleInCurrent = getVisibleTabs(currentGroup, type);
     const stillVisible = visibleInCurrent.some((t) => t.value === activeTab);
     if (stillVisible) return;
-    // Try first visible tab in current group; fallback to first tab of identification group
     const fallback =
       visibleInCurrent[0]?.value ||
       getVisibleTabs(PROFILE_GROUPS[0], type)[0]?.value ||
@@ -173,8 +174,6 @@ export const FarmerProfileComplete = () => {
     setActiveTab(fallback);
   }, [farmer?.farmer_type]);
 
-  
-  const { data: farmer, isLoading } = useFarmer(id!);
   const { data: productionHistory } = useProductionHistory(id);
   const { data: certificates } = useCertificates({ farmer_id: id });
   const { data: financialProfile } = useFinancialProfile(id!);
