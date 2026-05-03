@@ -10,7 +10,10 @@ import {
   DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { Download, Printer, Fingerprint, Phone, MapPin, CreditCard } from 'lucide-react';
+import { Download, Printer, Fingerprint, Phone, MapPin, CreditCard, FileDown, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 import type { Farmer } from '@/hooks/useFarmers';
 
 interface FarmerCardProps {
