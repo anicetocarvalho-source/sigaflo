@@ -2,6 +2,26 @@ import jsPDF from 'jspdf';
 import QRCode from 'qrcode';
 import JSZip from 'jszip';
 import type { Farmer } from '@/hooks/useFarmers';
+import insigniaAngolaUrl from '@/assets/insignia-angola.png';
+
+let _insigniaDataUrlCache: string | null = null;
+async function getInsigniaDataUrl(): Promise<string | null> {
+  if (_insigniaDataUrlCache) return _insigniaDataUrlCache;
+  try {
+    const res = await fetch(insigniaAngolaUrl);
+    const blob = await res.blob();
+    const dataUrl = await new Promise<string>((resolve, reject) => {
+      const r = new FileReader();
+      r.onload = () => resolve(r.result as string);
+      r.onerror = reject;
+      r.readAsDataURL(blob);
+    });
+    _insigniaDataUrlCache = dataUrl;
+    return dataUrl;
+  } catch {
+    return null;
+  }
+}
 
 export type BatchFormat = 'a4_grid' | 'cr80_individual';
 export type BatchPackaging = 'single_pdf' | 'zip_per_card' | 'zip_per_province';
