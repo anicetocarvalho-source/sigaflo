@@ -1,4 +1,4 @@
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams, Navigate } from 'react-router-dom';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { FarmerForm, type FarmerFormSubmitData } from '@/components/farmers/FarmerForm';
 import { useCreateFarmer, useFarmer } from '@/hooks/useFarmers';
@@ -7,6 +7,10 @@ const FarmerNewPage = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const createFarmer = useCreateFarmer();
+
+  const typeParam = searchParams.get('type');
+  if (typeParam === 'cooperative') return <Navigate to="/agricultores/cooperativas/nova" replace />;
+  if (typeParam === 'field_school') return <Navigate to="/agricultores/escolas/nova" replace />;
 
   // Get cooperative or field school ID from URL params
   const cooperativeId = searchParams.get('cooperative_id');

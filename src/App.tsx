@@ -28,6 +28,8 @@ import FarmerEditPage from "./pages/farmers/FarmerEditPage";
 import AddMembersPage from "./pages/farmers/AddMembersPage";
 import FieldSchoolsPage from "./pages/farmers/FieldSchoolsPage";
 import CooperativesPage from "./pages/farmers/CooperativesPage";
+import CooperativeFormPage from "./pages/farmers/CooperativeFormPage";
+import FieldSchoolFormPage from "./pages/farmers/FieldSchoolFormPage";
 import FieldRegistrationPage from "./pages/farmers/FieldRegistrationPage";
 import ExternalAccessPage from "./pages/farmers/ExternalAccessPage";
 import ParcelsListPage from "./pages/farmers/ParcelsListPage";
@@ -184,6 +186,10 @@ const App = () => {
             <Route path="/agricultores/novo" element={<ProtectedRoute requiredRoles={TECHNICIAN_AND_ADMIN}><FarmerNewPage /></ProtectedRoute>} />
             <Route path="/agricultores/escolas" element={<ProtectedRoute requiredRoles={ALL_INTERNAL}><FieldSchoolsPage /></ProtectedRoute>} />
             <Route path="/agricultores/cooperativas" element={<ProtectedRoute requiredRoles={ALL_INTERNAL}><CooperativesPage /></ProtectedRoute>} />
+            <Route path="/agricultores/cooperativas/nova" element={<ProtectedRoute requiredRoles={TECHNICIAN_AND_ADMIN}><CooperativeFormPage mode="new" /></ProtectedRoute>} />
+            <Route path="/agricultores/cooperativas/:id/editar" element={<ProtectedRoute requiredRoles={TECHNICIAN_AND_ADMIN}><CooperativeFormPage mode="edit" /></ProtectedRoute>} />
+            <Route path="/agricultores/escolas/nova" element={<ProtectedRoute requiredRoles={TECHNICIAN_AND_ADMIN}><FieldSchoolFormPage mode="new" /></ProtectedRoute>} />
+            <Route path="/agricultores/escolas/:id/editar" element={<ProtectedRoute requiredRoles={TECHNICIAN_AND_ADMIN}><FieldSchoolFormPage mode="edit" /></ProtectedRoute>} />
             <Route path="/agricultores/:id" element={<ProtectedRoute requiredRoles={ALL_INTERNAL}><FarmerDetailPage /></ProtectedRoute>} />
             <Route path="/agricultores/:id/editar" element={<ProtectedRoute requiredRoles={TECHNICIAN_AND_ADMIN}><FarmerEditPage /></ProtectedRoute>} />
             <Route path="/agricultores/:id/membros" element={<ProtectedRoute requiredRoles={TECHNICIAN_AND_ADMIN}><AddMembersPage /></ProtectedRoute>} />

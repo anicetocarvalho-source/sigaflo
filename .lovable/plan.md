@@ -1,91 +1,85 @@
-# Suporte Offline-First com Sincronização Híbrida
+## Objetivo
 
-## Objectivo
-Permitir que o SIGAFLO funcione sem rede (cadastro, POS, ocorrências e consulta geral) e sincronize automaticamente quando a conexão regressa, mantendo um indicador visível da fila pendente.
+Separar os registos de **Cooperativa** e **Escola de Campo (ECA)** do formulário genérico de Agricultor, criando formulários dedicados, esquemas de validação próprios e tabelas 1:1 para guardar atributos específicos de cada entidade.
 
-## Arquitectura
+## Arquitetura proposta
 
-### 1. PWA Instalável
-- Instalar `vite-plugin-pwa` com `registerType: autoUpdate`
-- Manifest com nome **SIGAFLO**, ícones (192/512), `display: standalone`, cor de tema institucional
-- Service worker com estratégia:
-  - `NetworkFirst` para HTML e chamadas Supabase (com fallback para cache)
-  - `CacheFirst` para assets estáticos (JS/CSS/imagens/fontes)
-  - `navigateFallbackDenylist`: `/~oauth`, `/auth/callback`
-- Guard de iframe/preview para não registar SW em ambiente Lovable
-- Aviso ao utilizador: PWA só funciona em produção (sigaflo.lovable.app)
+```text
+FarmerForm (individual / family / company)         ← mantém-se
+CooperativeForm (novo)  ──┐
+                          ├──► farmers (linha base com farmer_type)
+FieldSchoolForm (novo) ───┘     + cooperative_details (1:1)
+                                + field_school_details (1:1)
+```
 
-### 2. Camada Offline (IndexedDB via Dexie)
-Novo `src/lib/offline/db.ts` com 3 stores:
-- **cache**: snapshot de queries (chave = queryKey, valor = dados + timestamp)
-- **mutationQueue**: operações pendentes (`{id, type, table, payload, createdAt, retries, error}`)
-- **assets**: ficheiros pendentes (fotos BI, biometria) em base64
+## 1. Base de Dados (migração)
 
-### 3. Hook `useOfflineQuery` e `useOfflineMutation`
-- `useOfflineQuery`: wrapper sobre React Query que:
-  - Hidrata cache do IndexedDB no `initialData`
-  - Persiste cada resposta bem-sucedida no IndexedDB
-  - Marca dados como `stale` quando vêm do cache offline
-- `useOfflineMutation`: wrapper sobre `useMutation` que:
-  - Se online → executa normalmente
-  - Se offline → adiciona à `mutationQueue`, mostra toast "Guardado offline", retorna optimistic id
+**Nova tabela `cooperative_details`** (FK 1:1 → `farmers.id`):
+- Jurídico: `nif`, `legal_constitution_date`, `dncm_registration_number`, `license_url`, `statutes_url`
+- Órgãos sociais: `president_name`, `president_phone`, `secretary_name`, `treasurer_name`, `board_contacts` (jsonb)
+- Estrutura: `degree` (1º/2º grau), `total_members`, `share_capital_aoa`, `minimum_quota_aoa`
+- Atividade agregada: `aggregated_area_ha`, `infrastructures` (text[]: armazém, silo, processamento, etc.)
 
-### 4. Sync Engine (`src/lib/offline/syncEngine.ts`)
-- Listener `window.addEventListener('online'/'offline')`
-- Ao voltar online: processa fila por ordem cronológica, com retry exponencial (3 tentativas)
-- Conflitos: estratégia `last-write-wins` no servidor; falhas permanentes ficam visíveis para revisão manual
-- Invalida queries do React Query após cada sync bem-sucedido
+**Nova tabela `field_school_details`** (FK 1:1 → `farmers.id`):
+- Pedagógico: `facilitator_id` (→ `field_technicians`), `start_date`, `duration_months`, `curriculum_modules` (text[]), `focus_crop`
+- Turma: `participants_count`, `participants_male`, `participants_female`, `avg_age_range`, `avg_education_level`
+- Promotor: `promoter_entity` (IDA/ONG/Cooperativa), `promoter_name`, `funding_source`, `linked_project`
+- Parcela demonstrativa: `demo_parcel_area_ha`, `demo_crops` (text[]), `session_schedule` (jsonb), `demo_latitude`, `demo_longitude`
 
-### 5. UI de Estado de Conexão
-Novo `src/components/layout/OfflineIndicator.tsx` no Header:
-- Badge persistente: 🟢 Online / 🟡 Sincronizando (X) / 🔴 Offline (X pendentes)
-- Click abre Popover com:
-  - Lista das mutations pendentes (tipo, módulo, hora)
-  - Botão "Sincronizar agora" (força flush)
-  - Botão "Descartar" por item em caso de erro permanente
-- Toast automático ao voltar online: "Conexão restaurada, sincronizando N itens..."
+Ambas com RLS jurisdicional (`is_technician_or_admin` + `can_access_province` via JOIN com `farmers`), trigger `update_updated_at_column`, e campos auditáveis (`created_by`, `updated_by`).
 
-### 6. Módulos Prioritários Adaptados
-Aplicar `useOfflineMutation` em:
-- **Cadastro de Campo** (`FieldRegistrationPage`, `useCreateFarmer`)
-- **POS** (`usePOS` — vendas, recibos, hash chain mantém-se válida offline)
-- **Ocorrências** (`useCreateOccurrence`, `ReportOccurrenceForm`)
-- **Parcelas/Biometria** (uploads ficam em fila no `assets` store)
+## 2. Frontend — novos formulários
 
-E `useOfflineQuery` nos hooks de leitura mais usados:
-- `useFarmers`, `useProvinces/Municipalities/Communes`, `useProductionRecords`, `useOccurrences`
+### `src/components/farmers/CooperativeForm.tsx`
+Tabs: **Identificação** · **Dados Jurídicos** · **Órgãos Sociais** · **Estrutura Associativa** · **Localização** · **Atividade Agregada** · **Membros**
 
-### 7. Persistência do React Query
-Adicionar `@tanstack/query-sync-storage-persister` + `persistQueryClient` para que o cache da última sessão sobreviva a recarregamentos sem rede.
+### `src/components/farmers/FieldSchoolForm.tsx`
+Tabs: **Identificação** · **Promotor & Patrocínio** · **Dados Pedagógicos** · **Composição da Turma** · **Localização** · **Parcela Demonstrativa** · **Participantes**
 
-## Ficheiros a Criar
-- `vite.config.ts` (alterar — adicionar VitePWA)
-- `public/manifest.webmanifest` + ícones (192, 512, maskable)
-- `index.html` (alterar — meta tags PWA, theme-color)
-- `src/lib/offline/db.ts` (Dexie schema)
-- `src/lib/offline/syncEngine.ts`
-- `src/lib/offline/useOfflineQuery.ts`
-- `src/lib/offline/useOfflineMutation.ts`
-- `src/lib/offline/queryPersister.ts`
-- `src/components/layout/OfflineIndicator.tsx`
-- `src/components/layout/Header.tsx` (alterar — incluir indicador)
-- `src/main.tsx` (alterar — registar SW com guard, montar persister)
+Cada um com:
+- Schema Zod próprio em `src/lib/validations.ts` (mensagens em PT)
+- Reuso de sub-componentes existentes: `LocationFields`, `MemberSelector`, `DocumentUpload`
+- Verificação onBlur de NIF duplicado (igual ao `FarmerForm`)
+- `WorkflowStatusBadge` e estados padronizados de `src/lib/constants.ts`
 
-## Ficheiros a Adaptar (mutations críticas)
-- `src/hooks/useFarmers.ts`
-- `src/hooks/usePOS.ts`
-- `src/hooks/useOccurrences.ts`
-- `src/hooks/useProductionHistory.ts`
+## 3. Páginas e rotas
 
-## Dependências a Instalar
-- `vite-plugin-pwa`
-- `dexie`
-- `@tanstack/query-sync-storage-persister`
-- `@tanstack/react-query-persist-client`
+- **Nova rota** `/cooperativas/nova` → `CooperativeNewPage` (usa `CooperativeForm`)
+- **Nova rota** `/escolas-campo/nova` → `FieldSchoolNewPage` (usa `FieldSchoolForm`)
+- **Edição**: `/cooperativas/:id/editar` e `/escolas-campo/:id/editar`
+- Atualizar botões "Nova Cooperativa" / "Nova ECA" em `CooperativesPage.tsx` e `FieldSchoolsPage.tsx` para apontar para as novas rotas (em vez de `/agricultores/novo?type=...`)
+- `FarmerForm` deixa de oferecer `cooperative` e `field_school` no seletor de tipo (apenas individual/family/company)
+- `FarmerNewPage` redireciona para a rota dedicada se `?type=cooperative` ou `?type=field_school` for recebido (compatibilidade)
 
-## Notas Importantes
-- **Auth**: token Supabase já persiste em `localStorage`; sessão sobrevive offline
-- **RLS**: mutations offline só sincronizam com sucesso se o utilizador continuar autenticado e tiver permissão — caso contrário ficam na fila com erro visível
-- **Limites**: IndexedDB tem ~50MB por origem; assets grandes (>5MB) já são bloqueados pela validação Zod existente
-- **Preview Lovable**: SW desactivado dentro do iframe; testar offline na URL publicada (`sigaflo.lovable.app`)
-- **Memória**: actualizar `mem://features/offline-contingency-support` com a nova arquitectura
+## 4. Hooks de dados
+
+Em `src/hooks/`:
+- `useCooperative.ts`: `useCooperative(id)`, `useCreateCooperative()`, `useUpdateCooperative()` — escreve em `farmers` + `cooperative_details` numa única mutação (RPC ou duas chamadas em transação lógica)
+- `useFieldSchool.ts`: equivalente para ECA
+
+## 5. Detalhes & visualização
+
+- `FarmerProfileComplete.tsx` (página `/agricultores/:id`): detetar `farmer_type` e renderizar o painel apropriado (`CooperativeDetailsPanel` ou `FieldSchoolDetailsPanel`) carregando da tabela 1:1.
+- Cards de listagem em `CooperativesPage` / `FieldSchoolsPage` enriquecidos com os novos campos (ex.: nº de cooperados real, facilitador da ECA).
+
+## 6. Migração de dados existentes
+
+Para cooperativas/ECAs já registadas em `farmers`:
+- Criar linha vazia em `cooperative_details` / `field_school_details` automaticamente quando o utilizador abre a edição (upsert idempotente).
+- Sem perda de dados; campos novos ficam opcionais até completos.
+
+## 7. Entrega
+
+1. Migração SQL (tabelas, RLS, triggers, índices)
+2. Schemas Zod e tipos TS
+3. `CooperativeForm` + `FieldSchoolForm`
+4. Páginas New/Edit + rotas em `App.tsx`
+5. Hooks de leitura/escrita
+6. Atualização das páginas de listagem e do perfil
+7. QA: verificar fluxo Rascunho → Submetido → Validado nas duas novas entidades
+
+## Notas técnicas
+
+- Mantém a coluna `farmer_type` em `farmers` como discriminador (não duplicar registos).
+- Uniqueness de NIF continua na tabela `farmers` (já existe constraint).
+- Auditoria: registar criação/alteração nas duas tabelas via `audit_log` (jsonb old/new) conforme política do projeto.
