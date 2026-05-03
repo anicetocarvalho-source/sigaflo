@@ -16,6 +16,8 @@ import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import type { Farmer } from '@/hooks/useFarmers';
 import { PrintPreviewDialog } from './PrintPreviewDialog';
+import { useActiveFarmerCard } from '@/hooks/useFarmerCards';
+import { CardStatusBar } from './CardStatusBar';
 
 interface FarmerCardProps {
   farmer: Farmer;
@@ -137,7 +139,11 @@ export const FarmerCard = ({ farmer, onPrint, showActions = true }: FarmerCardPr
   // Long-edge → verso na orientação natural. Simplex → utilizador imprime 2 páginas separadas.
   const backRotation = duplexMode === 'short-edge' ? 180 : 0;
 
-  const qrPayload = JSON.stringify({
+  const { data: activeCard } = useActiveFarmerCard(farmer.id);
+  const verificationUrl = activeCard
+    ? `${window.location.origin}/verificacao/${activeCard.qr_token}`
+    : null;
+  const qrPayload = verificationUrl ?? JSON.stringify({
     plataforma: 'SIGAFLO',
     id: farmer.id,
     nome: farmer.name,
@@ -502,6 +508,7 @@ export const FarmerCard = ({ farmer, onPrint, showActions = true }: FarmerCardPr
 
   return (
     <div className="space-y-4">
+      {showActions && <CardStatusBar farmer={farmer} />}
       {/* 3D Flip Card */}
       <div
         className="cursor-pointer mx-auto"

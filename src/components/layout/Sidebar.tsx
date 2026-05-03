@@ -67,6 +67,7 @@ const navigation: NavItem[] = [
       { label: 'Escolas de Campo', href: '/agricultores/escolas' },
       { label: 'Cooperativas', href: '/agricultores/cooperativas' },
       { label: 'Parcelas', href: '/parcelas' },
+      { label: 'Cartões ID', href: '/agricultores/cartoes' },
       { label: 'Cadastro de Campo', href: '/cadastro-campo' },
       { label: 'Acesso Externo', href: '/cadastro-externo' },
     ],
