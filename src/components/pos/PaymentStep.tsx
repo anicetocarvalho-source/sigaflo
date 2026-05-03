@@ -32,9 +32,13 @@ export function PaymentStep({ farmer, total, hasMechanization, onPay, onBack, is
         setPinError('PIN deve ter 4 dígitos');
         return;
       }
-      if (wallet?.pin_hash) {
-        const valid = await verifyPin(pin, wallet.pin_hash);
-        if (!valid) {
+      if (wallet?.id) {
+        const hashed = await hashPin(pin);
+        const { data: valid, error } = await supabase.rpc('verify_farmer_wallet_pin', {
+          _wallet_id: wallet.id,
+          _pin_hash: hashed,
+        });
+        if (error || !valid) {
           setPinError('PIN inválido');
           return;
         }
