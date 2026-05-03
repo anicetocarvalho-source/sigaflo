@@ -7,7 +7,10 @@ verify_jwt = true
 verify_jwt = true
 
 [functions.occurrence-ai-recommendations]
-verify_jwt = false
+verify_jwt = true
+
+[functions.interpret-sms]
+verify_jwt = true
 
 [functions.get-mapbox-token]
 verify_jwt = false
