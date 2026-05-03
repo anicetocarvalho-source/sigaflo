@@ -80,6 +80,7 @@ const GuillocheBg = () => (
 type DuplexMode = 'long-edge' | 'short-edge' | 'simplex';
 const DUPLEX_KEY = 'sigaflo.card.duplex';
 const OFFSET_KEY = 'sigaflo.card.offset';
+const CUT_KEY = 'sigaflo.card.cutGuides';
 
 export const FarmerCard = ({ farmer, onPrint, showActions = true }: FarmerCardProps) => {
   const [flipped, setFlipped] = useState(false);
