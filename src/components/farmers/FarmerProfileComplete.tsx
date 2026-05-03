@@ -79,7 +79,7 @@ import { useFieldSchoolDetails } from '@/hooks/useFieldSchool';
 import { Skeleton } from '@/components/ui/skeleton';
 import { QuickStats } from './profile/QuickStats';
 import { ProfileGroupedNav } from './profile/ProfileGroupedNav';
-import { ALL_TAB_VALUES } from './profile/profileTabsConfig';
+import { ALL_TAB_VALUES, PROFILE_GROUPS, getVisibleTabs, findGroupForTab, type FarmerType as ProfileFarmerType } from './profile/profileTabsConfig';
 import { toast } from 'sonner';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -156,8 +156,24 @@ export const FarmerProfileComplete = () => {
     }
   }, [searchParams]);
 
-  
   const { data: farmer, isLoading } = useFarmer(id!);
+
+  // Auto-adjust activeTab when farmer_type changes so it remains visible/consistent
+  useEffect(() => {
+    const type = farmer?.farmer_type as ProfileFarmerType | undefined;
+    if (!type) return;
+    const currentGroupKey = findGroupForTab(activeTab);
+    const currentGroup = PROFILE_GROUPS.find((g) => g.key === currentGroupKey)!;
+    const visibleInCurrent = getVisibleTabs(currentGroup, type);
+    const stillVisible = visibleInCurrent.some((t) => t.value === activeTab);
+    if (stillVisible) return;
+    const fallback =
+      visibleInCurrent[0]?.value ||
+      getVisibleTabs(PROFILE_GROUPS[0], type)[0]?.value ||
+      'identification';
+    setActiveTab(fallback);
+  }, [farmer?.farmer_type]);
+
   const { data: productionHistory } = useProductionHistory(id);
   const { data: certificates } = useCertificates({ farmer_id: id });
   const { data: financialProfile } = useFinancialProfile(id!);
