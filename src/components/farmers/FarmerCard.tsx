@@ -169,6 +169,8 @@ export const FarmerCard = ({ farmer, onPrint, showActions = true }: FarmerCardPr
   const [printDialogOpen, setPrintDialogOpen] = useState(false);
   const [exporting, setExporting] = useState<null | 'pvc' | 'a4'>(null);
   const [previewMode, setPreviewMode] = useState<null | 'pvc' | 'a4'>(null);
+  const [wizardOpen, setWizardOpen] = useState(false);
+  const [pendingPrintMode, setPendingPrintMode] = useState<null | 'pvc' | 'a4'>(null);
   const [duplexMode, setDuplexMode] = useState<DuplexMode>('long-edge');
   const [offsetX, setOffsetX] = useState(0); // mm — ajuste fino do verso
   const [offsetY, setOffsetY] = useState(0); // mm
