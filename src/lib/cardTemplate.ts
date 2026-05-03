@@ -321,7 +321,7 @@ export function renderCardFrontHtml(ctx: CardTemplateCtx, qrSrc: string): string
   <div class="sigaflo-card front">
     <div class="header">
       <div class="gov">
-        <div class="brasao">${brasaoSvg}</div>
+        <div class="brasao"><img src="${insigniaAngolaUrl}" alt="Brasão da República de Angola" crossorigin="anonymous" /></div>
         <div class="gov-text">
           <b>REPÚBLICA DE ANGOLA</b>
           <span>Ministério da Agricultura</span>
