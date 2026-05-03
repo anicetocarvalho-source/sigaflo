@@ -287,6 +287,117 @@ export const FarmerCard = ({ farmer, onPrint, showActions = true }: FarmerCardPr
     setPrintDialogOpen(false);
   };
 
+  const exportPdf = async (mode: 'pvc' | 'a4') => {
+    setExporting(mode);
+    const iframe = document.createElement('iframe');
+    iframe.style.position = 'fixed';
+    iframe.style.left = '-10000px';
+    iframe.style.top = '0';
+    iframe.style.width = mode === 'pvc' ? '120mm' : '230mm';
+    iframe.style.height = mode === 'pvc' ? '180mm' : '180mm';
+    iframe.style.border = '0';
+    document.body.appendChild(iframe);
+
+    try {
+      // Reuse the same HTML as the print mode but strip the auto-print script.
+      const html = buildPrintHtml(mode).replace(/<script[\s\S]*?<\/script>/g, '');
+      const doc = iframe.contentDocument!;
+      doc.open();
+      doc.write(html);
+      doc.close();
+
+      // Wait for fonts and images.
+      await new Promise<void>((resolve) => {
+        if (iframe.contentDocument?.readyState === 'complete') resolve();
+        else iframe.onload = () => resolve();
+      });
+      const imgs = Array.from(doc.images);
+      await Promise.all(
+        imgs.map(
+          (img) =>
+            img.complete
+              ? Promise.resolve()
+              : new Promise<void>((res) => {
+                  img.onload = () => res();
+                  img.onerror = () => res();
+                }),
+        ),
+      );
+      // Small delay so guilloché gradients settle.
+      await new Promise((r) => setTimeout(r, 150));
+
+      const cards = Array.from(doc.querySelectorAll<HTMLElement>('.card'));
+      if (cards.length === 0) throw new Error('Cartões não encontrados');
+
+      const CR80_W = 85.6; // mm
+      const CR80_H = 53.98;
+
+      if (mode === 'pvc') {
+        // One card per page (front then back), no margins, exact CR-80.
+        const pdf = new jsPDF({
+          unit: 'mm',
+          format: [CR80_W, CR80_H],
+          orientation: 'landscape',
+        });
+        for (let i = 0; i < cards.length; i++) {
+          const canvas = await html2canvas(cards[i], {
+            scale: 4,
+            backgroundColor: null,
+            useCORS: true,
+            logging: false,
+          });
+          const img = canvas.toDataURL('image/jpeg', 0.95);
+          if (i > 0) pdf.addPage([CR80_W, CR80_H], 'landscape');
+          pdf.addImage(img, 'JPEG', 0, 0, CR80_W, CR80_H);
+        }
+        pdf.save(`cartao_${farmer.registration_number || farmer.id}_pvc.pdf`);
+      } else {
+        // A4 sheet: front + back side by side with cut guides (mirrors print layout).
+        const pdf = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'landscape' });
+        const pageW = pdf.internal.pageSize.getWidth();
+        const pageH = pdf.internal.pageSize.getHeight();
+        const gap = 12;
+        const totalW = CR80_W * 2 + gap;
+        const startX = (pageW - totalW) / 2;
+        const startY = (pageH - CR80_H) / 2;
+
+        for (let i = 0; i < Math.min(2, cards.length); i++) {
+          const canvas = await html2canvas(cards[i], {
+            scale: 4,
+            backgroundColor: null,
+            useCORS: true,
+            logging: false,
+          });
+          const img = canvas.toDataURL('image/jpeg', 0.95);
+          const x = startX + i * (CR80_W + gap);
+          pdf.addImage(img, 'JPEG', x, startY, CR80_W, CR80_H);
+
+          // Dashed cut guides
+          pdf.setLineDashPattern([1, 1], 0);
+          pdf.setDrawColor(150);
+          pdf.rect(x - 1, startY - 1, CR80_W + 2, CR80_H + 2);
+        }
+        pdf.setLineDashPattern([], 0);
+        pdf.setFontSize(8);
+        pdf.setTextColor(120);
+        pdf.text(
+          `SIGAFLO · Cartão de Identificação · ${farmer.name}`,
+          pageW / 2,
+          pageH - 8,
+          { align: 'center' },
+        );
+        pdf.save(`cartao_${farmer.registration_number || farmer.id}_a4.pdf`);
+      }
+      toast.success('PDF gerado com sucesso');
+      setPrintDialogOpen(false);
+    } catch (e: any) {
+      toast.error('Erro ao gerar PDF: ' + (e?.message || 'desconhecido'));
+    } finally {
+      document.body.removeChild(iframe);
+      setExporting(null);
+    }
+  };
+
   const handlePrint = () => {
     if (onPrint) onPrint();
     else setPrintDialogOpen(true);
