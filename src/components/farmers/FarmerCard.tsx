@@ -10,6 +10,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Download, Printer, CreditCard, FileDown, Loader2, Eye } from 'lucide-react';
 import { toast } from 'sonner';
 import jsPDF from 'jspdf';
