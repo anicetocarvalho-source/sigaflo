@@ -1867,6 +1867,32 @@ export type Database = {
           },
         ]
       }
+      farmer_wallet_pins: {
+        Row: {
+          pin_hash: string
+          updated_at: string
+          wallet_id: string
+        }
+        Insert: {
+          pin_hash: string
+          updated_at?: string
+          wallet_id: string
+        }
+        Update: {
+          pin_hash?: string
+          updated_at?: string
+          wallet_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "farmer_wallet_pins_wallet_id_fkey"
+            columns: ["wallet_id"]
+            isOneToOne: true
+            referencedRelation: "farmer_wallets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       farmer_wallets: {
         Row: {
           balance_aoa: number
@@ -1874,7 +1900,6 @@ export type Database = {
           farmer_id: string
           id: string
           is_active: boolean
-          pin_hash: string | null
           updated_at: string
         }
         Insert: {
@@ -1883,7 +1908,6 @@ export type Database = {
           farmer_id: string
           id?: string
           is_active?: boolean
-          pin_hash?: string | null
           updated_at?: string
         }
         Update: {
@@ -1892,7 +1916,6 @@ export type Database = {
           farmer_id?: string
           id?: string
           is_active?: boolean
-          pin_hash?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -6809,6 +6832,31 @@ export type Database = {
       is_admin: { Args: { _user_id: string }; Returns: boolean }
       is_national_level: { Args: { _user_id: string }; Returns: boolean }
       is_technician_or_admin: { Args: { _user_id: string }; Returns: boolean }
+      set_farmer_wallet_pin: {
+        Args: { _pin_hash: string; _wallet_id: string }
+        Returns: undefined
+      }
+      verify_farmer_wallet_pin: {
+        Args: { _pin_hash: string; _wallet_id: string }
+        Returns: boolean
+      }
+      verify_transport_permit: {
+        Args: { _permit_number: string }
+        Returns: {
+          arrival_at: string
+          departure_at: string
+          destination_location: string
+          id: string
+          issue_date: string
+          origin_location: string
+          permit_number: string
+          species_summary: Json
+          status: string
+          total_volume_m3: number
+          valid_until: string
+          vehicle_plate: string
+        }[]
+      }
     }
     Enums: {
       certificate_type:

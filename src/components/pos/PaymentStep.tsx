@@ -6,9 +6,9 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Badge } from '@/components/ui/badge';
 import { Wallet, Smartphone, Clock, Lock, AlertTriangle } from 'lucide-react';
-import { formatAOA } from '@/lib/fiscal';
+import { formatAOA, hashPin } from '@/lib/fiscal';
 import { useFarmerWallet } from '@/hooks/usePOS';
-import { verifyPin } from '@/lib/fiscal';
+import { supabase } from '@/integrations/supabase/client';
 
 interface PaymentStepProps {
   farmer: any;
@@ -32,9 +32,13 @@ export function PaymentStep({ farmer, total, hasMechanization, onPay, onBack, is
         setPinError('PIN deve ter 4 dígitos');
         return;
       }
-      if (wallet?.pin_hash) {
-        const valid = await verifyPin(pin, wallet.pin_hash);
-        if (!valid) {
+      if (wallet?.id) {
+        const hashed = await hashPin(pin);
+        const { data: valid, error } = await supabase.rpc('verify_farmer_wallet_pin', {
+          _wallet_id: wallet.id,
+          _pin_hash: hashed,
+        });
+        if (error || !valid) {
           setPinError('PIN inválido');
           return;
         }

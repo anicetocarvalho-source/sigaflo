@@ -4,7 +4,7 @@ project_id = "rfgeckzjtbkqoijxwltm"
 verify_jwt = true
 
 [functions.report-occurrence-ai]
-verify_jwt = false
+verify_jwt = true
 
 [functions.occurrence-ai-recommendations]
 verify_jwt = false
