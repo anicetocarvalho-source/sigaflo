@@ -54,6 +54,7 @@ export const useSaveCooperative = () => {
     mutationFn: async ({ id, base, details, memberIds }: CooperativePayload & { id?: string }) => {
       const baseData = { ...base, farmer_type: 'cooperative' as const };
       let farmerId = id;
+      const createdNew = !id;
 
       if (id) {
         const { error } = await supabase.from('farmers').update(baseData as any).eq('id', id);
@@ -66,14 +67,26 @@ export const useSaveCooperative = () => {
 
       if (!farmerId) throw new Error('Falha ao obter ID da cooperativa');
 
-      const detailsRow = { farmer_id: farmerId, ...details };
-      const { error: dErr } = await supabase
-        .from('cooperative_details')
-        .upsert(detailsRow as any, { onConflict: 'farmer_id' });
-      if (dErr) throw dErr;
+      try {
+        const detailsRow = { farmer_id: farmerId, ...details };
+        const { error: dErr } = await supabase
+          .from('cooperative_details')
+          .upsert(detailsRow as any, { onConflict: 'farmer_id' });
+        if (dErr) throw dErr;
 
-      if (memberIds && memberIds.length > 0) {
-        await supabase.from('farmers').update({ parent_cooperative_id: farmerId }).in('id', memberIds);
+        if (memberIds && memberIds.length > 0) {
+          const { error: mErr } = await supabase
+            .from('farmers')
+            .update({ parent_cooperative_id: farmerId })
+            .in('id', memberIds);
+          if (mErr) throw mErr;
+        }
+      } catch (err) {
+        // Compensação: se acabámos de criar a cooperativa, removemos para evitar registo órfão
+        if (createdNew && farmerId) {
+          await supabase.from('farmers').delete().eq('id', farmerId);
+        }
+        throw err;
       }
 
       return farmerId;
