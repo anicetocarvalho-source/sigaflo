@@ -5,6 +5,9 @@
 // Layout aligns with the official institutional mockup (CR-80 PVC, 85.6 x 53.98 mm).
 
 import type { Farmer } from '@/hooks/useFarmers';
+import insigniaAngolaUrl from '@/assets/insignia-angola.png';
+
+export { insigniaAngolaUrl };
 
 export interface CardTemplateCtx {
   farmer: Farmer;
