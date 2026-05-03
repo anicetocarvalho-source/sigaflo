@@ -2100,6 +2100,28 @@ export const FarmerProfileComplete = () => {
           </div>
         </TabsContent>
       </Tabs>
+      <Dialog open={photoDialogOpen} onOpenChange={setPhotoDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Fotografia do Agricultor</DialogTitle>
+            <DialogDescription>
+              Esta fotografia é também usada na frente do cartão de identificação. JPG, PNG ou WEBP até 5 MB.
+            </DialogDescription>
+          </DialogHeader>
+          <PhotoUpload
+            value={farmer.photo_url}
+            onChange={async (url) => {
+              try {
+                await updateFarmer.mutateAsync({ id: farmer.id, photo_url: url } as any);
+                if (url) setPhotoDialogOpen(false);
+              } catch (e) {
+                // toast handled in hook
+              }
+            }}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
+
