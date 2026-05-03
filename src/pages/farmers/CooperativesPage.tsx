@@ -38,7 +38,9 @@ const CooperativesPage = () => {
 
   // Get associated farmers count (farmers that belong to cooperatives)
   const { data: allFarmers } = useFarmers({});
-  
+  const coopIds = useMemo(() => (cooperatives || []).map(c => c.id), [cooperatives]);
+  const { data: detailsMap } = useCooperativeDetailsBulk(coopIds);
+
   const filteredCoops = useMemo(() => {
     if (!cooperatives) return [];
     return cooperatives.filter(coop => 
