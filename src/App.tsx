@@ -6,6 +6,11 @@ import { QueryClient } from "@tanstack/react-query";
 import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
 import { createSyncStoragePersister } from "@tanstack/query-sync-storage-persister";
 import { BrowserRouter, Routes, Route, Navigate, useParams } from "react-router-dom";
+import { useEffect } from "react";
+import { AuthProvider } from "@/contexts/AuthContext";
+import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+import { ScrollToTop } from "@/components/layout/ScrollToTop";
+import { initSyncEngine } from "@/lib/offline/syncEngine";
 
 const CooperativeAliasRedirect = () => {
   const { id } = useParams();
@@ -15,11 +20,6 @@ const FieldSchoolAliasRedirect = () => {
   const { id } = useParams();
   return <Navigate to={`/agricultores/escolas/${id}/editar`} replace />;
 };
-import { useEffect } from "react";
-import { AuthProvider } from "@/contexts/AuthContext";
-import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
-import { ScrollToTop } from "@/components/layout/ScrollToTop";
-import { initSyncEngine } from "@/lib/offline/syncEngine";
 
 // Pages
 import Index from "./pages/Index";
