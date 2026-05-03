@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,170 +11,124 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useFarmers, useProvinces } from '@/hooks/useFarmers';
 import { useFieldSchoolDetailsBulk } from '@/hooks/useFieldSchool';
 import { WorkflowStatusBadge } from '@/components/farmers/WorkflowStatusBadge';
-import { 
-  Search, 
-  Plus, 
-  Eye, 
-  Edit, 
-  GraduationCap, 
-  Users, 
-  MapPin,
-  FileSpreadsheet,
-  FileText,
-  TrendingUp
+import { PaginationControls } from '@/components/ui/pagination-controls';
+import {
+  Search, Plus, Eye, Edit, GraduationCap, Users, MapPin,
+  FileSpreadsheet, TrendingUp, FilterX,
 } from 'lucide-react';
 
 const FieldSchoolsPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [provinceFilter, setProvinceFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
-  
-  const { data: provinces, isLoading: loadingProvinces } = useProvinces();
-  const { data: fieldSchools, isLoading: loadingSchools } = useFarmers({ 
+  const [cropFilter, setCropFilter] = useState<string>('all');
+  const [minParticipants, setMinParticipants] = useState<string>('');
+  const [minDemoArea, setMinDemoArea] = useState<string>('');
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
+
+  const { data: provinces } = useProvinces();
+  const { data: fieldSchools, isLoading: loadingSchools } = useFarmers({
     type: 'field_school',
     province_id: provinceFilter !== 'all' ? provinceFilter : undefined,
-    status: statusFilter !== 'all' ? statusFilter as any : undefined
+    status: statusFilter !== 'all' ? (statusFilter as any) : undefined,
   });
 
-  // Get associated farmers count (farmers that belong to field schools)
   const { data: allFarmers } = useFarmers({});
-  const schoolIds = useMemo(() => (fieldSchools || []).map(s => s.id), [fieldSchools]);
+  const schoolIds = useMemo(() => (fieldSchools || []).map((s) => s.id), [fieldSchools]);
   const { data: detailsMap } = useFieldSchoolDetailsBulk(schoolIds);
+
+  const cropOptions = useMemo(() => {
+    const set = new Set<string>();
+    Object.values(detailsMap || {}).forEach((d: any) => { if (d?.focus_crop) set.add(d.focus_crop); });
+    return Array.from(set).sort();
+  }, [detailsMap]);
 
   const filteredSchools = useMemo(() => {
     if (!fieldSchools) return [];
-    return fieldSchools.filter(school => 
-      school.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      school.registration_number?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  }, [fieldSchools, searchTerm]);
+    const term = searchTerm.toLowerCase();
+    const minP = minParticipants ? Number(minParticipants) : null;
+    const minA = minDemoArea ? Number(minDemoArea) : null;
+    return fieldSchools.filter((school) => {
+      const det = detailsMap?.[school.id];
+      const participants = det?.participants_count ?? (allFarmers?.filter((f) => f.field_school_id === school.id)?.length || 0);
+      const demoArea = det?.demo_parcel_area_ha ?? school.cultivated_area_ha ?? 0;
+      if (term && !(
+        school.name.toLowerCase().includes(term) ||
+        school.registration_number?.toLowerCase().includes(term)
+      )) return false;
+      if (cropFilter !== 'all' && det?.focus_crop !== cropFilter) return false;
+      if (minP !== null && participants < minP) return false;
+      if (minA !== null && Number(demoArea) < minA) return false;
+      return true;
+    });
+  }, [fieldSchools, detailsMap, allFarmers, searchTerm, cropFilter, minParticipants, minDemoArea]);
 
-  // Calculate stats
+  useEffect(() => { setPage(1); }, [searchTerm, provinceFilter, statusFilter, cropFilter, minParticipants, minDemoArea, pageSize]);
+
+  const totalCount = filteredSchools.length;
+  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+  const pageItems = useMemo(() => filteredSchools.slice((page - 1) * pageSize, page * pageSize), [filteredSchools, page, pageSize]);
+
   const stats = useMemo(() => {
     if (!fieldSchools) return { total: 0, active: 0, provinces: 0, members: 0 };
-    
-    const activeSchools = fieldSchools.filter(s => s.status === 'issued' || s.status === 'approved');
-    const uniqueProvinces = new Set(fieldSchools.map(s => s.province_id).filter(Boolean));
-    const membersCount = allFarmers?.filter(f => f.field_school_id)?.length || 0;
-    
-    return {
-      total: fieldSchools.length,
-      active: activeSchools.length,
-      provinces: uniqueProvinces.size,
-      members: membersCount
-    };
+    const activeSchools = fieldSchools.filter((s) => s.status === 'issued' || s.status === 'approved');
+    const uniqueProvinces = new Set(fieldSchools.map((s) => s.province_id).filter(Boolean));
+    const membersCount = allFarmers?.filter((f) => f.field_school_id)?.length || 0;
+    return { total: fieldSchools.length, active: activeSchools.length, provinces: uniqueProvinces.size, members: membersCount };
   }, [fieldSchools, allFarmers]);
 
+  const clearFilters = () => {
+    setSearchTerm(''); setProvinceFilter('all'); setStatusFilter('all');
+    setCropFilter('all'); setMinParticipants(''); setMinDemoArea('');
+  };
+
   const handleExportExcel = () => {
-    const headers = ['Nº Registo', 'Nome', 'Província', 'Município', 'Estado', 'Membros'];
-    const rows = filteredSchools.map(school => [
-      school.registration_number || '',
-      school.name,
-      school.provinces?.name || '',
-      school.municipalities?.name || '',
-      school.status || '',
-      allFarmers?.filter(f => f.field_school_id === school.id)?.length || 0
-    ]);
-    
-    const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const headers = ['Nº Registo', 'Nome', 'Cultura Focal', 'Início', 'Província', 'Município', 'Participantes', 'Parcela (ha)', 'Estado'];
+    const rows = filteredSchools.map((s) => {
+      const det = detailsMap?.[s.id];
+      return [
+        s.registration_number || '', s.name, det?.focus_crop || '', det?.start_date || '',
+        s.provinces?.name || '', s.municipalities?.name || '',
+        det?.participants_count ?? (allFarmers?.filter((f) => f.field_school_id === s.id)?.length || 0),
+        det?.demo_parcel_area_ha ?? s.cultivated_area_ha ?? 0,
+        s.status || '',
+      ];
+    });
+    const csv = [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = url;
-    a.download = `escolas-campo-${new Date().toISOString().split('T')[0]}.csv`;
-    a.click();
+    a.href = url; a.download = `escolas-campo-${new Date().toISOString().split('T')[0]}.csv`; a.click();
   };
 
   return (
-    <MainLayout 
-      title="Escolas de Campo" 
-      subtitle="Gestão de Escolas de Campo de Agricultores (ECAs)"
-    >
+    <MainLayout title="Escolas de Campo" subtitle="Gestão de Escolas de Campo de Agricultores (ECAs)">
       <div className="space-y-6">
-        {/* Stats Cards */}
         <div className="grid gap-4 md:grid-cols-4">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                Total de ECAs
-              </CardTitle>
-              <GraduationCap className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <p className="text-2xl font-bold">{stats.total}</p>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                ECAs Activas
-              </CardTitle>
-              <TrendingUp className="h-4 w-4 text-primary" />
-            </CardHeader>
-            <CardContent>
-              <p className="text-2xl font-bold text-primary">{stats.active}</p>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                Províncias Abrangidas
-              </CardTitle>
-              <MapPin className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <p className="text-2xl font-bold">{stats.provinces}</p>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                Membros Totais
-              </CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <p className="text-2xl font-bold">{stats.members}</p>
-            </CardContent>
-          </Card>
+          <Card><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Total de ECAs</CardTitle><GraduationCap className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><p className="text-2xl font-bold">{stats.total}</p></CardContent></Card>
+          <Card><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">ECAs Activas</CardTitle><TrendingUp className="h-4 w-4 text-primary" /></CardHeader><CardContent><p className="text-2xl font-bold text-primary">{stats.active}</p></CardContent></Card>
+          <Card><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Províncias Abrangidas</CardTitle><MapPin className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><p className="text-2xl font-bold">{stats.provinces}</p></CardContent></Card>
+          <Card><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Membros Totais</CardTitle><Users className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><p className="text-2xl font-bold">{stats.members}</p></CardContent></Card>
         </div>
 
-        {/* Filters and Actions */}
         <Card>
-          <CardContent className="pt-6">
+          <CardContent className="pt-6 space-y-4">
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-              <div className="flex flex-1 gap-4">
-                <div className="relative flex-1 max-w-sm">
+              <div className="flex flex-1 gap-3 flex-wrap">
+                <div className="relative flex-1 min-w-[220px] max-w-sm">
                   <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                  <Input
-                    placeholder="Pesquisar por nome ou nº registo..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-9"
-                  />
+                  <Input placeholder="Pesquisar por nome ou nº registo..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-9" />
                 </div>
-                
                 <Select value={provinceFilter} onValueChange={setProvinceFilter}>
-                  <SelectTrigger className="w-48">
-                    <SelectValue placeholder="Província" />
-                  </SelectTrigger>
+                  <SelectTrigger className="w-48"><SelectValue placeholder="Província" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">Todas as Províncias</SelectItem>
-                    {provinces?.map(province => (
-                      <SelectItem key={province.id} value={province.id}>
-                        {province.name}
-                      </SelectItem>
-                    ))}
+                    {provinces?.map((p) => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
                   </SelectContent>
                 </Select>
-                
                 <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger className="w-40">
-                    <SelectValue placeholder="Estado" />
-                  </SelectTrigger>
+                  <SelectTrigger className="w-40"><SelectValue placeholder="Estado" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">Todos</SelectItem>
                     <SelectItem value="draft">Rascunho</SelectItem>
@@ -185,53 +139,43 @@ const FieldSchoolsPage = () => {
                   </SelectContent>
                 </Select>
               </div>
-              
               <div className="flex gap-2">
                 <Button variant="outline" size="sm" onClick={handleExportExcel}>
-                  <FileSpreadsheet className="mr-2 h-4 w-4" />
-                  Excel
+                  <FileSpreadsheet className="mr-2 h-4 w-4" />Excel
                 </Button>
                 <Button asChild>
-                  <Link to="/agricultores/escolas/nova">
-                    <Plus className="mr-2 h-4 w-4" />
-                    Nova ECA
-                  </Link>
+                  <Link to="/agricultores/escolas/nova"><Plus className="mr-2 h-4 w-4" />Nova ECA</Link>
                 </Button>
               </div>
+            </div>
+
+            <div className="grid gap-3 md:grid-cols-4">
+              <Select value={cropFilter} onValueChange={setCropFilter}>
+                <SelectTrigger><SelectValue placeholder="Cultura focal" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todas as culturas</SelectItem>
+                  {cropOptions.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                </SelectContent>
+              </Select>
+              <Input type="number" min={0} placeholder="Mín. participantes" value={minParticipants} onChange={(e) => setMinParticipants(e.target.value)} />
+              <Input type="number" min={0} placeholder="Mín. parcela (ha)" value={minDemoArea} onChange={(e) => setMinDemoArea(e.target.value)} />
+              <Button variant="ghost" onClick={clearFilters}><FilterX className="mr-2 h-4 w-4" />Limpar filtros</Button>
             </div>
           </CardContent>
         </Card>
 
-        {/* Table */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <GraduationCap className="h-5 w-5" />
-              Lista de Escolas de Campo
-            </CardTitle>
+            <CardTitle className="flex items-center gap-2"><GraduationCap className="h-5 w-5" />Lista de Escolas de Campo</CardTitle>
           </CardHeader>
           <CardContent>
             {loadingSchools ? (
-              <div className="space-y-4">
-                {[...Array(5)].map((_, i) => (
-                  <Skeleton key={i} className="h-16 w-full" />
-                ))}
-              </div>
-            ) : filteredSchools.length === 0 ? (
+              <div className="space-y-4">{[...Array(5)].map((_, i) => <Skeleton key={i} className="h-16 w-full" />)}</div>
+            ) : totalCount === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 text-center">
                 <GraduationCap className="h-12 w-12 text-muted-foreground/50 mb-4" />
                 <h3 className="text-lg font-semibold">Nenhuma ECA encontrada</h3>
-                <p className="text-muted-foreground mt-1">
-                  {searchTerm || provinceFilter !== 'all' || statusFilter !== 'all'
-                    ? 'Tente ajustar os filtros de pesquisa'
-                    : 'Comece por registar uma nova Escola de Campo'}
-                </p>
-                <Button asChild className="mt-4">
-                  <Link to="/agricultores/escolas/nova">
-                    <Plus className="mr-2 h-4 w-4" />
-                    Registar ECA
-                  </Link>
-                </Button>
+                <p className="text-muted-foreground mt-1">Tente ajustar os filtros de pesquisa</p>
               </div>
             ) : (
               <>
@@ -250,14 +194,12 @@ const FieldSchoolsPage = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredSchools.map((school) => {
-                      const memberCount = allFarmers?.filter(f => f.field_school_id === school.id)?.length || 0;
+                    {pageItems.map((school) => {
+                      const memberCount = allFarmers?.filter((f) => f.field_school_id === school.id)?.length || 0;
                       const det = detailsMap?.[school.id];
                       return (
                         <TableRow key={school.id}>
-                          <TableCell className="font-mono text-sm">
-                            {school.registration_number || '-'}
-                          </TableCell>
+                          <TableCell className="font-mono text-sm">{school.registration_number || '-'}</TableCell>
                           <TableCell>
                             <div className="flex items-center gap-2">
                               <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
@@ -266,41 +208,24 @@ const FieldSchoolsPage = () => {
                               <span className="font-medium">{school.name}</span>
                             </div>
                           </TableCell>
-                          <TableCell>
-                            {det?.focus_crop ? <Badge variant="outline">{det.focus_crop}</Badge> : '-'}
-                          </TableCell>
+                          <TableCell>{det?.focus_crop ? <Badge variant="outline">{det.focus_crop}</Badge> : '-'}</TableCell>
                           <TableCell className="text-xs">{det?.start_date || '-'}</TableCell>
                           <TableCell>
                             <div className="text-sm">
                               <div>{school.provinces?.name || '-'}</div>
-                              <div className="text-muted-foreground text-xs">
-                                {school.municipalities?.name}
-                              </div>
+                              <div className="text-muted-foreground text-xs">{school.municipalities?.name}</div>
                             </div>
                           </TableCell>
-                          <TableCell>
-                            <Badge variant="secondary">
-                              <Users className="mr-1 h-3 w-3" />
-                              {det?.participants_count ?? memberCount}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            {(det?.demo_parcel_area_ha ?? school.cultivated_area_ha)?.toLocaleString() || '-'}
-                          </TableCell>
-                          <TableCell>
-                            <WorkflowStatusBadge status={school.status} />
-                          </TableCell>
+                          <TableCell><Badge variant="secondary"><Users className="mr-1 h-3 w-3" />{det?.participants_count ?? memberCount}</Badge></TableCell>
+                          <TableCell>{(det?.demo_parcel_area_ha ?? school.cultivated_area_ha)?.toLocaleString() || '-'}</TableCell>
+                          <TableCell><WorkflowStatusBadge status={school.status} /></TableCell>
                           <TableCell className="text-right">
                             <div className="flex justify-end gap-2">
                               <Button variant="ghost" size="sm" asChild>
-                                <Link to={`/agricultores/${school.id}`}>
-                                  <Eye className="h-4 w-4" />
-                                </Link>
+                                <Link to={`/agricultores/${school.id}`}><Eye className="h-4 w-4" /></Link>
                               </Button>
                               <Button variant="ghost" size="sm" asChild>
-                                <Link to={`/agricultores/escolas/${school.id}/editar`}>
-                                  <Edit className="h-4 w-4" />
-                                </Link>
+                                <Link to={`/agricultores/escolas/${school.id}/editar`}><Edit className="h-4 w-4" /></Link>
                               </Button>
                             </div>
                           </TableCell>
@@ -309,10 +234,15 @@ const FieldSchoolsPage = () => {
                     })}
                   </TableBody>
                 </Table>
-                
-                <div className="mt-4 text-sm text-muted-foreground">
-                  A mostrar {filteredSchools.length} de {fieldSchools?.length || 0} ECAs
-                </div>
+
+                <PaginationControls
+                  currentPage={page}
+                  totalPages={totalPages}
+                  totalCount={totalCount}
+                  pageSize={pageSize}
+                  onPageChange={setPage}
+                  onPageSizeChange={setPageSize}
+                />
               </>
             )}
           </CardContent>
