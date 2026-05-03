@@ -37,12 +37,12 @@ export const useCooperativeDetails = (farmerId?: string) => {
     queryFn: async () => {
       if (!farmerId) return null;
       const { data, error } = await supabase
-        .from('cooperative_details' as any)
+        .from('cooperative_details')
         .select('*')
         .eq('farmer_id', farmerId)
         .maybeSingle();
       if (error) throw error;
-      return data as CooperativeDetails | null;
+      return data as unknown as CooperativeDetails | null;
     },
     enabled: !!farmerId,
   });
