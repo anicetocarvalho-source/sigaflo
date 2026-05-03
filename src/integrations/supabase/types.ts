@@ -1867,6 +1867,32 @@ export type Database = {
           },
         ]
       }
+      farmer_wallet_pins: {
+        Row: {
+          pin_hash: string
+          updated_at: string
+          wallet_id: string
+        }
+        Insert: {
+          pin_hash: string
+          updated_at?: string
+          wallet_id: string
+        }
+        Update: {
+          pin_hash?: string
+          updated_at?: string
+          wallet_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "farmer_wallet_pins_wallet_id_fkey"
+            columns: ["wallet_id"]
+            isOneToOne: true
+            referencedRelation: "farmer_wallets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       farmer_wallets: {
         Row: {
           balance_aoa: number
@@ -1874,7 +1900,6 @@ export type Database = {
           farmer_id: string
           id: string
           is_active: boolean
-          pin_hash: string | null
           updated_at: string
         }
         Insert: {
@@ -1883,7 +1908,6 @@ export type Database = {
           farmer_id: string
           id?: string
           is_active?: boolean
-          pin_hash?: string | null
           updated_at?: string
         }
         Update: {
@@ -1892,7 +1916,6 @@ export type Database = {
           farmer_id?: string
           id?: string
           is_active?: boolean
-          pin_hash?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -2250,6 +2273,13 @@ export type Database = {
             columns: ["transport_permit_id"]
             isOneToOne: false
             referencedRelation: "forest_transport_permits"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "forest_checkpoint_logs_transport_permit_id_fkey"
+            columns: ["transport_permit_id"]
+            isOneToOne: false
+            referencedRelation: "transport_permits_verification_public"
             referencedColumns: ["id"]
           },
         ]
@@ -2618,6 +2648,13 @@ export type Database = {
             columns: ["related_transport_id"]
             isOneToOne: false
             referencedRelation: "forest_transport_permits"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "forest_infractions_related_transport_id_fkey"
+            columns: ["related_transport_id"]
+            isOneToOne: false
+            referencedRelation: "transport_permits_verification_public"
             referencedColumns: ["id"]
           },
         ]
@@ -6769,6 +6806,51 @@ export type Database = {
         }
         Relationships: []
       }
+      transport_permits_verification_public: {
+        Row: {
+          arrival_at: string | null
+          departure_at: string | null
+          destination_location: string | null
+          id: string | null
+          issue_date: string | null
+          origin_location: string | null
+          permit_number: string | null
+          species_summary: Json | null
+          status: string | null
+          total_volume_m3: number | null
+          valid_until: string | null
+          vehicle_plate: string | null
+        }
+        Insert: {
+          arrival_at?: string | null
+          departure_at?: string | null
+          destination_location?: string | null
+          id?: string | null
+          issue_date?: string | null
+          origin_location?: string | null
+          permit_number?: string | null
+          species_summary?: Json | null
+          status?: string | null
+          total_volume_m3?: number | null
+          valid_until?: string | null
+          vehicle_plate?: string | null
+        }
+        Update: {
+          arrival_at?: string | null
+          departure_at?: string | null
+          destination_location?: string | null
+          id?: string | null
+          issue_date?: string | null
+          origin_location?: string | null
+          permit_number?: string | null
+          species_summary?: Json | null
+          status?: string | null
+          total_volume_m3?: number | null
+          valid_until?: string | null
+          vehicle_plate?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       calculate_risk_score: {
@@ -6809,6 +6891,14 @@ export type Database = {
       is_admin: { Args: { _user_id: string }; Returns: boolean }
       is_national_level: { Args: { _user_id: string }; Returns: boolean }
       is_technician_or_admin: { Args: { _user_id: string }; Returns: boolean }
+      set_farmer_wallet_pin: {
+        Args: { _pin_hash: string; _wallet_id: string }
+        Returns: undefined
+      }
+      verify_farmer_wallet_pin: {
+        Args: { _pin_hash: string; _wallet_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       certificate_type:
