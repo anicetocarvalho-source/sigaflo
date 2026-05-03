@@ -229,6 +229,19 @@ export const PrintPreviewDialog = ({
           </div>
         </div>
 
+        {liveControls && (
+          <aside className="border rounded-md p-3 bg-card overflow-y-auto" style={{ maxHeight: '60vh' }}>
+            <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
+              Calibração e guias
+            </div>
+            {liveControls}
+            <p className="mt-3 text-[10px] text-muted-foreground">
+              Os ajustes refletem-se imediatamente na pré-visualização e no PDF exportado.
+            </p>
+          </aside>
+        )}
+        </div>
+
         <DialogFooter className="flex-wrap gap-2">
           <Button variant="ghost" onClick={() => onOpenChange(false)} disabled={exporting}>
             Cancelar
