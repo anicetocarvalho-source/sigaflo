@@ -12,6 +12,9 @@
  *     user did not touch, keep local changes for fields the server did not
  *     touch, and flag remaining true conflicts for manual review.
  *  - 'manual': always park as a pending conflict for the user to resolve.
+ *  - 'last-write-wins': compare the local edit timestamp (`localEditedAt`)
+ *     against the server's `updated_at`; the most recent wins. If neither
+ *     timestamp is available, falls back to local-wins.
  */
 import type { QueuedMutation, PendingConflict, ConflictStrategy } from './db';
 
@@ -75,7 +78,9 @@ export function resolveConflict(
   localPayload: Record<string, any>,
   baseRow: Record<string, any> | null | undefined,
   serverRow: Record<string, any>,
-  analysis: ConflictAnalysis
+  analysis: ConflictAnalysis,
+  /** Wall-clock time the offline edit was made. Used by 'last-write-wins'. */
+  localEditedAt?: number | string | null
 ): ResolutionResult {
   if (strategy === 'server-wins') {
     return { payload: null, requiresManualReview: false, unresolvedFields: [] };
@@ -91,6 +96,16 @@ export function resolveConflict(
       requiresManualReview: true,
       unresolvedFields: analysis.conflictingFields,
     };
+  }
+
+  if (strategy === 'last-write-wins') {
+    const localTs = localEditedAt ? new Date(localEditedAt).getTime() : NaN;
+    const serverTs = serverRow?.updated_at ? new Date(serverRow.updated_at).getTime() : NaN;
+    // If timestamps are missing or equal → keep local (deterministic fallback).
+    if (Number.isFinite(localTs) && Number.isFinite(serverTs) && serverTs > localTs) {
+      return { payload: null, requiresManualReview: false, unresolvedFields: [] };
+    }
+    return { payload: localPayload, requiresManualReview: false, unresolvedFields: [] };
   }
 
   // 'merge' — 3-way field-level merge.
