@@ -45,6 +45,9 @@ export const useCooperativeDetails = (farmerId?: string) => {
       return data as unknown as CooperativeDetails | null;
     },
     enabled: !!farmerId,
+    networkMode: 'offlineFirst',
+    staleTime: 1000 * 60 * 5,
+    gcTime: 1000 * 60 * 60 * 24 * 7,
   });
 };
 
@@ -116,5 +119,8 @@ export const useCooperativeDetailsBulk = (farmerIds: string[]) => {
       return map;
     },
     enabled: farmerIds.length > 0,
+    networkMode: 'offlineFirst',
+    staleTime: 1000 * 60 * 5,
+    gcTime: 1000 * 60 * 60 * 24 * 7,
   });
 };
