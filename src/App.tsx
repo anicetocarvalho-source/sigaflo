@@ -131,6 +131,9 @@ import NDVIPage from "./pages/monitoring/NDVIPage";
 // Insurance Module
 import InsurancePage from "./pages/insurance/InsurancePage";
 
+// Dev / QA
+import PrintTestPage from "./pages/dev/PrintTestPage";
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -350,6 +353,9 @@ const App = () => {
             <Route path="/verificar" element={<Navigate to="/portal/verificar" replace />} />
             <Route path="/verificar/*" element={<Navigate to="/portal/verificar" replace />} />
             
+            {/* Dev / QA — sem auth para testes cross-browser */}
+            <Route path="/dev/print-test" element={<PrintTestPage />} />
+
             {/* Catch-all */}
             <Route path="*" element={<NotFound />} />
           </Routes>
