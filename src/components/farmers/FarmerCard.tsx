@@ -659,6 +659,84 @@ ${isPvc ? `
             setPreviewMode(null);
           }}
           exporting={exporting !== null}
+          controlsKey={`${duplexMode}|${offsetX}|${offsetY}|${cutA4Visible}|${cutA4Offset}|${cutPvcVisible}|${cutPvcOffset}`}
+          liveControls={
+            <div className="space-y-4">
+              <div>
+                <div className="text-xs font-medium mb-1">Modo duplex</div>
+                <div className="grid grid-cols-1 gap-1.5">
+                  {([
+                    { v: 'long-edge', l: 'Borda longa', d: 'Padrão A4 / livro' },
+                    { v: 'short-edge', l: 'Borda curta', d: 'Cartão PVC' },
+                    { v: 'simplex', l: 'Simplex', d: 'Só frente' },
+                  ] as const).map((o) => (
+                    <button
+                      key={o.v}
+                      type="button"
+                      onClick={() => setDuplexMode(o.v)}
+                      className={`text-left border rounded-md px-2 py-1.5 transition ${
+                        duplexMode === o.v ? 'border-primary bg-primary/5' : 'hover:border-primary/50'
+                      }`}
+                    >
+                      <div className="text-xs font-semibold">{o.l}</div>
+                      <div className="text-[10px] text-muted-foreground">{o.d}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {duplexMode !== 'simplex' && (
+                <div className="space-y-2">
+                  <div>
+                    <label className="text-[10px] text-muted-foreground uppercase tracking-wide">
+                      Ajuste X (mm): <span className="font-mono">{offsetX.toFixed(1)}</span>
+                    </label>
+                    <input type="range" min={-3} max={3} step={0.1} value={offsetX}
+                      onChange={(e) => setOffsetX(parseFloat(e.target.value))} className="w-full" />
+                  </div>
+                  <div>
+                    <label className="text-[10px] text-muted-foreground uppercase tracking-wide">
+                      Ajuste Y (mm): <span className="font-mono">{offsetY.toFixed(1)}</span>
+                    </label>
+                    <input type="range" min={-3} max={3} step={0.1} value={offsetY}
+                      onChange={(e) => setOffsetY(parseFloat(e.target.value))} className="w-full" />
+                  </div>
+                  <button type="button" onClick={() => { setOffsetX(0); setOffsetY(0); }}
+                    className="text-[10px] text-primary hover:underline">
+                    Repor calibração
+                  </button>
+                </div>
+              )}
+
+              <div className="space-y-2 pt-2 border-t">
+                {([
+                  { key: 'a4', label: 'A4', visible: cutA4Visible, setVisible: setCutA4Visible, offset: cutA4Offset, setOffset: setCutA4Offset },
+                  { key: 'pvc', label: 'CR-80', visible: cutPvcVisible, setVisible: setCutPvcVisible, offset: cutPvcOffset, setOffset: setCutPvcOffset },
+                ] as const)
+                  .filter((c) => (previewMode === 'a4' ? c.key === 'a4' : c.key === 'pvc'))
+                  .map((cfg) => (
+                  <div key={cfg.key}>
+                    <div className="flex items-center gap-2">
+                      <input type="checkbox" checked={cfg.visible}
+                        onChange={(e) => cfg.setVisible(e.target.checked)} id={`pv-cut-${cfg.key}`} />
+                      <label htmlFor={`pv-cut-${cfg.key}`} className="text-xs font-medium cursor-pointer">
+                        Guias de corte · {cfg.label}
+                      </label>
+                    </div>
+                    {cfg.visible && (
+                      <div className="mt-1 pl-6">
+                        <label className="text-[10px] text-muted-foreground uppercase tracking-wide">
+                          Offset (mm): <span className="font-mono">{cfg.offset.toFixed(1)}</span>
+                        </label>
+                        <input type="range" min={0} max={5} step={0.1} value={cfg.offset}
+                          onChange={(e) => cfg.setOffset(parseFloat(e.target.value))} className="w-full" />
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          }
         />
       )}
     </div>
