@@ -17,6 +17,7 @@ import html2canvas from 'html2canvas';
 import type { Farmer } from '@/hooks/useFarmers';
 import { PrintPreviewDialog } from './PrintPreviewDialog';
 import { useActiveFarmerCard } from '@/hooks/useFarmerCards';
+import { CardStatusBar } from './CardStatusBar';
 
 interface FarmerCardProps {
   farmer: Farmer;
@@ -507,6 +508,7 @@ export const FarmerCard = ({ farmer, onPrint, showActions = true }: FarmerCardPr
 
   return (
     <div className="space-y-4">
+      {showActions && <CardStatusBar farmer={farmer} />}
       {/* 3D Flip Card */}
       <div
         className="cursor-pointer mx-auto"
