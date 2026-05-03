@@ -224,55 +224,82 @@ function drawBarcodeBars(pdf: jsPDF, value: string, x: number, y: number, w: num
 
 function drawCardBack(pdf: jsPDF, x: number, y: number, ctx: CardCtx) {
   const { farmer, card } = ctx;
+
+  // Fundo branco
   pdf.setFillColor(255, 255, 255);
   pdf.rect(x, y, CARD_W, CARD_H, 'F');
 
-  // Top band — barcode
-  pdf.setFillColor(233, 243, 236);
-  pdf.rect(x, y, CARD_W, 11, 'F');
-  const bcId = card?.serial || farmer.registration_number || farmer.id.slice(0, 12);
-  drawBarcodeBars(pdf, bcId, x + 3, y + 1.8, CARD_W - 22, 6.5);
-  pdf.setTextColor(38, 48, 61).setFont('courier', 'normal').setFontSize(5.5);
-  pdf.text(bcId, x + 3 + (CARD_W - 22) / 2, y + 10, { align: 'center' });
-  pdf.setTextColor(31, 107, 52).setFont('helvetica', 'bold').setFontSize(7);
-  pdf.text('SIGAFLO', x + CARD_W - 3, y + 6.5, { align: 'right' });
-
-  // Status pill
-  pdf.setDrawColor(31, 107, 52).setFillColor(231, 247, 236).setLineWidth(0.15);
-  pdf.roundedRect(x + 3, y + 12.5, 16, 3.2, 0.6, 0.6, 'FD');
-  pdf.setTextColor(12, 81, 40).setFont('helvetica', 'bold').setFontSize(5.2);
-  pdf.text('● ACTIVO', x + 11, y + 14.7, { align: 'center' });
-
-  // Data row
-  pdf.setTextColor(38, 48, 61).setFont('helvetica', 'normal').setFontSize(5.8);
-  const phone = farmer.phone || '—';
-  const area = farmer.total_area_ha ? `${farmer.total_area_ha.toFixed(1)} ha` : '—';
-  pdf.text(`BI/NIF: ${farmer.bi_nif ?? '—'}   ·   Tel: ${phone}   ·   Área: ${area}`, x + 21, y + 14.7);
-
-  // Bottom — emissão/validade + nota legal
-  pdf.setDrawColor(226, 230, 234).setLineWidth(0.1);
-  pdf.line(x + 3, y + 16.8, x + CARD_W - 3, y + 16.8);
+  // ===== Painel esquerdo (verde escuro) =====
+  const leftW = CARD_W * 0.38;
+  pdf.setFillColor(12, 61, 26);
+  pdf.rect(x, y, leftW, CARD_H, 'F');
 
   const issued = new Date();
   const valid = new Date(issued); valid.setFullYear(valid.getFullYear() + 5);
   const fmt = (d: Date) => d.toLocaleDateString('pt-PT');
 
-  pdf.setTextColor(38, 48, 61).setFontSize(5.8);
-  pdf.text(`Emissão: ${fmt(issued)}`, x + 3, y + 21);
-  pdf.text(`Validade: ${fmt(valid)}`, x + 3, y + 24);
-  pdf.text('Tel: 923 000 000', x + 3, y + 27);
-  pdf.text('Web: sigaflo.gov.ao', x + 3, y + 30);
+  const items: Array<[string, string]> = [
+    ['DATA DE EMISSÃO', fmt(issued)],
+    ['DATA DE VALIDADE', fmt(valid)],
+    ['ESTADO DO REGISTO', 'ATIVO'],
+  ];
+  items.forEach(([lbl, val], i) => {
+    const ty = y + 4 + i * 9;
+    pdf.setTextColor(212, 160, 23).setFont('helvetica', 'bold').setFontSize(3.8);
+    pdf.text('▣', x + 2.5, ty);
+    pdf.setTextColor(220, 220, 220).setFont('helvetica', 'bold').setFontSize(4.2);
+    pdf.text(lbl, x + 4.5, ty);
+    pdf.setTextColor(255).setFont('helvetica', 'bold').setFontSize(7);
+    pdf.text(val, x + 2.5, ty + 4);
+  });
 
-  pdf.setTextColor(107, 114, 128).setFontSize(5);
-  const legal = pdf.splitTextToSize(
-    'Documento intransmissível e de uso institucional. Em caso de extravio devolver ao Min. Agricultura e Florestas. Autenticidade verificável pelo QR no anverso.',
-    CARD_W / 2 - 4,
-  );
-  pdf.text(legal, x + CARD_W / 2, y + 21);
+  // Assinatura + autoridade
+  pdf.setDrawColor(255, 255, 255).setLineWidth(0.1);
+  pdf.line(x + 2.5, y + CARD_H - 9, x + leftW - 2.5, y + CARD_H - 9);
+  pdf.setTextColor(255).setFont('times', 'italic').setFontSize(9);
+  pdf.text('Autoridade', x + 2.5, y + CARD_H - 5);
+  pdf.setFont('helvetica', 'bold').setFontSize(4.2).setTextColor(220, 220, 220);
+  pdf.text('AUTORIDADE EMISSORA', x + 2.5, y + CARD_H - 2.5);
 
-  // Footer stripe
+  // ===== Painel direito (branco) =====
+  const rightX = x + leftW + 2.5;
+  const rightW = CARD_W - leftW - 5;
+  const bcId = card?.serial || farmer.registration_number || farmer.id.slice(0, 12);
+
+  pdf.setTextColor(107, 114, 128).setFont('helvetica', 'bold').setFontSize(4.2);
+  pdf.text('CÓDIGO DE BARRAS', rightX, y + 4);
+  drawBarcodeBars(pdf, bcId, rightX, y + 5, rightW, 7);
+  pdf.setTextColor(26, 32, 48).setFont('courier', 'bold').setFontSize(5.8);
+  pdf.text(bcId, rightX + rightW / 2, y + 14.5, { align: 'center' });
+
+  // NFC
+  pdf.setFillColor(240, 247, 241);
+  pdf.circle(rightX + 2, y + 19.5, 1.6, 'F');
+  pdf.setTextColor(31, 107, 52).setFont('helvetica', 'bold').setFontSize(5);
+  pdf.text('NFC', rightX + 4.5, y + 19.5);
+  pdf.setTextColor(26, 32, 48).setFont('helvetica', 'normal').setFontSize(4.2);
+  pdf.text('Aproxime para verificar', rightX + 4.5, y + 21.7);
+
+  // Caixa de apoio
+  pdf.setFillColor(240, 247, 241);
+  pdf.roundedRect(rightX, y + 25, rightW, 8, 0.5, 0.5, 'F');
+  pdf.setTextColor(31, 107, 52).setFont('helvetica', 'bold').setFontSize(4.6);
+  pdf.text('LINHA DE APOIO SIGAFLO', rightX + 1.5, y + 27.5);
+  pdf.setTextColor(26, 32, 48).setFont('helvetica', 'normal').setFontSize(4);
+  pdf.text('923 123 456 - apoio@sigaflo.gov.ao', rightX + 1.5, y + 30);
+  pdf.text('www.sigaflo.gov.ao', rightX + 1.5, y + 32);
+
+  // Nota legal
+  pdf.setFillColor(240, 247, 241);
+  pdf.rect(rightX, y + CARD_H - 7, rightW, 5, 'F');
   pdf.setFillColor(31, 107, 52);
-  pdf.rect(x, y + CARD_H - 1.4, CARD_W, 1.4, 'F');
+  pdf.rect(rightX, y + CARD_H - 7, 0.5, 5, 'F');
+  pdf.setTextColor(26, 32, 48).setFont('helvetica', 'normal').setFontSize(3.6);
+  const legal = pdf.splitTextToSize(
+    'Este cartão é pessoal e intransmissível. O uso indevido implica sanções nos termos da lei.',
+    rightW - 2,
+  );
+  pdf.text(legal, rightX + 1.2, y + CARD_H - 5);
 }
 
 async function buildA4Pdf(ctxs: CardCtx[], opts: BatchExportOptions, onProgress?: (p: BatchProgress) => void): Promise<Blob> {
