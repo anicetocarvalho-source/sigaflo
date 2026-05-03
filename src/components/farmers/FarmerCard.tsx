@@ -182,8 +182,8 @@ export const FarmerCard = ({ farmer, onPrint, showActions = true }: FarmerCardPr
     width: 85.6mm; height: 53.98mm; position: relative; overflow: hidden;
     flex-shrink: 0;
     ${isPvc
-      ? 'display: block;'
-      : 'box-shadow: 0 2px 6px rgba(0,0,0,0.15); border-radius: 3mm; outline: 1px dashed #888; outline-offset: 2mm;'}
+      ? `display: block; ${cutPvcVisible ? `outline: 0.3mm dashed #888; outline-offset: ${cutPvcOffset}mm;` : ''}`
+      : `box-shadow: 0 2px 6px rgba(0,0,0,0.15); border-radius: 3mm; ${cutA4Visible ? `outline: 0.3mm dashed #888; outline-offset: ${cutA4Offset}mm;` : ''}`}
   }
   ${isPvc ? `
     /* Force exactly one card per page (front then back). */
