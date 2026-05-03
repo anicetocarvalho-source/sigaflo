@@ -494,7 +494,28 @@ export const FarmerProfileComplete = () => {
                 </Button>
               </div>
             </div>
-            {farmer.farmer_type === 'cooperative'
+            {(() => {
+              const computedMembers = members.length;
+              const computedArea = members.reduce((s, m: any) => s + (Number(m.cultivated_area_ha) || 0), 0);
+              const discrepancies = isCoop
+                ? [
+                    { label: 'Total de cooperados', declared: coopDetails?.total_members, computed: computedMembers },
+                    { label: 'Área agregada (ha)', declared: coopDetails?.aggregated_area_ha, computed: computedArea, unit: 'ha', tolerance: 0.5 },
+                  ]
+                : [
+                    { label: 'Participantes', declared: ecaDetails?.participants_count, computed: computedMembers },
+                  ];
+              return (
+                <EntityDetailsConsistency
+                  farmerId={farmer.id}
+                  farmerType={isCoop ? 'cooperative' : 'field_school'}
+                  hasDetails={isCoop ? !!coopDetails : !!ecaDetails}
+                  isLoading={isCoop ? loadingCoopDetails : loadingEcaDetails}
+                  discrepancies={discrepancies}
+                />
+              );
+            })()}
+            {isCoop
               ? <CooperativeDetailsCard farmerId={farmer.id} />
               : <FieldSchoolDetailsCard farmerId={farmer.id} />}
           </TabsContent>
