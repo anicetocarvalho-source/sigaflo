@@ -1,99 +1,100 @@
-## Redesign do Cartão de Identificação do Agricultor (SIGAFLO)
+## Redesign do Cartão SIGAFLO — alinhamento com mockup oficial
 
-Aplicar o novo padrão visual ao componente `FarmerCard` (preview 3D), aos templates de impressão (HTML PVC/A4) e à geração em lote (`cardBatchExport.ts`), garantindo consistência total entre preview digital, PDF print-ready e exportação em massa.
+Reescrever o template do cartão (`src/lib/cardTemplate.ts`), o preview 3D (`FarmerCard.tsx`) e o renderizador em lote (`cardBatchExport.ts`) para reproduzir fielmente o mockup fornecido, omitindo as áreas marcadas a vermelho.
 
-### 1. Frente — layout institucional em 3 zonas
+### Áreas a REMOVER (marcadas a vermelho no mockup)
+- Texto "MINAGRIF" sob o brasão (manter apenas "República de Angola / Ministério da Agricultura e Florestas").
+- Bloco lateral "Cultura Principal / Área Produtiva" na frente.
+- Os dois selos institucionais em baixo no verso ("Sistema Integrado de Gestão Agro Florestal" e "Governo Digital / Inovação e Serviço ao Cidadão").
 
-Substituir o layout actual (foto+info+chip dourado) por uma grelha rígida 30/45/25 dentro da safe-zone de 3 mm:
-
-```text
-┌─ HEADER (faixa verde 6mm) ─────────────────────────────┐
-│ República de Angola · MINAGRIF        [SIGAFLO wordmark]│
-├──────────┬───────────────────────┬─────────────────────┤
-│          │ NOME COMPLETO (11pt)  │   ▢ QR (22×22 mm)   │
-│  FOTO    │ ID SIGAF (bold mono)  │                     │
-│ 25×32 mm │ Tipo de produtor      │   Cultura principal │
-│  (cinza) │ Província/Município/  │   Área: X.X ha      │
-│          │ Comuna                │                     │
-└──────────┴───────────────────────┴─────────────────────┘
-```
-
-- Reduzir gradientes: fundo branco com faixa institucional verde no topo (6 mm) e rodapé fino (1.5 mm). Eliminar o padrão guilloché agressivo da frente; substituir por marca-d’água SIGAFLO discreta (≤ 6% opacidade) no fundo branco.
-- Foto com moldura cinza neutro (sem dourado), 25×32 mm.
-- Nome em uppercase 11pt bold; ID SIGAF em mono 10pt bold verde institucional; subtítulos em 7pt cinza-700.
-- QR movido para a frente (zona 3) com mínimo 20×20 mm — exigido pelo brief para leitura rápida.
-- Remover chip PVC simulado e badge "Verificado/Pendente" da frente (ruído visual); estado migra para o verso.
-
-### 2. Verso — estrutura clara
+### FRENTE — novo layout
 
 ```text
-┌────────────────────────────────────────────────┐
-│ ▮▮▮▮▮▮▮ Code128: ID SIGAF        SIGAFLO logo │
-├────────────────────────────────────────────────┤
-│ Estado: ●ACTIVO    NFC: ⌬ disponível          │
-│ BI/NIF · Telefone · Área total                 │
-├────────────────────────────────────────────────┤
-│ Emissão: dd/mm/aaaa   │ Nota legal:           │
-│ Validade: dd/mm/aaaa  │ Documento intransmis- │
-│ ☎ 923 000 000         │ sível. Uso institucio-│
-│ sigaflo.gov.ao        │ nal. Devolver ao MINAG│
-└────────────────────────────────────────────────┘
+┌───────────────────────────────────────────────────────────────┐
+│ [brasão] REPÚBLICA DE ANGOLA   [logo SIGAFLO grande]   ┌────┐ │
+│          Ministério da Agric.   SISTEMA INTEGRADO DE    │mapa│ │
+│          e Florestas            GESTÃO AGRO FLORESTAL   │ AO │ │
+│                                                          └────┘ │
+│            ┌───── faixa verde ─────┐         GOVERNO DE       │
+│            │ CARTÃO DE IDENTIFICAÇÃO DO AGRICULTOR │ ANGOLA   │
+│            └───────────────────────┘                          │
+│ ┌──────┐  NOME COMPLETO          📍 PROVÍNCIA                 │
+│ │      │  JOÃO MANUEL KALUNGA       BENGUELA                  │
+│ │ FOTO │                                                       │
+│ │      │  ID SIGAFLO             🏛 MUNICÍPIO                  │
+│ │      │  AO-SIGAF-00012345         BAÍA FUNDA                │
+│ └──────┘                                                       │
+│           TIPO DE PRODUTOR       👥 COMUNA      ▣ QR          │
+│           PEQUENO PRODUTOR          CAIMBAMBO   VERIFIQUE A    │
+│                                                  AUTENTICIDADE │
+│ ═══════════════════ paisagem rural verde ════════════════════ │
+│  ⊙ PRODUZIR  🌳 PRESERVAR  📈 DESENVOLVER  👥 INCLUIR         │
+└───────────────────────────────────────────────────────────────┘
 ```
 
-- Adicionar `jsbarcode` (ou render SVG manual Code128) para o código de barras topo.
-- Indicador NFC textual "⌬ NFC" (apenas badge — sem hardware real).
-- Pílula `ACTIVO/INACTIVO/REVOGADO` com cor semântica (verde/cinza/vermelho).
-- Datas obtidas de `activeCard.issued_at` e regra de validade (default: 5 anos).
-- Nota legal compactada à direita, 5pt.
+Detalhes:
+- **Header branco** com brasão de Angola (asset existente ou placeholder), logo SIGAFLO em verde + tagline "SISTEMA INTEGRADO DE GESTÃO AGRO FLORESTAL", mapa de Angola à direita com tag "GOVERNO DE ANGOLA" sobre faixa verde-escuro recortada.
+- **Faixa verde central** com texto "CARTÃO DE IDENTIFICAÇÃO DO AGRICULTOR".
+- **Corpo em 3 colunas**:
+  - Coluna 1 (foto + paisagem rural ao fundo).
+  - Coluna 2 (Nome, ID SIGAFLO, Tipo de produtor) com labels uppercase pequenas em cinza e valores em peso forte.
+  - Coluna 3 (Província / Município / Comuna) com pequenos ícones a verde.
+- **QR code** integrado à direita (≥ 20 mm) com texto vertical "VERIFIQUE A AUTENTICIDADE DESTE CARTÃO".
+- **Rodapé verde** com paisagem rural ilustrada + 4 pilares: Produzir · Preservar · Desenvolver · Incluir (com mini-ícones).
+- Remover elementos do design anterior: chip PVC simulado, marca-d'água "SIGAFLO" diagonal, badge biometria.
 
-### 3. Paleta e tipografia (design tokens)
+### VERSO — novo layout
 
-Adicionar ao `index.css` / `tailwind.config.ts` tokens dedicados (HSL):
+```text
+┌──────────────────┬──────────────────────────────────┐
+│  📅 DATA EMISSÃO │   CÓDIGO DE BARRAS               │
+│  20/05/2025      │   ▮▮▮▮▮▮ Code128 ▮▮▮▮▮▮          │
+│                  │   AO-SIGAF-00012345              │
+│  📅 VALIDADE     │                                  │
+│  20/05/2030      │   📡 NFC                         │
+│                  │   Aproxime para verificar        │
+│  ✓ ESTADO        │                                  │
+│  ATIVO           │   ┌────────────────────────────┐ │
+│                  │   │ 🎧 LINHA DE APOIO SIGAFLO  │ │
+│  ─signature─     │   │ 923 123 456 │ apoio@...    │ │
+│  MINAGRIF        │   │ www.sigaflo.gov.ao         │ │
+│  AUT. EMISSORA   │   └────────────────────────────┘ │
+└──────────────────┴──────────────────────────────────┘
+```
 
-- `--card-sigaflo-green`: hsl(142 72% 22%) — verde institucional dominante
-- `--card-sigaflo-green-dark`: hsl(142 80% 14%) — faixa header
-- `--card-sigaflo-gold`: hsl(45 90% 55%) — apenas detalhe selo (1 linha)
-- `--card-sigaflo-surface`: hsl(0 0% 100%) — fundo principal
-- `--card-sigaflo-muted`: hsl(220 14% 96%) — fundo foto/secções
-- `--card-sigaflo-text`: hsl(220 13% 18%)
+- **Painel esquerdo verde-escuro** (~38% largura) com Data Emissão, Validade, Estado do Registo, "assinatura" + "AUTORIDADE EMISSORA" (texto institucional, sem logos).
+- **Painel direito branco** com:
+  - Código de barras Code128 (jsbarcode existente) + ID legível.
+  - Bloco NFC com ícone (texto "Aproxime para verificar").
+  - Caixa "Linha de apoio SIGAFLO" com telefone/email/site.
+  - Pequena nota legal: "Este cartão é pessoal e intransmissível. O uso indevido implica sanções nos termos da lei."
+- **Remover** os dois selos (zonas marcadas a vermelho).
+- Folhagem decorativa muito subtil (≤ 5% opacidade) no fundo verde.
 
-Tipografia: Inter (já presente). Hierarquia: Nome 11pt/700, ID 10pt/700 mono, dados 7.5pt/500, labels 6pt/600 uppercase.
+### Tokens / paleta
+Manter os tokens `--card-sigaflo-*` já existentes; ajustar:
+- Verde escuro do painel verso: `#0c3d1a`.
+- Verde médio header/badges: `#1f6b34`.
+- Verde claro de fundo das caixas (linha apoio, nota legal): `#f0f7f1`.
+- Texto principal: `#1a2030`. Labels: `#6b7280`.
 
-### 4. Compatibilidade print-ready
+### Assets necessários
+- `src/assets/brasao-angola.png` — brasão da República (gerado/placeholder SVG com escudo simplificado).
+- `src/assets/sigaflo-logo.svg` — logo SIGAFLO (composição de árvore/folhas em verde com tagline).
+- `src/assets/mapa-angola.svg` — silhueta do mapa para o badge "Governo de Angola".
+- `src/assets/paisagem-rural.svg` — ilustração leve da paisagem para rodapé da frente.
 
-- Manter `@page 85.6mm 53.98mm`, margem 0, com safe-zone CSS de 3 mm (padding interno).
-- Adicionar guias visuais opcionais de sangria (3 mm) para o modo PVC no preview de impressão.
-- Forçar `print-color-adjust: exact`. Usar apenas cores sólidas (sem gradientes complexos) → melhor conversão para CMYK em RIPs externos.
-- Render `html2canvas` aumentado para `scale: 5` (~300 DPI em 85.6 mm).
+Estes assets serão gerados via `imagegen` (transparent PNG) com prompts específicos, ou desenhados directamente em SVG inline para manter print-ready / vetorial. Decisão: **inline SVG** (vetorial, sem dependências externas, escalável a 300 DPI sem perda).
 
-### 5. Versão digital (preview 3D)
+### Ficheiros a actualizar
 
-- Refazer JSX da frente/verso em `FarmerCard.tsx` espelhando exactamente o template HTML para evitar discrepâncias entre preview e PDF.
-- Manter flip 3D, mas remover o badge dourado e overlay "Rascunho" → mover para `CardStatusBar`.
-- Mobile: garantir que o card (380×240 px) escala com `max-w-full` e `aspect-[1.586]`.
-
-### 6. Exportação em lote
-
-Actualizar `src/lib/cardBatchExport.ts` (`drawCardFront` e `drawCardBack`) com o mesmo layout 30/45/25, código de barras no verso, paleta institucional e tipografia. Manter compatibilidade com `BatchExportOptions` actual.
-
-### 7. Template reutilizável
-
-Extrair o markup HTML do cartão para `src/lib/cardTemplate.ts` exportando `renderCardFrontHtml(ctx)` e `renderCardBackHtml(ctx)` reutilizado por:
-- `FarmerCard.tsx` (impressão single)
-- futuras integrações (e-mail, partilha pública)
-
-### Ficheiros a alterar
-
-- `src/components/farmers/FarmerCard.tsx` — preview 3D + `buildPrintHtml`
-- `src/lib/cardTemplate.ts` — **novo**, markup partilhado
-- `src/lib/cardBatchExport.ts` — sincronizar `drawCardFront`/`drawCardBack`
-- `src/index.css` + `tailwind.config.ts` — tokens `--card-sigaflo-*`
-- `package.json` — adicionar `jsbarcode`
+- `src/lib/cardTemplate.ts` — reescrever `renderCardFrontHtml` e `renderCardBackHtml` com a nova estrutura HTML/CSS e SVGs inline.
+- `src/components/farmers/FarmerCard.tsx` — sem mudanças estruturais, apenas usa o novo template (preview 3D já consome o template).
+- `src/lib/cardBatchExport.ts` — reescrever `drawCardFront` e `drawCardBack` em jsPDF (vector primitives) para reproduzir o mesmo layout, garantindo que a exportação em lote permanece print-ready.
 
 ### Validação final
-
-- Preview digital idêntico ao PDF gerado (frente + verso).
-- QR ≥ 20 mm, código de barras legível.
-- Nenhum elemento crítico fora da safe-zone de 3 mm.
-- Contraste WCAG AA em todos os textos sobre verde/branco.
-- Geração em lote (A4 grid e CR80) usa o mesmo layout.
+- QR ≥ 20 mm e código de barras legíveis após render @300 DPI.
+- Nada das 3 zonas marcadas a vermelho aparece.
+- Preview 3D digital idêntico ao PDF gerado (single + batch).
+- Margem de segurança de 3 mm respeitada em ambos os lados.
+- Contraste WCAG AA em todos os textos.
