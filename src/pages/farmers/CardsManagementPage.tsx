@@ -12,8 +12,8 @@ import { CreditCard, Download, FileDown, Loader2, Sparkles, Search } from 'lucid
 import { useFarmers, useProvinces, type Farmer } from '@/hooks/useFarmers';
 import { useGenerateCard, useCardStats, type CardStatus } from '@/hooks/useFarmerCards';
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip } from 'recharts';
-import jsPDF from 'jspdf';
 import { toast } from 'sonner';
+import CardBatchExportDialog from '@/components/farmers/CardBatchExportDialog';
 
 const STATUS_LABELS: Record<CardStatus, string> = {
   rascunho: 'Rascunho', gerado: 'Gerado', impresso: 'Impresso', entregue: 'Entregue', revogado: 'Revogado',
@@ -30,6 +30,7 @@ export default function CardsManagementPage() {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [batchExporting, setBatchExporting] = useState(false);
+  const [exportDialogOpen, setExportDialogOpen] = useState(false);
 
   // Get cards map
   const { data: cardsMap = {} } = useQuery({
@@ -87,56 +88,10 @@ export default function CardsManagementPage() {
     toast.success(`${done}/${targets.length} cartões gerados`);
   };
 
-  const handleBatchExportPdf = async () => {
-    const targets = filtered.filter((f) => selected.has(f.id));
-    if (!targets.length) return;
-    setBatchExporting(true);
-    try {
-      // A4 landscape, 10 cartões por página (5 colunas x 2 linhas)
-      const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
-      const cardW = 85.6, cardH = 53.98;
-      const cols = 3, rows = 3; // mais espaço para guias
-      const pageW = 297, pageH = 210;
-      const totalW = cols * cardW + (cols - 1) * 4;
-      const totalH = rows * cardH + (rows - 1) * 4;
-      const offsetX = (pageW - totalW) / 2;
-      const offsetY = (pageH - totalH) / 2;
-      let i = 0;
-      for (const f of targets) {
-        const idx = i % (cols * rows);
-        if (i > 0 && idx === 0) pdf.addPage();
-        const col = idx % cols;
-        const row = Math.floor(idx / cols);
-        const x = offsetX + col * (cardW + 4);
-        const y = offsetY + row * (cardH + 4);
-        // moldura + dados básicos
-        pdf.setDrawColor(150); pdf.setLineDashPattern([1, 1], 0);
-        pdf.rect(x - 1, y - 1, cardW + 2, cardH + 2);
-        pdf.setLineDashPattern([], 0);
-        pdf.setFillColor(22, 163, 74);
-        pdf.rect(x, y, cardW, 10, 'F');
-        pdf.setTextColor(255).setFontSize(9).setFont('helvetica', 'bold');
-        pdf.text('SIGAFLO · CARTÃO DE AGRICULTOR', x + 3, y + 6.5);
-        pdf.setTextColor(0).setFont('helvetica', 'bold').setFontSize(11);
-        pdf.text(f.name.slice(0, 32), x + 3, y + 18);
-        pdf.setFont('helvetica', 'normal').setFontSize(8);
-        pdf.text(`Reg: ${f.registration_number ?? '—'}`, x + 3, y + 24);
-        pdf.text(`${f.provinces?.name ?? ''} / ${f.municipalities?.name ?? ''}`.slice(0, 40), x + 3, y + 30);
-        pdf.text(`Cultura: ${(f.main_crops?.[0]) ?? '—'}`, x + 3, y + 36);
-        pdf.text(`Área: ${f.cultivated_area_ha ?? 0} ha`, x + 3, y + 42);
-        const card = cardsMap[f.id];
-        if (card?.serial) {
-          pdf.setFont('courier', 'normal').setFontSize(7);
-          pdf.text(card.serial, x + 3, y + 50);
-        }
-        i++;
-      }
-      pdf.save(`cartoes-sigaflo-${Date.now()}.pdf`);
-      toast.success(`${targets.length} cartões exportados`);
-    } finally {
-      setBatchExporting(false);
-    }
-  };
+  const selectedFarmers = useMemo(
+    () => filtered.filter((f) => selected.has(f.id)),
+    [filtered, selected],
+  );
 
   const provinceData = Object.entries(stats?.byProvince ?? {})
     .map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value).slice(0, 10);
@@ -215,9 +170,9 @@ export default function CardsManagementPage() {
                 {generate.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
                 Gerar cartões
               </Button>
-              <Button size="sm" variant="outline" onClick={handleBatchExportPdf} disabled={!selected.size || batchExporting}>
+              <Button size="sm" variant="outline" onClick={() => setExportDialogOpen(true)} disabled={!selected.size || batchExporting}>
                 {batchExporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileDown className="h-4 w-4" />}
-                Exportar PDF agrupado
+                Exportar lote (PDF/ZIP)
               </Button>
             </div>
           </div>
@@ -272,6 +227,13 @@ export default function CardsManagementPage() {
           )}
         </CardContent>
       </Card>
+
+      <CardBatchExportDialog
+        open={exportDialogOpen}
+        onOpenChange={setExportDialogOpen}
+        farmers={selectedFarmers}
+        cardsMap={cardsMap}
+      />
     </div>
   );
 }
