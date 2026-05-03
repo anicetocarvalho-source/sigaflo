@@ -52,15 +52,8 @@ const addYears = (iso: string, n: number) => {
 
 // ---------- Inline SVG assets (vector, print-ready) ----------
 
-const brasaoSvg = `
-<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-  <circle cx="30" cy="30" r="28" fill="#fff" stroke="#1f6b34" stroke-width="1.5"/>
-  <path d="M30 10 L42 22 L42 36 L30 50 L18 36 L18 22 Z" fill="#1f6b34"/>
-  <path d="M22 26 L30 18 L38 26 L38 34 L30 42 L22 34 Z" fill="#d4a017"/>
-  <path d="M26 30 h8 M30 26 v8" stroke="#0c3d1a" stroke-width="1.5"/>
-  <path d="M10 32 q20 18 40 0" fill="none" stroke="#1f6b34" stroke-width="1.2"/>
-  <text x="30" y="56" text-anchor="middle" font-family="serif" font-size="4" fill="#0c3d1a" font-weight="700">ANGOLA</text>
-</svg>`.trim();
+// Insígnia oficial da República de Angola (PNG importado como asset Vite).
+// Substitui o brasão SVG estilizado anterior.
 
 const sigafloLogoSvg = `
 <svg viewBox="0 0 200 60" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
