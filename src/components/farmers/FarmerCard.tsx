@@ -212,44 +212,46 @@ export const FarmerCard = ({ farmer, onPrint, showActions = true }: FarmerCardPr
 </head>
 <body>
   ${isPvc ? `
-    <div class="page"><div class="card front"><div class="front-inner">
-      <div class="topbar">
-        <div class="gov">República de Angola<strong>Min. da Agricultura e Florestas</strong></div>
-        <div class="wordmark">SIGAFLO</div>
-      </div>
-      <div class="body">
-        <div class="photo">${photoHtml}</div>
-        <div class="info">
-          <div class="name">${farmer.name}</div>
-          <div class="bi">${formatBI(farmer.bi_nif)}</div>
-          <div class="meta">📍 ${farmer.provinces?.name || '—'}, ${farmer.municipalities?.name || '—'}</div>
-          <div class="reg">Nº ${farmer.registration_number || '—'}</div>
-          <div class="chips">
-            <span class="chip gold">${farmerTypeLabels[farmer.farmer_type] || farmer.farmer_type}</span>
-            <span class="chip">${hasBiometry ? '✓ Biometria' : '⏳ Biometria'}</span>
+    <div class="sheet">
+      <div class="card front"><div class="front-inner">
+        <div class="topbar">
+          <div class="gov">República de Angola<strong>Min. da Agricultura e Florestas</strong></div>
+          <div class="wordmark">SIGAFLO</div>
+        </div>
+        <div class="body">
+          <div class="photo">${photoHtml}</div>
+          <div class="info">
+            <div class="name">${farmer.name}</div>
+            <div class="bi">${formatBI(farmer.bi_nif)}</div>
+            <div class="meta">📍 ${farmer.provinces?.name || '—'}, ${farmer.municipalities?.name || '—'}</div>
+            <div class="reg">Nº ${farmer.registration_number || '—'}</div>
+            <div class="chips">
+              <span class="chip gold">${farmerTypeLabels[farmer.farmer_type] || farmer.farmer_type}</span>
+              <span class="chip">${hasBiometry ? '✓ Biometria' : '⏳ Biometria'}</span>
+            </div>
           </div>
         </div>
-      </div>
-      <div class="chip-stripe"></div>
-    </div></div></div>
-    <div class="page"><div class="card back">
-      <div class="back-grid">
-        <div class="back-info">
-          <div class="label">BI / NIF</div><div class="value">${formatBI(farmer.bi_nif)}</div>
-          <div class="label">Telefone</div><div class="value">${farmer.phone || '—'}</div>
-          <div class="label">Província / Município</div><div class="value">${farmer.provinces?.name || '—'} / ${farmer.municipalities?.name || '—'}</div>
-          <div class="label">Área Total</div><div class="value">${farmer.total_area_ha ? farmer.total_area_ha.toFixed(1) + ' ha' : '—'}</div>
+        <div class="chip-stripe"></div>
+      </div></div>
+      <div class="card back">
+        <div class="back-grid">
+          <div class="back-info">
+            <div class="label">BI / NIF</div><div class="value">${formatBI(farmer.bi_nif)}</div>
+            <div class="label">Telefone</div><div class="value">${farmer.phone || '—'}</div>
+            <div class="label">Província / Município</div><div class="value">${farmer.provinces?.name || '—'} / ${farmer.municipalities?.name || '—'}</div>
+            <div class="label">Área Total</div><div class="value">${farmer.total_area_ha ? farmer.total_area_ha.toFixed(1) + ' ha' : '—'}</div>
+          </div>
+          <div class="qr-wrap">
+            <img src="${qrSrc}" />
+            <div class="qr-label">Verificar</div>
+          </div>
         </div>
-        <div class="qr-wrap">
-          <img src="${qrSrc}" />
-          <div class="qr-label">Verificar</div>
-        </div>
+        <div class="back-footer">Válido enquanto o registo estiver activo · SIGAFLO</div>
       </div>
-      <div class="back-footer">Válido enquanto o registo estiver activo · SIGAFLO</div>
-    </div></div>
+    </div>
   ` : `
     <div class="sheet">
-      <div>
+      <div class="col">
         <h2>Frente</h2>
         <div class="card front"><div class="front-inner">
           <div class="topbar">
@@ -272,7 +274,7 @@ export const FarmerCard = ({ farmer, onPrint, showActions = true }: FarmerCardPr
           <div class="chip-stripe"></div>
         </div></div>
       </div>
-      <div>
+      <div class="col">
         <h2>Verso</h2>
         <div class="card back">
           <div class="back-grid">
