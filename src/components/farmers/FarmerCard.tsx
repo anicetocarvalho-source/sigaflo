@@ -735,6 +735,68 @@ export const FarmerCard = ({ farmer, onPrint, showActions = true }: FarmerCardPr
               </div>
             </div>
           </div>
+
+          {/* Configuração duplex (alinhamento frente/verso) */}
+          <div className="border-t pt-3 space-y-2">
+            <p className="text-xs font-medium text-muted-foreground">
+              Modo duplex (alinhamento frente/verso)
+            </p>
+            <div className="grid grid-cols-3 gap-2">
+              {([
+                { v: 'long-edge', l: 'Borda longa', d: 'Padrão A4 / livro' },
+                { v: 'short-edge', l: 'Borda curta', d: 'Cartão PVC (Zebra/Evolis)' },
+                { v: 'simplex', l: 'Simplex', d: 'Imprimir só a frente' },
+              ] as const).map((o) => (
+                <button
+                  key={o.v}
+                  type="button"
+                  onClick={() => setDuplexMode(o.v)}
+                  className={`text-left border rounded-md p-2 transition ${
+                    duplexMode === o.v ? 'border-primary bg-primary/5' : 'hover:border-primary/50'
+                  }`}
+                >
+                  <div className="text-xs font-semibold">{o.l}</div>
+                  <div className="text-[10px] text-muted-foreground">{o.d}</div>
+                </button>
+              ))}
+            </div>
+            {duplexMode !== 'simplex' && (
+              <div className="grid grid-cols-2 gap-3 pt-1">
+                <div>
+                  <label className="text-[10px] text-muted-foreground uppercase tracking-wide">
+                    Ajuste fino X (mm): <span className="font-mono">{offsetX.toFixed(1)}</span>
+                  </label>
+                  <input
+                    type="range" min={-3} max={3} step={0.1}
+                    value={offsetX}
+                    onChange={(e) => setOffsetX(parseFloat(e.target.value))}
+                    className="w-full"
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] text-muted-foreground uppercase tracking-wide">
+                    Ajuste fino Y (mm): <span className="font-mono">{offsetY.toFixed(1)}</span>
+                  </label>
+                  <input
+                    type="range" min={-3} max={3} step={0.1}
+                    value={offsetY}
+                    onChange={(e) => setOffsetY(parseFloat(e.target.value))}
+                    className="w-full"
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => { setOffsetX(0); setOffsetY(0); }}
+                  className="col-span-2 text-[10px] text-primary hover:underline text-left"
+                >
+                  Repor calibração
+                </button>
+              </div>
+            )}
+            <p className="text-[10px] text-muted-foreground">
+              Estas preferências ficam guardadas neste dispositivo. Use a borda curta para impressoras de cartão CR-80.
+            </p>
+          </div>
           <div className="border-t pt-3">
             <p className="text-xs font-medium text-muted-foreground mb-2">
               Exportar para PDF (mesmo layout, frente e verso)
