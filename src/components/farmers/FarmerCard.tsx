@@ -168,223 +168,56 @@ export const FarmerCard = ({ farmer, onPrint, showActions = true }: FarmerCardPr
 
   const hasBiometry = !!(farmer as any).fingerprint_data;
 
+  const tplCtx: CardTemplateCtx = {
+    farmer,
+    qrPayload,
+    serial: activeCard?.serial ?? farmer.registration_number,
+    status: activeCard?.card_status === 'revogado' ? 'revogado'
+      : activeCard ? 'activo' : 'inactivo',
+    issuedAt: activeCard?.issued_at,
+    hasNfc: false,
+  };
+
   const buildPrintHtml = (mode: 'pvc' | 'a4') => {
     const isPvc = mode === 'pvc';
-    const qrSrc = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(qrPayload)}`;
-    const photoHtml = farmer.photo_url
-      ? `<img src="${farmer.photo_url}" crossorigin="anonymous" />`
-      : `<div class="initials">${getInitials(farmer.name)}</div>`;
+    const qrSrc = qrServiceUrl(qrPayload);
+    const barcodeSvg = buildBarcodeSvgString(tplCtx.serial || farmer.id);
+    const frontHtml = renderCardFrontHtml(tplCtx, qrSrc);
+    const backHtml = renderCardBackHtml(tplCtx, barcodeSvg);
+
+    const cutCss = isPvc
+      ? (cutPvcVisible ? `.sigaflo-card{outline:0.3mm dashed #888;outline-offset:${cutPvcOffset}mm;}` : '')
+      : (cutA4Visible ? `.sigaflo-card{outline:0.3mm dashed #888;outline-offset:${cutA4Offset}mm;}` : '');
 
     return `<!DOCTYPE html>
-<html>
-<head>
-<meta charset="utf-8" />
+<html><head><meta charset="utf-8" />
 <title>Cartão SIGAFLO — ${farmer.name}</title>
 <style>
-  /* PVC: exact CR-80, no margins, one card per page (duplex front/back).
-     A4: landscape so both cards fit side-by-side within 297x210 minus margins. */
-  @page {
-    size: ${isPvc ? '85.6mm 53.98mm' : 'A4 landscape'};
-    margin: ${isPvc ? '0' : '12mm'};
-  }
-  * { box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  html, body {
-    margin: 0; padding: 0;
-    background: ${isPvc ? 'transparent' : '#f5f5f5'};
-    font-family: 'Helvetica Neue', Arial, sans-serif; color: #fff;
-  }
-  .sheet {
-    ${isPvc
-      ? 'width: 85.6mm;'
-      : 'display: flex; gap: 10mm; flex-wrap: nowrap; align-items: flex-start; justify-content: center;'}
-  }
-  .card {
-    width: 85.6mm; height: 53.98mm; position: relative; overflow: hidden;
-    flex-shrink: 0;
-    ${isPvc
-      ? `display: block; ${cutPvcVisible ? `outline: 0.3mm dashed #888; outline-offset: ${cutPvcOffset}mm;` : ''}`
-      : `box-shadow: 0 2px 6px rgba(0,0,0,0.15); border-radius: 3mm; ${cutA4Visible ? `outline: 0.3mm dashed #888; outline-offset: ${cutA4Offset}mm;` : ''}`}
-  }
+  @page { size: ${isPvc ? '85.6mm 53.98mm' : 'A4 landscape'}; margin: ${isPvc ? '0' : '12mm'}; }
+  html, body { margin:0; padding:0; background: ${isPvc ? 'transparent' : '#f5f5f5'}; font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif; }
+  ${cardCss}
+  ${cutCss}
   ${isPvc ? `
-    /* Force exactly one card per page (front then back). */
-    .card { page-break-after: always; break-after: page; }
-    .card:last-of-type { page-break-after: auto; break-after: auto; }
-    /* Duplex alignment: rotate back when feeder flips along short edge,
-       and apply per-printer fine offset (mm) so front/back register perfectly. */
-    .back-content {
-      transform: rotate(${backRotation}deg) translate(${offsetX}mm, ${offsetY}mm);
-      transform-origin: center center;
-      width: 100%; height: 100%;
-    }
-  ` : ''}
-
-  /* FRONT */
-  .front {
-    background: linear-gradient(135deg, #052e14 0%, #0d4a22 45%, #166534 100%);
-    color: #fff; padding: 4mm 4.5mm; position: relative;
-  }
-  .front::before {
-    content: ''; position: absolute; inset: 0;
-    background:
-      radial-gradient(circle at 85% 15%, rgba(255,255,255,0.18), transparent 45%),
-      repeating-linear-gradient(45deg, rgba(255,255,255,0.04) 0 2px, transparent 2px 8px);
-  }
-  .front-inner { position: relative; height: 100%; display: flex; flex-direction: column; }
-  .topbar { display: flex; align-items: center; justify-content: space-between; }
-  .topbar .gov { font-size: 6pt; letter-spacing: 1.2px; opacity: 0.85; text-transform: uppercase; line-height: 1.3; }
-  .topbar .gov strong { font-size: 7pt; display: block; letter-spacing: 0.5px; }
-  .wordmark {
-    font-size: 9pt; font-weight: 800; letter-spacing: 3px;
-    background: linear-gradient(135deg, #fde68a, #f59e0b);
-    -webkit-background-clip: text; background-clip: text; color: transparent;
-    padding: 1mm 2mm; border: 0.3mm solid rgba(253,230,138,0.45); border-radius: 1mm;
-  }
-  .body { display: flex; gap: 3mm; margin-top: 2mm; flex: 1; align-items: stretch; min-height: 0; }
-  .photo {
-    width: 22mm; height: 28mm; border-radius: 1.5mm; overflow: hidden;
-    border: 0.4mm solid rgba(253,230,138,0.6);
-    box-shadow: inset 0 0 0 0.3mm rgba(0,0,0,0.3), 0 0 4mm rgba(0,0,0,0.4);
-    background: rgba(255,255,255,0.08);
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
-  }
-  .photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
-  .photo .initials { font-size: 18pt; font-weight: 700; color: rgba(255,255,255,0.6); }
-  .info { flex: 1; min-width: 0; display: flex; flex-direction: column; }
-  .name { font-size: 11pt; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; line-height: 1.15; margin: 0 0 1.2mm; }
-  .bi { font-size: 9pt; font-family: 'Courier New', monospace; letter-spacing: 1.5px; color: #fde68a; margin-bottom: 1.5mm; }
-  .meta { font-size: 6.5pt; opacity: 0.92; margin-bottom: 0.8mm; display: flex; align-items: center; gap: 1mm; }
-  .reg { font-family: 'Courier New', monospace; font-size: 7pt; color: #fde68a; margin-top: 1mm; }
-  .chips { margin-top: auto; display: flex; gap: 1.5mm; flex-wrap: wrap; }
-  .chip { font-size: 5.5pt; padding: 0.6mm 1.6mm; border-radius: 1mm; background: rgba(255,255,255,0.18); border: 0.2mm solid rgba(255,255,255,0.25); }
-  .chip.gold { background: rgba(253,230,138,0.18); border-color: rgba(253,230,138,0.45); color: #fde68a; }
-  .chip-stripe {
-    position: absolute; bottom: 4mm; right: 4mm;
-    width: 14mm; height: 9mm; border-radius: 1mm;
-    background: linear-gradient(135deg, #fde68a, #b45309 60%, #fde68a);
-    opacity: 0.85;
-    box-shadow: 0 0 1mm rgba(0,0,0,0.4) inset;
-  }
-  .chip-stripe::after {
-    content: ''; position: absolute; inset: 1mm;
-    background-image:
-      linear-gradient(0deg, transparent 49%, rgba(0,0,0,0.25) 49% 51%, transparent 51%),
-      linear-gradient(90deg, transparent 49%, rgba(0,0,0,0.25) 49% 51%, transparent 51%);
-    background-size: 100% 2mm, 2mm 100%;
-  }
-
-  /* BACK */
-  .back {
-    background: linear-gradient(135deg, #f0fdf4, #dcfce7);
-    color: #1a1a1a; padding: 4mm 4.5mm; position: relative;
-  }
-  .back-grid { display: flex; gap: 3mm; height: 100%; }
-  .back-info { flex: 1; min-width: 0; }
-  .back-info .label { font-size: 6pt; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; }
-  .back-info .value { font-size: 8pt; font-weight: 600; color: #111827; margin-bottom: 1.5mm; }
-  .qr-wrap { display: flex; flex-direction: column; align-items: center; justify-content: center; flex-shrink: 0; }
-  .qr-wrap img { width: 22mm; height: 22mm; }
-  .qr-wrap .qr-label { font-size: 5pt; color: #6b7280; margin-top: 1mm; }
-  .back-footer { position: absolute; bottom: 2mm; left: 4.5mm; right: 4.5mm; font-size: 5pt; color: #6b7280; text-align: center; }
-
-  ${isPvc ? '' : `
-    .col { display: flex; flex-direction: column; align-items: center; }
-    h2 { font-size: 10pt; color: #111; margin: 0 0 4mm; letter-spacing: 1px; text-transform: uppercase; }
-  `}
-</style>
-</head>
-<body>
-  ${isPvc ? `
-    <div class="sheet">
-      <div class="card front"><div class="front-inner">
-        <div class="topbar">
-          <div class="gov">República de Angola<strong>Min. da Agricultura e Florestas</strong></div>
-          <div class="wordmark">SIGAFLO</div>
-        </div>
-        <div class="body">
-          <div class="photo">${photoHtml}</div>
-          <div class="info">
-            <div class="name">${farmer.name}</div>
-            <div class="bi">${formatBI(farmer.bi_nif)}</div>
-            <div class="meta">📍 ${farmer.provinces?.name || '—'}, ${farmer.municipalities?.name || '—'}</div>
-            <div class="reg">Nº ${farmer.registration_number || '—'}</div>
-            <div class="chips">
-              <span class="chip gold">${farmerTypeLabels[farmer.farmer_type] || farmer.farmer_type}</span>
-              <span class="chip">${hasBiometry ? '✓ Biometria' : '⏳ Biometria'}</span>
-            </div>
-          </div>
-        </div>
-        <div class="chip-stripe"></div>
-      </div></div>
-      ${duplexMode === 'simplex' ? '' : `
-      <div class="card back">
-        <div class="back-content">
-          <div class="back-grid">
-            <div class="back-info">
-              <div class="label">BI / NIF</div><div class="value">${formatBI(farmer.bi_nif)}</div>
-              <div class="label">Telefone</div><div class="value">${farmer.phone || '—'}</div>
-              <div class="label">Província / Município</div><div class="value">${farmer.provinces?.name || '—'} / ${farmer.municipalities?.name || '—'}</div>
-              <div class="label">Área Total</div><div class="value">${farmer.total_area_ha ? farmer.total_area_ha.toFixed(1) + ' ha' : '—'}</div>
-            </div>
-            <div class="qr-wrap">
-              <img src="${qrSrc}" />
-              <div class="qr-label">Verificar</div>
-            </div>
-          </div>
-          <div class="back-footer">Válido enquanto o registo estiver activo · SIGAFLO · duplex ${duplexMode}</div>
-        </div>
-      </div>`}
-    </div>
+    .sigaflo-card { page-break-after: always; break-after: page; }
+    .sigaflo-card:last-of-type { page-break-after: auto; break-after: auto; }
+    .back-wrap { transform: rotate(${backRotation}deg) translate(${offsetX}mm, ${offsetY}mm); transform-origin: center center; }
   ` : `
-    <div class="sheet">
-      <div class="col">
-        <h2>Frente</h2>
-        <div class="card front"><div class="front-inner">
-          <div class="topbar">
-            <div class="gov">República de Angola<strong>Min. da Agricultura e Florestas</strong></div>
-            <div class="wordmark">SIGAFLO</div>
-          </div>
-          <div class="body">
-            <div class="photo">${photoHtml}</div>
-            <div class="info">
-              <div class="name">${farmer.name}</div>
-              <div class="bi">${formatBI(farmer.bi_nif)}</div>
-              <div class="meta">📍 ${farmer.provinces?.name || '—'}, ${farmer.municipalities?.name || '—'}</div>
-              <div class="reg">Nº ${farmer.registration_number || '—'}</div>
-              <div class="chips">
-                <span class="chip gold">${farmerTypeLabels[farmer.farmer_type] || farmer.farmer_type}</span>
-                <span class="chip">${hasBiometry ? '✓ Biometria' : '⏳ Biometria'}</span>
-              </div>
-            </div>
-          </div>
-          <div class="chip-stripe"></div>
-        </div></div>
-      </div>
-      <div class="col">
-        <h2>Verso</h2>
-        <div class="card back">
-          <div class="back-grid">
-            <div class="back-info">
-              <div class="label">BI / NIF</div><div class="value">${formatBI(farmer.bi_nif)}</div>
-              <div class="label">Telefone</div><div class="value">${farmer.phone || '—'}</div>
-              <div class="label">Província / Município</div><div class="value">${farmer.provinces?.name || '—'} / ${farmer.municipalities?.name || '—'}</div>
-              <div class="label">Área Total</div><div class="value">${farmer.total_area_ha ? farmer.total_area_ha.toFixed(1) + ' ha' : '—'}</div>
-            </div>
-            <div class="qr-wrap">
-              <img src="${qrSrc}" />
-              <div class="qr-label">Verificar</div>
-            </div>
-          </div>
-          <div class="back-footer">Válido enquanto o registo estiver activo · SIGAFLO</div>
-        </div>
-      </div>
-    </div>
+    .sheet { display: flex; gap: 14mm; flex-wrap: nowrap; align-items: flex-start; justify-content: center; padding-top: 6mm; }
+    .col { display: flex; flex-direction: column; align-items: center; gap: 3mm; }
+    .col h2 { font-size: 9pt; color:#26303d; margin: 0; letter-spacing: 1px; text-transform: uppercase; font-family: Inter, sans-serif; }
   `}
-  <script>
-    window.addEventListener('load', () => setTimeout(() => window.print(), 400));
-  </script>
-</body>
-</html>`;
+</style></head><body>
+${isPvc ? `
+  ${frontHtml}
+  ${duplexMode === 'simplex' ? '' : `<div class="back-wrap">${backHtml}</div>`}
+` : `
+  <div class="sheet">
+    <div class="col"><h2>Frente</h2>${frontHtml}</div>
+    <div class="col"><h2>Verso</h2>${backHtml}</div>
+  </div>
+`}
+<script>window.addEventListener('load', () => setTimeout(() => window.print(), 400));</script>
+</body></html>`;
   };
 
   const openPrintWindow = (mode: 'pvc' | 'a4') => {
