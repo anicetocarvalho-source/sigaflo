@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { UserMenu } from '@/components/auth/UserMenu';
 import { NotificationBell } from './NotificationBell';
+import { OfflineIndicator } from './OfflineIndicator';
 
 interface HeaderProps {
   title: string;
@@ -36,6 +37,8 @@ export function Header({ title, subtitle, onMenuToggle }: HeaderProps) {
             className="w-64 pl-9 bg-muted/50 border-0 focus:bg-background"
           />
         </div>
+
+        <OfflineIndicator />
 
         <NotificationBell />
 

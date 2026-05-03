@@ -2,11 +2,15 @@ import { Toaster } from "@/components/ui/toaster";
 import CoffeeTraceabilityPage from "./pages/coffee/CoffeeTraceabilityPage";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClient } from "@tanstack/react-query";
+import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
+import { createSyncStoragePersister } from "@tanstack/query-sync-storage-persister";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { useEffect } from "react";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { ScrollToTop } from "@/components/layout/ScrollToTop";
+import { initSyncEngine } from "@/lib/offline/syncEngine";
 
 // Pages
 import Index from "./pages/Index";
@@ -116,7 +120,28 @@ import NDVIPage from "./pages/monitoring/NDVIPage";
 // Insurance Module
 import InsurancePage from "./pages/insurance/InsurancePage";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      gcTime: 1000 * 60 * 60 * 24, // 24h — needed for persistence
+      staleTime: 1000 * 60 * 5,
+      networkMode: 'offlineFirst',
+      retry: (count, err: any) => {
+        if (!navigator.onLine) return false;
+        return count < 2;
+      },
+    },
+    mutations: {
+      networkMode: 'offlineFirst',
+    },
+  },
+});
+
+const persister = createSyncStoragePersister({
+  storage: typeof window !== 'undefined' ? window.localStorage : undefined as any,
+  key: 'sigaflo-rq-cache',
+  throttleTime: 1000,
+});
 
 // Role groups for route protection
 const ADMIN_ROLES: Array<'admin_national' | 'admin_provincial' | 'admin_municipal' | 'technician_national' | 'technician_provincial' | 'technician_municipal' | 'private_entity' | 'viewer'> = ['admin_national', 'admin_provincial', 'admin_municipal'];
@@ -136,8 +161,10 @@ const FORESTRY_ROLES: Array<'admin_national' | 'admin_provincial' | 'admin_munic
   'private_entity'
 ];
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
+const App = () => {
+  useEffect(() => { initSyncEngine(queryClient); }, []);
+  return (
+  <PersistQueryClientProvider client={queryClient} persistOptions={{ persister, maxAge: 1000 * 60 * 60 * 24 * 7 }}>
     <AuthProvider>
       <TooltipProvider>
         <Toaster />
@@ -307,6 +334,7 @@ const App = () => (
         </BrowserRouter>
       </TooltipProvider>
     </AuthProvider>
-  </QueryClientProvider>
-);
+  </PersistQueryClientProvider>
+  );
+};
 export default App;
