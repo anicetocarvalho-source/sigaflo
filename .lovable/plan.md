@@ -1,58 +1,67 @@
 ## Problema
 
-O diálogo aberto a partir do botão **Imprimir / Download** (`src/components/farmers/FarmerCard.tsx`, linhas 442–632) acumula 5 secções verticais (Formatos PVC/A4, Duplex + ajuste fino X/Y, Guias de corte A4 e PVC, Export PDF, Footer) dentro de um `DialogContent` com largura por defeito (`max-w-lg`, ~512 px) e sem scroll. Resultado: textos saem fora dos cards e o conteúdo transborda na viewport.
+A página `/agricultores/cartoes` (`src/pages/farmers/CardsManagementPage.tsx`) é renderizada **sem `MainLayout`**, ao contrário do resto do sistema (ex.: `FarmersListPage`, `FarmerDetailPage`). Resulta:
 
-Existe também um warning no console (`DialogFooter` recebe ref sem `forwardRef`) que aparece sempre que o diálogo monta.
+- Sem sidebar, sem header, sem breadcrumbs — parece uma página "órfã".
+- Sem acesso ao perfil do agricultor, ao QR público, ao histórico de auditoria ou às notificações.
+- Sem paginação real (corta arbitrariamente em 200 linhas) nem filtro por município.
+- Sem `QueryState` para estados de loading/erro/vazio (padrão SIGAFLO).
 
-## Solução proposta
+## Plano de integração
 
-Reorganizar o diálogo em **abas** (Tabs do shadcn) para reduzir altura, alargar para `max-w-2xl` e adicionar scroll interno como salvaguarda. Sem mudar comportamento de impressão/exportação.
+### 1. Layout consistente (`MainLayout`)
+- Envolver o conteúdo em `<MainLayout title="Gestão de Cartões" subtitle="Geração, impressão, entrega e auditoria">`.
+- Remover o cabeçalho duplicado (`CreditCard + h1`) — passa a viver no header global.
+- Remover `p-6` interno (já aplicado pelo MainLayout).
 
-### Layout novo
+### 2. Ações por linha (ligação ao agricultor)
+Adicionar coluna **Ações** com:
+- **Ver perfil** → `NavLink` para `/agricultores/{id}` (abre `FarmerDetailPage` no separador "Cartão").
+- **Verificar QR** → abre `/verificar-cartao/{qr_token}` em nova aba (verificação pública existente).
+- **Imprimir** → reutiliza `FarmerCard` em modal (componente já preparado para `PrintPreviewDialog` + `DuplexAlignmentWizard`).
+- **Revogar / Regenerar QR** → menu kebab usando `useRevokeCard` e `useRegenerateQR` já existentes em `useFarmerCards.ts`.
+- **Histórico** → drawer lateral mostrando `useFarmerCardHistory` (eventos generated/printed/delivered/revoked/scanned).
+
+### 3. Ligações cruzadas
+- Botão **"Notificar agricultor"** (sino) que cria notificação via `useNotifications` quando o cartão fica `gerado` ou `impresso`.
+- Botão **"Auditoria"** no header da página → navega para `/admin/auditoria?entity=farmer_cards` (filtro pré-aplicado).
+- Card de KPI "Verificações públicas hoje" alimentado por `farmer_card_events` (event_type=`scanned`).
+- Link no painel de KPIs "Sem cartão" → aplica filtro `statusFilter=sem_cartao` automaticamente.
+
+### 4. Paginação + filtro de município
+- Substituir o `useFarmers` cliente + `slice(0, 200)` por **`usePaginatedQuery`** (padrão SIGAFLO em `src/hooks/usePagination.ts`) consumindo a query Supabase com `range()`.
+- Adicionar **filtro em cascata Província → Município** usando `useLocationCascade`.
+- Adicionar `<PaginationControls />` no rodapé da tabela.
+- Mover o `cardsMap` para uma query paralela limitada à página visível (evita carregar todos os cartões).
+
+### 5. UX padrão
+- Substituir o estado de loading custom por `<QueryState isLoading isError isEmpty>` (padrão `src/components/ui/query-state.tsx`).
+- Skeleton loader na tabela enquanto carrega (consistente com `FarmersListPage`).
+- Mobile: ações colapsam em menu kebab; tabela usa scroll horizontal.
+
+## Diagrama de navegação
 
 ```text
-┌─ Imprimir cartão ────────────────────────────┐
-│  [ Formato ] [ Calibração ] [ Guias de corte ] │
-│ ────────────────────────────────────────────── │
-│  (conteúdo da aba activa, scrollável)         │
-│                                                │
-│  ── Exportar para PDF ──                       │
-│  [ PDF PVC ]  [ PDF A4 ]                       │
-│                                                │
-│                          [ Cancelar ]          │
-└────────────────────────────────────────────────┘
+                ┌─────────────────────────┐
+                │ /agricultores/cartoes   │  (MainLayout + sidebar)
+                └────────────┬────────────┘
+                             │
+   ┌─────────────┬───────────┼───────────┬──────────────┐
+   ▼             ▼           ▼           ▼              ▼
+Ver perfil   Imprimir   Verificar QR  Histórico    Notificar
+/agric/:id   FarmerCard /verificar    Drawer       useNotif.
+             dialog     -cartao/:tok  audit events
 ```
 
-- **Aba "Formato"** — os 2 cards PVC e A4 (pré-visualizar / imprimir), em grid 2 colunas estável.
-- **Aba "Calibração"** — modo duplex + sliders X/Y + repor (só visível se duplex ≠ simplex).
-- **Aba "Guias de corte"** — checkboxes e sliders para A4 e PVC.
-- **Rodapé fixo** — bloco "Exportar para PDF" + botão Cancelar (sempre visíveis, não dentro das abas).
+## Ficheiros previstos
 
-### Alterações de CSS / estrutura
+- **edit** `src/pages/farmers/CardsManagementPage.tsx` — refactor completo (MainLayout, paginação, ações).
+- **new** `src/components/farmers/CardActionsMenu.tsx` — menu kebab por linha (imprimir/revogar/regenerar/notificar).
+- **new** `src/components/farmers/CardHistoryDrawer.tsx` — drawer com timeline de eventos.
+- **edit** `src/components/layout/Sidebar.tsx` — garantir destaque do item "Cartões ID" quando ativo (já existe, só validar).
 
-- `DialogContent` → adicionar `className="max-w-2xl max-h-[90vh] overflow-hidden flex flex-col"`.
-- Wrapper das abas → `flex-1 overflow-y-auto pr-1`.
-- Garantir gaps consistentes (`space-y-3`) e remover `border-t pt-3` redundantes (já separados pelas tabs).
-- Manter todos os labels, sliders e estado/`localStorage` exactamente como hoje — apenas reagrupar.
+## Fora de âmbito
 
-### Correção do warning React
-
-Em `src/components/ui/dialog.tsx`, `DialogFooter` é um function component normal mas o Radix injecta refs em alguns contextos. Envolver com `React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>` para silenciar o warning sem mudar API.
-
-## Ficheiros afectados
-
-- `src/components/farmers/FarmerCard.tsx` — apenas o JSX do `<Dialog open={printDialogOpen}>` (linhas 442–632). Lógica (`buildPrintHtml`, `openPrintWindow`, `exportPdf`, estado) intocada.
-- `src/components/ui/dialog.tsx` — converter `DialogFooter` (e por consistência `DialogHeader`) em `forwardRef`.
-
-## Fora do âmbito
-
-- Não mexe em `cardTemplate.ts`, `cardBatchExport.ts`, nem na pré-visualização 3D.
-- Não altera o fluxo de impressão, duplex, calibração ou geração de PDF.
-- Não altera a página `/dev/print-test` nem o `PrintPreviewDialog`.
-
-## Verificação
-
-1. Navegar a `/agricultores/:id?tab=card`, clicar **Imprimir / Download** → diálogo abre sem overflow em viewport 1394×830 e em 768 px.
-2. Trocar entre as 3 abas — cada secção mantém os controlos com estado preservado.
-3. Imprimir/Exportar PDF nos modos PVC e A4 — comportamento idêntico ao actual.
-4. Console — sem warning de `forwardRef` ao abrir/fechar o diálogo.
+- Mudanças de schema na BD (já existe tudo: `farmer_cards`, `farmer_card_events`, RPCs `revoke_farmer_card`, `regenerate_card_qr`, view `card_verification_view`).
+- Redesenho do `FarmerCard` ou do wizard duplex (já feitos).
+- Alterações no fluxo de exportação em lote (`CardBatchExportDialog` permanece igual).
