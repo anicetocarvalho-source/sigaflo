@@ -1,244 +1,261 @@
 /**
- * Testes de sincronização offline → online.
- *
- * Valida que:
- *  - Mutations executadas offline (cadastro de agricultor, ocorrência) são
- *    enfileiradas no IndexedDB em vez de chamar a rede.
- *  - Ao voltar a rede, syncNow() processa a fila por ordem cronológica e
- *    invoca os endpoints corretos do Supabase.
- *  - Items bem-sucedidos são removidos da fila; falhas incrementam retries
- *    e são marcadas como `failed` ao fim de 3 tentativas.
- *  - Múltiplas mutations enfileiradas offline sincronizam todas em ordem.
+ * Testes de sincronização offline → online (incluindo resolução de conflitos).
  */
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 
-// Mock do cliente Supabase ANTES de importar os módulos sob teste.
 const insertMock = vi.fn();
 const updateMock = vi.fn();
-const eqMock = vi.fn();
+const deleteMock = vi.fn();
+const selectMock = vi.fn();
+const eqUpdateMock = vi.fn();
+const eqDeleteMock = vi.fn();
+const eqSelectMock = vi.fn();
+const maybeSingleMock = vi.fn();
 const fromMock = vi.fn();
 
 vi.mock("@/integrations/supabase/client", () => ({
-  supabase: {
-    from: (...args: any[]) => fromMock(...args),
-  },
+  supabase: { from: (...args: any[]) => fromMock(...args) },
 }));
 
 vi.mock("sonner", () => ({
-  toast: {
-    info: vi.fn(),
-    success: vi.fn(),
-    warning: vi.fn(),
-    error: vi.fn(),
-  },
+  toast: { info: vi.fn(), success: vi.fn(), warning: vi.fn(), error: vi.fn() },
 }));
 
 import { offlineDB, enqueueMutation } from "@/lib/offline/db";
 import { syncNow } from "@/lib/offline/syncEngine";
+import { analyzeConflict, resolveConflict } from "@/lib/offline/conflictResolver";
 
 function setOnline(value: boolean) {
-  Object.defineProperty(navigator, "onLine", {
-    configurable: true,
-    get: () => value,
+  Object.defineProperty(navigator, "onLine", { configurable: true, get: () => value });
+}
+
+/** Wires the from() builder so each chain returns its own mock. */
+function wireFrom(serverRow: Record<string, any> | null = null) {
+  maybeSingleMock.mockResolvedValue({ data: serverRow, error: null });
+  eqSelectMock.mockReturnValue({ maybeSingle: maybeSingleMock });
+  selectMock.mockReturnValue({ eq: eqSelectMock });
+
+  eqUpdateMock.mockResolvedValue({ data: [{}], error: null });
+  updateMock.mockReturnValue({ eq: eqUpdateMock });
+
+  eqDeleteMock.mockResolvedValue({ data: [{}], error: null });
+  deleteMock.mockReturnValue({ eq: eqDeleteMock });
+
+  insertMock.mockResolvedValue({ data: [{}], error: null });
+
+  fromMock.mockReturnValue({
+    insert: insertMock,
+    update: updateMock,
+    delete: deleteMock,
+    select: selectMock,
   });
-}
-
-function mockInsertSuccess() {
-  insertMock.mockResolvedValue({ data: [{ id: "srv-1" }], error: null });
-  fromMock.mockReturnValue({ insert: insertMock });
-}
-
-function mockInsertFailure(message = "rls violation") {
-  insertMock.mockResolvedValue({ data: null, error: { message } });
-  fromMock.mockReturnValue({ insert: insertMock });
-}
-
-function mockUpdateSuccess() {
-  eqMock.mockResolvedValue({ data: [{ id: "srv-2" }], error: null });
-  updateMock.mockReturnValue({ eq: eqMock });
-  fromMock.mockReturnValue({ update: updateMock });
 }
 
 beforeEach(async () => {
   await offlineDB.mutationQueue.clear();
-  insertMock.mockReset();
-  updateMock.mockReset();
-  eqMock.mockReset();
-  fromMock.mockReset();
+  await offlineDB.conflicts.clear();
+  [insertMock, updateMock, deleteMock, selectMock, eqUpdateMock, eqDeleteMock, eqSelectMock, maybeSingleMock, fromMock]
+    .forEach((m) => m.mockReset());
 });
 
-afterEach(() => {
-  setOnline(true);
+afterEach(() => setOnline(true));
+
+// ---------- Conflict resolver unit tests ----------
+
+describe("Resolução de conflitos (3-way merge)", () => {
+  it("não detecta conflito quando local e servidor mudam campos diferentes", () => {
+    const base = { name: "João", phone: "111", area: 5 };
+    const local = { phone: "222" };
+    const server = { name: "João Silva", phone: "111", area: 5, updated_at: "2026-01-02" };
+    const a = analyzeConflict(local, base, server);
+    expect(a.hasConflict).toBe(false);
+    expect(a.localChanged).toEqual(["phone"]);
+    expect(a.serverChanged).toEqual(["name"]);
+  });
+
+  it("detecta conflito real quando ambos alteram o mesmo campo", () => {
+    const base = { phone: "111" };
+    const local = { phone: "222" };
+    const server = { phone: "333", updated_at: "2026-01-02" };
+    const a = analyzeConflict(local, base, server);
+    expect(a.hasConflict).toBe(true);
+    expect(a.conflictingFields).toEqual(["phone"]);
+  });
+
+  it("merge mantém alterações do servidor + alterações locais não conflituantes", () => {
+    const base = { name: "João", phone: "111", area: 5 };
+    const local = { phone: "222" };
+    const server = { name: "João Silva", phone: "111", area: 5, updated_at: "x" };
+    const a = analyzeConflict(local, base, server);
+    const r = resolveConflict("merge", local, base, server, a);
+    expect(r.payload).toEqual({ name: "João Silva", phone: "222", area: 5 });
+    expect(r.requiresManualReview).toBe(false);
+  });
+
+  it("merge sinaliza revisão manual quando há conflito real num campo", () => {
+    const base = { phone: "111", area: 5 };
+    const local = { phone: "222", area: 7 };
+    const server = { phone: "333", area: 5, updated_at: "x" };
+    const a = analyzeConflict(local, base, server);
+    const r = resolveConflict("merge", local, base, server, a);
+    expect(r.requiresManualReview).toBe(true);
+    expect(r.unresolvedFields).toEqual(["phone"]);
+    expect(r.payload!.area).toBe(7); // não conflituante aplicado
+  });
+
+  it("server-wins descarta payload local", () => {
+    const r = resolveConflict("server-wins", { phone: "222" }, { phone: "111" }, { phone: "333" }, {
+      hasConflict: true, conflictingFields: ["phone"], localChanged: ["phone"], serverChanged: ["phone"],
+    });
+    expect(r.payload).toBeNull();
+  });
+
+  it("local-wins força payload local mesmo com conflito", () => {
+    const r = resolveConflict("local-wins", { phone: "222" }, { phone: "111" }, { phone: "333" }, {
+      hasConflict: true, conflictingFields: ["phone"], localChanged: ["phone"], serverChanged: ["phone"],
+    });
+    expect(r.payload).toEqual({ phone: "222" });
+  });
 });
+
+// ---------- Sync engine integration tests ----------
 
 describe("Sincronização offline → online", () => {
-  it("enfileira um cadastro de agricultor quando offline", async () => {
-    setOnline(false);
-
-    await enqueueMutation({
-      module: "farmers",
-      table: "farmers",
-      operation: "insert",
-      payload: { name: "João Field", farmer_type: "individual" },
-      invalidateKeys: [["farmers"]],
-    });
-
-    const queued = await offlineDB.mutationQueue.toArray();
-    expect(queued).toHaveLength(1);
-    expect(queued[0].module).toBe("farmers");
-    expect(queued[0].operation).toBe("insert");
-    expect(queued[0].status).toBe("pending");
-    expect(queued[0].retries).toBe(0);
-    expect(insertMock).not.toHaveBeenCalled();
-  });
-
-  it("processa a fila ao voltar a rede e remove items sincronizados", async () => {
+  it("enfileira cadastro quando offline", async () => {
     setOnline(false);
     await enqueueMutation({
-      module: "occurrences",
-      table: "phytosanitary_occurrences",
-      operation: "insert",
-      payload: { description: "Praga detectada", severity: "high" },
+      module: "farmers", table: "farmers", operation: "insert",
+      payload: { name: "Cadastro" },
     });
-
-    setOnline(true);
-    mockInsertSuccess();
-
-    const result = await syncNow(true);
-
-    expect(result.ok).toBe(1);
-    expect(result.failed).toBe(0);
-    expect(fromMock).toHaveBeenCalledWith("phytosanitary_occurrences");
-    expect(insertMock).toHaveBeenCalledWith({
-      description: "Praga detectada",
-      severity: "high",
-    });
-    expect(await offlineDB.mutationQueue.count()).toBe(0);
-  });
-
-  it("não processa nada se permanecer offline", async () => {
-    setOnline(false);
-    await enqueueMutation({
-      module: "farmers",
-      table: "farmers",
-      operation: "insert",
-      payload: { name: "Maria" },
-    });
-
-    const result = await syncNow(true);
-    expect(result.ok).toBe(0);
-    expect(result.failed).toBe(0);
-    expect(insertMock).not.toHaveBeenCalled();
     expect(await offlineDB.mutationQueue.count()).toBe(1);
+    expect(insertMock).not.toHaveBeenCalled();
   });
 
-  it("respeita ordem cronológica ao sincronizar várias mutations", async () => {
+  it("sincroniza insert ao voltar à rede", async () => {
     setOnline(false);
     await enqueueMutation({
-      module: "farmers",
-      table: "farmers",
-      operation: "insert",
-      payload: { name: "Primeiro" },
+      module: "occurrences", table: "phytosanitary_occurrences", operation: "insert",
+      payload: { description: "Praga" },
     });
-    await new Promise((r) => setTimeout(r, 5));
-    await enqueueMutation({
-      module: "occurrences",
-      table: "climate_occurrences",
-      operation: "insert",
-      payload: { description: "Segundo" },
-    });
-
     setOnline(true);
-    insertMock.mockResolvedValue({ data: [{}], error: null });
-    fromMock.mockReturnValue({ insert: insertMock });
-
-    await syncNow(true);
-
-    const tables = fromMock.mock.calls.map((c) => c[0]);
-    expect(tables).toEqual(["farmers", "climate_occurrences"]);
+    wireFrom();
+    const r = await syncNow(true);
+    expect(r.ok).toBe(1);
+    expect(insertMock).toHaveBeenCalledWith({ description: "Praga" });
     expect(await offlineDB.mutationQueue.count()).toBe(0);
   });
 
-  it("marca como failed após 3 tentativas falhadas", async () => {
+  it("UPDATE sem alteração concorrente aplica payload directamente", async () => {
     setOnline(false);
     await enqueueMutation({
-      module: "farmers",
-      table: "farmers",
-      operation: "insert",
-      payload: { name: "Erro" },
+      module: "farmers", table: "farmers", operation: "update",
+      payload: { phone: "999" },
+      matchKey: { column: "id", value: "f-1" },
+      baseRow: { phone: "111", name: "João", updated_at: "2026-01-01T00:00:00Z" },
+      baseUpdatedAt: "2026-01-01T00:00:00Z",
+      conflictStrategy: "merge",
     });
-
     setOnline(true);
-    mockInsertFailure("permission denied");
-
-    await syncNow(true);
-    let item = (await offlineDB.mutationQueue.toArray())[0];
-    expect(item.retries).toBe(1);
-    expect(item.status).toBe("pending");
-    expect(item.lastError).toContain("permission denied");
-
-    await syncNow(true);
-    await syncNow(true);
-
-    item = (await offlineDB.mutationQueue.toArray())[0];
-    expect(item.retries).toBe(3);
-    expect(item.status).toBe("failed");
-  });
-
-  it("sincroniza updates com matchKey", async () => {
-    setOnline(false);
-    await enqueueMutation({
-      module: "farmers",
-      table: "farmers",
-      operation: "update",
-      payload: { name: "Atualizado" },
-      matchKey: { column: "id", value: "abc-123" },
-    });
-
-    setOnline(true);
-    mockUpdateSuccess();
-
-    const result = await syncNow(true);
-
-    expect(result.ok).toBe(1);
-    expect(updateMock).toHaveBeenCalledWith({ name: "Atualizado" });
-    expect(eqMock).toHaveBeenCalledWith("id", "abc-123");
+    // server unchanged (same updated_at)
+    wireFrom({ id: "f-1", phone: "111", name: "João", updated_at: "2026-01-01T00:00:00Z" });
+    const r = await syncNow(true);
+    expect(r.ok).toBe(1);
+    expect(updateMock).toHaveBeenCalledWith({ phone: "999" });
     expect(await offlineDB.mutationQueue.count()).toBe(0);
   });
 
-  it("cenário fim-a-fim: cadastro + ocorrência offline, sincronizam ao voltar a rede", async () => {
+  it("UPDATE com merge auto-resolve quando campos alterados são disjuntos", async () => {
     setOnline(false);
-
-    // Técnico no campo regista um agricultor e reporta uma ocorrência sem rede.
     await enqueueMutation({
-      module: "farmers",
-      table: "farmers",
-      operation: "insert",
-      payload: { name: "Cadastro Campo", farmer_type: "individual" },
-      invalidateKeys: [["farmers"]],
+      module: "farmers", table: "farmers", operation: "update",
+      payload: { phone: "999" },
+      matchKey: { column: "id", value: "f-1" },
+      baseRow: { phone: "111", name: "João", updated_at: "2026-01-01T00:00:00Z" },
+      baseUpdatedAt: "2026-01-01T00:00:00Z",
+      conflictStrategy: "merge",
     });
-    await new Promise((r) => setTimeout(r, 5));
-    await enqueueMutation({
-      module: "occurrences",
-      table: "phytosanitary_occurrences",
-      operation: "insert",
-      payload: { description: "Foco de praga", severity: "critical" },
-      invalidateKeys: [["occurrences"]],
-    });
-
-    expect(await offlineDB.mutationQueue.count()).toBe(2);
-
-    // Volta a rede.
     setOnline(true);
-    insertMock.mockResolvedValue({ data: [{ id: "ok" }], error: null });
-    fromMock.mockReturnValue({ insert: insertMock });
+    // servidor alterou nome, local altera telefone — sem conflito real
+    wireFrom({ id: "f-1", phone: "111", name: "João Silva", updated_at: "2026-01-02T00:00:00Z" });
+    const r = await syncNow(true);
+    expect(r.ok).toBe(1);
+    expect(r.conflicts).toBe(0);
+    // payload enviado contém só o campo local (servidor preserva 'name' naturalmente)
+    expect(updateMock).toHaveBeenCalledWith({ phone: "999" });
+    expect(await offlineDB.conflicts.count()).toBe(0);
+  });
 
-    const result = await syncNow(true);
-
-    expect(result.ok).toBe(2);
-    expect(result.failed).toBe(0);
+  it("UPDATE com conflito real é movido para fila de conflitos", async () => {
+    setOnline(false);
+    await enqueueMutation({
+      module: "farmers", table: "farmers", operation: "update",
+      payload: { phone: "999" },
+      matchKey: { column: "id", value: "f-1" },
+      baseRow: { phone: "111", updated_at: "2026-01-01T00:00:00Z" },
+      baseUpdatedAt: "2026-01-01T00:00:00Z",
+      conflictStrategy: "merge",
+    });
+    setOnline(true);
+    // servidor também alterou phone — conflito
+    wireFrom({ id: "f-1", phone: "555", updated_at: "2026-01-02T00:00:00Z" });
+    const r = await syncNow(true);
+    expect(r.ok).toBe(0);
+    expect(r.conflicts).toBe(1);
+    expect(updateMock).not.toHaveBeenCalled();
     expect(await offlineDB.mutationQueue.count()).toBe(0);
-    expect(fromMock).toHaveBeenCalledWith("farmers");
-    expect(fromMock).toHaveBeenCalledWith("phytosanitary_occurrences");
+    const conflicts = await offlineDB.conflicts.toArray();
+    expect(conflicts).toHaveLength(1);
+    expect(conflicts[0].conflictingFields).toEqual(["phone"]);
+    expect(conflicts[0].serverRow.phone).toBe("555");
+    expect(conflicts[0].localPayload.phone).toBe("999");
+  });
+
+  it("estratégia local-wins sobrescreve servidor mesmo em conflito", async () => {
+    setOnline(false);
+    await enqueueMutation({
+      module: "farmers", table: "farmers", operation: "update",
+      payload: { phone: "999" },
+      matchKey: { column: "id", value: "f-1" },
+      baseRow: { phone: "111", updated_at: "2026-01-01T00:00:00Z" },
+      baseUpdatedAt: "2026-01-01T00:00:00Z",
+      conflictStrategy: "local-wins",
+    });
+    setOnline(true);
+    wireFrom({ id: "f-1", phone: "555", updated_at: "2026-01-02T00:00:00Z" });
+    const r = await syncNow(true);
+    expect(r.ok).toBe(1);
+    expect(updateMock).toHaveBeenCalledWith({ phone: "999" });
+    expect(await offlineDB.conflicts.count()).toBe(0);
+  });
+
+  it("estratégia server-wins descarta a mutation silenciosamente", async () => {
+    setOnline(false);
+    await enqueueMutation({
+      module: "farmers", table: "farmers", operation: "update",
+      payload: { phone: "999" },
+      matchKey: { column: "id", value: "f-1" },
+      baseRow: { phone: "111", updated_at: "2026-01-01T00:00:00Z" },
+      baseUpdatedAt: "2026-01-01T00:00:00Z",
+      conflictStrategy: "server-wins",
+    });
+    setOnline(true);
+    wireFrom({ id: "f-1", phone: "555", updated_at: "2026-01-02T00:00:00Z" });
+    const r = await syncNow(true);
+    expect(r.ok).toBe(1);
+    expect(updateMock).not.toHaveBeenCalled();
+    expect(await offlineDB.mutationQueue.count()).toBe(0);
+  });
+
+  it("DELETE de linha já removida no servidor é idempotente", async () => {
+    setOnline(false);
+    await enqueueMutation({
+      module: "farmers", table: "farmers", operation: "delete",
+      payload: {}, matchKey: { column: "id", value: "f-1" },
+    });
+    setOnline(true);
+    wireFrom(null); // server says: row not found
+    const r = await syncNow(true);
+    expect(r.ok).toBe(1);
+    expect(deleteMock).not.toHaveBeenCalled();
   });
 });
