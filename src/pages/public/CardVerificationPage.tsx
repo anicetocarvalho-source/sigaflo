@@ -92,7 +92,7 @@ export default function CardVerificationPage() {
       icon: CheckCircle2,
       tone: 'success',
     };
-  }, [tokenIsValid, isLoading, error, data]);
+  }, [inputIsValid, isLoading, error, data, token]);
 
   const expiresAt = data?.issued_at
     ? new Date(new Date(data.issued_at).setFullYear(new Date(data.issued_at).getFullYear() + CARD_VALIDITY_YEARS))
