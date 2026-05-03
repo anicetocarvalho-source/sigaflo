@@ -6,9 +6,9 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Badge } from '@/components/ui/badge';
 import { Wallet, Smartphone, Clock, Lock, AlertTriangle } from 'lucide-react';
-import { formatAOA } from '@/lib/fiscal';
+import { formatAOA, hashPin } from '@/lib/fiscal';
 import { useFarmerWallet } from '@/hooks/usePOS';
-import { verifyPin } from '@/lib/fiscal';
+import { supabase } from '@/integrations/supabase/client';
 
 interface PaymentStepProps {
   farmer: any;
