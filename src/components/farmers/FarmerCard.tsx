@@ -467,10 +467,12 @@ export const FarmerCard = ({ farmer, onPrint, showActions = true }: FarmerCardPr
           const x = startX + i * (CR80_W + gap);
           pdf.addImage(img, 'JPEG', x, startY, CR80_W, CR80_H);
 
-          // Dashed cut guides
-          pdf.setLineDashPattern([1, 1], 0);
-          pdf.setDrawColor(150);
-          pdf.rect(x - 1, startY - 1, CR80_W + 2, CR80_H + 2);
+          if (cutA4Visible) {
+            pdf.setLineDashPattern([1, 1], 0);
+            pdf.setDrawColor(150);
+            const o = cutA4Offset;
+            pdf.rect(x - o, startY - o, CR80_W + 2 * o, CR80_H + 2 * o);
+          }
         }
         pdf.setLineDashPattern([], 0);
         pdf.setFontSize(8);
