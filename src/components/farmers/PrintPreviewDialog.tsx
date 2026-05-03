@@ -71,7 +71,7 @@ export const PrintPreviewDialog = ({
     doc.open();
     doc.write(html);
     doc.close();
-  }, [open, mode, buildHtml]);
+  }, [open, mode, buildHtml, controlsKey]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
