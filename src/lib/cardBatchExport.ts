@@ -4,23 +4,57 @@ import JSZip from 'jszip';
 import type { Farmer } from '@/hooks/useFarmers';
 import insigniaAngolaUrl from '@/assets/insignia-angola.png';
 
+// ===== Cache da insígnia (carregamento único + dedupe + retry) =====
 let _insigniaDataUrlCache: string | null = null;
+let _insigniaInflight: Promise<string | null> | null = null;
+let _insigniaFailed = false;
+let _insigniaWarned = false;
+
+async function fetchInsigniaOnce(): Promise<string | null> {
+  const MAX_ATTEMPTS = 3;
+  let lastErr: unknown = null;
+  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+    try {
+      const res = await fetch(insigniaAngolaUrl, { cache: 'force-cache' });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const blob = await res.blob();
+      const dataUrl = await new Promise<string>((resolve, reject) => {
+        const r = new FileReader();
+        r.onload = () => resolve(r.result as string);
+        r.onerror = () => reject(r.error ?? new Error('FileReader error'));
+        r.readAsDataURL(blob);
+      });
+      _insigniaDataUrlCache = dataUrl;
+      _insigniaFailed = false;
+      return dataUrl;
+    } catch (err) {
+      lastErr = err;
+      if (attempt < MAX_ATTEMPTS) {
+        await new Promise((r) => setTimeout(r, 150 * attempt));
+      }
+    }
+  }
+  _insigniaFailed = true;
+  if (!_insigniaWarned) {
+    _insigniaWarned = true;
+    console.warn('[cardBatchExport] Falha ao carregar insígnia após retries; a usar fallback vetorial.', lastErr);
+  }
+  return null;
+}
+
 async function getInsigniaDataUrl(): Promise<string | null> {
   if (_insigniaDataUrlCache) return _insigniaDataUrlCache;
-  try {
-    const res = await fetch(insigniaAngolaUrl);
-    const blob = await res.blob();
-    const dataUrl = await new Promise<string>((resolve, reject) => {
-      const r = new FileReader();
-      r.onload = () => resolve(r.result as string);
-      r.onerror = reject;
-      r.readAsDataURL(blob);
-    });
-    _insigniaDataUrlCache = dataUrl;
-    return dataUrl;
-  } catch {
-    return null;
-  }
+  if (_insigniaFailed) return null;
+  if (_insigniaInflight) return _insigniaInflight;
+  _insigniaInflight = fetchInsigniaOnce().finally(() => {
+    _insigniaInflight = null;
+  });
+  return _insigniaInflight;
+}
+
+/** Pré-carrega a insígnia uma vez antes da geração em lote. */
+export async function preloadInsignia(): Promise<void> {
+  await getInsigniaDataUrl();
 }
 
 export type BatchFormat = 'a4_grid' | 'cr80_individual';
@@ -402,6 +436,8 @@ export async function exportCardBatch(
   onProgress?: (p: BatchProgress) => void,
 ): Promise<{ filename: string; size: number }> {
   const verificationOrigin = window.location.origin;
+  // Carrega a insígnia uma única vez antes de iniciar a geração para evitar fetches repetidos por cartão.
+  await preloadInsignia();
   const ctxs: CardCtx[] = farmers.map((f) => ({ farmer: f, card: cardsMap[f.id], verificationOrigin }));
   const batch = safeName(opts.batchName);
 
