@@ -827,6 +827,47 @@ export const FarmerCard = ({ farmer, onPrint, showActions = true }: FarmerCardPr
               Estas preferências ficam guardadas neste dispositivo. Use a borda curta para impressoras de cartão CR-80.
             </p>
           </div>
+
+          {/* Linhas de corte / sangria */}
+          <div className="border-t pt-3 space-y-3">
+            <p className="text-xs font-medium text-muted-foreground">
+              Linhas de corte (sangria)
+            </p>
+            {([
+              { key: 'a4', label: 'A4', visible: cutA4Visible, setVisible: setCutA4Visible, offset: cutA4Offset, setOffset: setCutA4Offset },
+              { key: 'pvc', label: 'CR-80 (PVC)', visible: cutPvcVisible, setVisible: setCutPvcVisible, offset: cutPvcOffset, setOffset: setCutPvcOffset },
+            ] as const).map((cfg) => (
+              <div key={cfg.key}>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={cfg.visible}
+                    onChange={(e) => cfg.setVisible(e.target.checked)}
+                    id={`cut-${cfg.key}`}
+                  />
+                  <label htmlFor={`cut-${cfg.key}`} className="text-xs font-medium cursor-pointer">
+                    Mostrar guias · {cfg.label}
+                  </label>
+                </div>
+                {cfg.visible && (
+                  <div className="mt-1 pl-6">
+                    <label className="text-[10px] text-muted-foreground uppercase tracking-wide">
+                      Offset (mm fora do cartão): <span className="font-mono">{cfg.offset.toFixed(1)}</span>
+                    </label>
+                    <input
+                      type="range" min={0} max={5} step={0.1}
+                      value={cfg.offset}
+                      onChange={(e) => cfg.setOffset(parseFloat(e.target.value))}
+                      className="w-full"
+                    />
+                  </div>
+                )}
+              </div>
+            ))}
+            <p className="text-[10px] text-muted-foreground">
+              Linhas tracejadas a 0,3mm aplicadas em volta de cada cartão na pré-visualização, impressão e PDF.
+            </p>
+          </div>
           <div className="border-t pt-3">
             <p className="text-xs font-medium text-muted-foreground mb-2">
               Exportar para PDF (mesmo layout, frente e verso)
