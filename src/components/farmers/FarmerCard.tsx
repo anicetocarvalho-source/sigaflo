@@ -732,6 +732,24 @@ export const FarmerCard = ({ farmer, onPrint, showActions = true }: FarmerCardPr
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {previewMode && (
+        <PrintPreviewDialog
+          open={!!previewMode}
+          onOpenChange={(v) => !v && setPreviewMode(null)}
+          mode={previewMode}
+          buildHtml={buildPrintHtml}
+          onPrint={(m) => {
+            openPrintWindow(m);
+            setPreviewMode(null);
+          }}
+          onExportPdf={async (m) => {
+            await exportPdf(m);
+            setPreviewMode(null);
+          }}
+          exporting={exporting !== null}
+        />
+      )}
     </div>
   );
 };
