@@ -326,7 +326,7 @@ const CooperativesPage = () => {
                                 </Link>
                               </Button>
                               <Button variant="ghost" size="sm" asChild>
-                                <Link to={`/agricultores/${coop.id}/editar`}>
+                                <Link to={`/agricultores/cooperativas/${coop.id}/editar`}>
                                   <Edit className="h-4 w-4" />
                                 </Link>
                               </Button>

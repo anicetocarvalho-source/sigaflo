@@ -289,7 +289,7 @@ const FieldSchoolsPage = () => {
                                 </Link>
                               </Button>
                               <Button variant="ghost" size="sm" asChild>
-                                <Link to={`/agricultores/${school.id}/editar`}>
+                                <Link to={`/agricultores/escolas/${school.id}/editar`}>
                                   <Edit className="h-4 w-4" />
                                 </Link>
                               </Button>
