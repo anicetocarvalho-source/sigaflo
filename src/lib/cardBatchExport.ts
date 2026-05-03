@@ -83,9 +83,9 @@ async function drawCardFront(pdf: jsPDF, x: number, y: number, ctx: CardCtx) {
   pdf.text('SIGAFLO · CARTÃO DE AGRICULTOR', x + 3, y + 6);
 
   // photo placeholder
-  pdf.setFillColor(230);
+  pdf.setFillColor(230, 230, 230);
   pdf.rect(x + 3, y + 12, 22, 28, 'F');
-  pdf.setTextColor(150).setFontSize(6);
+  pdf.setTextColor(150, 150, 150).setFontSize(6);
   pdf.text('FOTO', x + 11, y + 27);
 
   // dados
