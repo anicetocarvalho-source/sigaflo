@@ -212,7 +212,8 @@ const App = () => {
             <Route path="/escolas-campo/nova" element={<Navigate to="/agricultores/escolas/nova" replace />} />
             <Route path="/escolas-campo/:id/editar" element={<FieldSchoolAliasRedirect />} />
             <Route path="/agricultores/cartoes" element={<ProtectedRoute requiredRoles={TECHNICIAN_AND_ADMIN}><CardsManagementPage /></ProtectedRoute>} />
-            <Route path="/verificacao/:token" element={<CardVerificationPage />} />
+           <Route path="/verificacao/codigo/:code" element={<CardVerificationPage />} />
+           <Route path="/verificacao/:token" element={<CardVerificationPage />} />
             <Route path="/agricultores/:id" element={<ProtectedRoute requiredRoles={ALL_INTERNAL}><FarmerDetailPage /></ProtectedRoute>} />
             <Route path="/agricultores/:id/editar" element={<ProtectedRoute requiredRoles={TECHNICIAN_AND_ADMIN}><FarmerEditPage /></ProtectedRoute>} />
             <Route path="/agricultores/:id/membros" element={<ProtectedRoute requiredRoles={TECHNICIAN_AND_ADMIN}><AddMembersPage /></ProtectedRoute>} />
