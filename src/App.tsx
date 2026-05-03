@@ -131,6 +131,9 @@ import NDVIPage from "./pages/monitoring/NDVIPage";
 // Insurance Module
 import InsurancePage from "./pages/insurance/InsurancePage";
 
+// Dev / QA
+import PrintTestPage from "./pages/dev/PrintTestPage";
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
