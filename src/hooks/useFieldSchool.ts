@@ -102,3 +102,21 @@ export const useSaveFieldSchool = () => {
     onError: (e) => toast.error(getCrudErrorMessage('update', 'escola de campo', e)),
   });
 };
+
+export const useFieldSchoolDetailsBulk = (farmerIds: string[]) => {
+  return useQuery({
+    queryKey: ['field-school-details-bulk', farmerIds.sort().join(',')],
+    queryFn: async () => {
+      if (farmerIds.length === 0) return {} as Record<string, FieldSchoolDetails>;
+      const { data, error } = await supabase
+        .from('field_school_details')
+        .select('*')
+        .in('farmer_id', farmerIds);
+      if (error) throw error;
+      const map: Record<string, FieldSchoolDetails> = {};
+      (data || []).forEach((row: any) => { map[row.farmer_id] = row; });
+      return map;
+    },
+    enabled: farmerIds.length > 0,
+  });
+};

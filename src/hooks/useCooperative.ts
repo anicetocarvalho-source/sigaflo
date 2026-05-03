@@ -100,3 +100,21 @@ export const useSaveCooperative = () => {
     onError: (e) => toast.error(getCrudErrorMessage('update', 'cooperativa', e)),
   });
 };
+
+export const useCooperativeDetailsBulk = (farmerIds: string[]) => {
+  return useQuery({
+    queryKey: ['cooperative-details-bulk', farmerIds.sort().join(',')],
+    queryFn: async () => {
+      if (farmerIds.length === 0) return {} as Record<string, CooperativeDetails>;
+      const { data, error } = await supabase
+        .from('cooperative_details')
+        .select('*')
+        .in('farmer_id', farmerIds);
+      if (error) throw error;
+      const map: Record<string, CooperativeDetails> = {};
+      (data || []).forEach((row: any) => { map[row.farmer_id] = row; });
+      return map;
+    },
+    enabled: farmerIds.length > 0,
+  });
+};
