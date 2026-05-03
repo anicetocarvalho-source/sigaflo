@@ -68,7 +68,7 @@ export const useSaveCooperative = () => {
 
       const detailsRow = { farmer_id: farmerId, ...details };
       const { error: dErr } = await supabase
-        .from('cooperative_details' as any)
+        .from('cooperative_details')
         .upsert(detailsRow as any, { onConflict: 'farmer_id' });
       if (dErr) throw dErr;
 
