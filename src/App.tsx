@@ -161,8 +161,10 @@ const FORESTRY_ROLES: Array<'admin_national' | 'admin_provincial' | 'admin_munic
   'private_entity'
 ];
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
+const App = () => {
+  useEffect(() => { initSyncEngine(queryClient); }, []);
+  return (
+  <PersistQueryClientProvider client={queryClient} persistOptions={{ persister, maxAge: 1000 * 60 * 60 * 24 * 7 }}>
     <AuthProvider>
       <TooltipProvider>
         <Toaster />
@@ -332,6 +334,7 @@ const App = () => (
         </BrowserRouter>
       </TooltipProvider>
     </AuthProvider>
-  </QueryClientProvider>
-);
+  </PersistQueryClientProvider>
+  );
+};
 export default App;
