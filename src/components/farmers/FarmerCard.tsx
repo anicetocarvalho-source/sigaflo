@@ -653,32 +653,44 @@ export const FarmerCard = ({ farmer, onPrint, showActions = true }: FarmerCardPr
             </DialogDescription>
           </DialogHeader>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 py-2">
-            <button
-              type="button"
-              onClick={() => openPrintWindow('pvc')}
-              className="border rounded-lg p-4 text-left hover:border-primary hover:bg-accent transition"
-            >
+            <div className="border rounded-lg p-4 hover:border-primary transition">
               <div className="flex items-center gap-2 mb-1">
                 <CreditCard className="h-5 w-5 text-primary" />
                 <span className="font-semibold">Cartão PVC</span>
               </div>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-muted-foreground mb-3">
                 CR-80 · 85,6 × 53,98 mm · sem margens · frente e verso em páginas separadas (duplex).
               </p>
-            </button>
-            <button
-              type="button"
-              onClick={() => openPrintWindow('a4')}
-              className="border rounded-lg p-4 text-left hover:border-primary hover:bg-accent transition"
-            >
+              <div className="flex gap-2">
+                <Button size="sm" variant="outline" onClick={() => setPreviewMode('pvc')}>
+                  <Eye className="h-3.5 w-3.5 mr-1" />
+                  Pré-visualizar
+                </Button>
+                <Button size="sm" variant="ghost" onClick={() => openPrintWindow('pvc')}>
+                  <Printer className="h-3.5 w-3.5 mr-1" />
+                  Imprimir
+                </Button>
+              </div>
+            </div>
+            <div className="border rounded-lg p-4 hover:border-primary transition">
               <div className="flex items-center gap-2 mb-1">
                 <Printer className="h-5 w-5 text-primary" />
                 <span className="font-semibold">A4 (teste)</span>
               </div>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-muted-foreground mb-3">
                 Frente e verso lado-a-lado em A4, com guias de corte. Ideal para impressão em papel.
               </p>
-            </button>
+              <div className="flex gap-2">
+                <Button size="sm" variant="outline" onClick={() => setPreviewMode('a4')}>
+                  <Eye className="h-3.5 w-3.5 mr-1" />
+                  Pré-visualizar
+                </Button>
+                <Button size="sm" variant="ghost" onClick={() => openPrintWindow('a4')}>
+                  <Printer className="h-3.5 w-3.5 mr-1" />
+                  Imprimir
+                </Button>
+              </div>
+            </div>
           </div>
           <div className="border-t pt-3">
             <p className="text-xs font-medium text-muted-foreground mb-2">
