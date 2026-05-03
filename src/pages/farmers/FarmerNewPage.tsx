@@ -1,4 +1,5 @@
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useEffect } from 'react';
+import { useNavigate, useSearchParams, Navigate } from 'react-router-dom';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { FarmerForm, type FarmerFormSubmitData } from '@/components/farmers/FarmerForm';
 import { useCreateFarmer, useFarmer } from '@/hooks/useFarmers';
