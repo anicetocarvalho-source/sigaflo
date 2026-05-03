@@ -14,6 +14,7 @@ import { useGenerateCard, useCardStats, type CardStatus } from '@/hooks/useFarme
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip } from 'recharts';
 import { toast } from 'sonner';
 import CardBatchExportDialog from '@/components/farmers/CardBatchExportDialog';
+import CardExportJobsPanel from '@/components/farmers/CardExportJobsPanel';
 
 const STATUS_LABELS: Record<CardStatus, string> = {
   rascunho: 'Rascunho', gerado: 'Gerado', impresso: 'Impresso', entregue: 'Entregue', revogado: 'Revogado',
