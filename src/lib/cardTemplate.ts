@@ -1,13 +1,15 @@
 // Shared SIGAFLO card template — used by single-card print/PDF export and
 // kept visually in sync with the React preview in FarmerCard.tsx and the
 // batch jsPDF renderer in cardBatchExport.ts.
+//
+// Layout aligns with the official institutional mockup (CR-80 PVC, 85.6 x 53.98 mm).
 
 import type { Farmer } from '@/hooks/useFarmers';
 
 export interface CardTemplateCtx {
   farmer: Farmer;
   qrPayload: string;          // text encoded into the front QR
-  serial?: string | null;     // ID SIGAF / serial
+  serial?: string | null;     // ID SIGAFLO / serial
   status?: 'activo' | 'inactivo' | 'revogado';
   issuedAt?: string | null;   // ISO
   validUntil?: string | null; // ISO (default: issuedAt + 5 years)
@@ -19,26 +21,22 @@ export const CARD_H_MM = 53.98;
 export const SAFE_MM = 3;
 
 export const CARD_COLORS = {
-  green: '#1f6b34',          // hsl(142 72% 22%)
-  greenDark: '#0c3d1a',      // hsl(142 80% 14%)
-  greenSoft: '#e9f3ec',
-  gold: '#d4a017',
+  green: '#1f6b34',
+  greenDark: '#0c3d1a',
+  greenSoft: '#f0f7f1',
   surface: '#ffffff',
-  muted: '#f1f3f5',
-  text: '#26303d',
+  text: '#1a2030',
   textMuted: '#6b7280',
+  divider: '#e2e6ea',
 } as const;
 
 const farmerTypeLabels: Record<string, string> = {
-  individual: 'Pequeno Agricultor',
-  family: 'Agricultura Familiar',
-  cooperative: 'Cooperativa',
-  field_school: 'Escola de Campo',
-  company: 'Empresa',
+  individual: 'PEQUENO PRODUTOR',
+  family: 'AGRICULTURA FAMILIAR',
+  cooperative: 'COOPERATIVA',
+  field_school: 'ESCOLA DE CAMPO',
+  company: 'EMPRESA',
 };
-
-const fmtBI = (bi?: string | null) =>
-  bi ? bi.replace(/\s/g, '').replace(/(.{4})/g, '$1 ').trim() : '—';
 
 const fmtDate = (iso?: string | null) => {
   if (!iso) return '—';
@@ -49,104 +47,266 @@ const addYears = (iso: string, n: number) => {
   const d = new Date(iso); d.setFullYear(d.getFullYear() + n); return d.toISOString();
 };
 
+// ---------- Inline SVG assets (vector, print-ready) ----------
+
+const brasaoSvg = `
+<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <circle cx="30" cy="30" r="28" fill="#fff" stroke="#1f6b34" stroke-width="1.5"/>
+  <path d="M30 10 L42 22 L42 36 L30 50 L18 36 L18 22 Z" fill="#1f6b34"/>
+  <path d="M22 26 L30 18 L38 26 L38 34 L30 42 L22 34 Z" fill="#d4a017"/>
+  <path d="M26 30 h8 M30 26 v8" stroke="#0c3d1a" stroke-width="1.5"/>
+  <path d="M10 32 q20 18 40 0" fill="none" stroke="#1f6b34" stroke-width="1.2"/>
+  <text x="30" y="56" text-anchor="middle" font-family="serif" font-size="4" fill="#0c3d1a" font-weight="700">ANGOLA</text>
+</svg>`.trim();
+
+const sigafloLogoSvg = `
+<svg viewBox="0 0 200 60" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <g transform="translate(4,8)">
+    <circle cx="22" cy="22" r="20" fill="#1f6b34"/>
+    <path d="M22 8 q-8 6 -8 14 q0 6 4 10 q-2 -4 0 -8 q3 -6 4 -10" fill="#fff"/>
+    <path d="M22 10 q8 4 9 14 q0 5 -3 8" fill="none" stroke="#fff" stroke-width="1.5"/>
+    <path d="M14 28 q8 4 16 0" fill="none" stroke="#fff" stroke-width="1.2"/>
+  </g>
+  <text x="56" y="32" font-family="Inter, Arial, sans-serif" font-size="26" font-weight="800" fill="#1f6b34" letter-spacing="1">SIGAFLO</text>
+  <text x="56" y="44" font-family="Inter, Arial, sans-serif" font-size="6" font-weight="600" fill="#0c3d1a" letter-spacing="1.4">SISTEMA INTEGRADO DE GESTÃO AGRO FLORESTAL</text>
+</svg>`.trim();
+
+const mapaAngolaSvg = `
+<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <path d="M14 16 L60 12 L66 24 L70 38 L64 56 L52 64 L36 66 L22 60 L16 46 L12 30 Z"
+    fill="#1f6b34" stroke="#0c3d1a" stroke-width="0.8"/>
+  <path d="M40 28 l4 -4 l4 6 l-4 6 z" fill="#d4a017"/>
+  <circle cx="42" cy="34" r="2" fill="#0c3d1a"/>
+</svg>`.trim();
+
+const ruralLandscapeSvg = `
+<svg viewBox="0 0 400 50" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" aria-hidden="true">
+  <defs>
+    <linearGradient id="sky" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0" stop-color="#a8d5b1"/>
+      <stop offset="1" stop-color="#1f6b34"/>
+    </linearGradient>
+  </defs>
+  <rect width="400" height="50" fill="url(#sky)"/>
+  <path d="M0 28 q40 -14 80 -2 q40 12 80 -4 q40 -16 80 0 q40 16 80 -2 q40 -18 80 -4 v34 H0 z" fill="#0c5128" opacity="0.85"/>
+  <path d="M0 38 q60 -8 120 0 q60 8 120 -4 q60 -12 120 2 q40 6 40 6 v18 H0 z" fill="#0c3d1a"/>
+  <g fill="#0a2f15" opacity="0.5">
+    <path d="M120 30 v-8 m-3 5 h6 M118 30 q2 -3 4 0" />
+    <circle cx="120" cy="22" r="3"/>
+    <circle cx="280" cy="26" r="2.5"/>
+  </g>
+</svg>`.trim();
+
+// ---------- CSS ----------
+
 export const cardCss = `
   *, *::before, *::after { box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   .sigaflo-card {
     width: ${CARD_W_MM}mm; height: ${CARD_H_MM}mm; position: relative; overflow: hidden;
     font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
     color: ${CARD_COLORS.text}; background: ${CARD_COLORS.surface};
-    border-radius: 2.5mm;
+    border-radius: 2.8mm;
   }
-  .sigaflo-card .safe { position: absolute; inset: ${SAFE_MM}mm; }
 
-  /* ===== FRONT ===== */
+  /* ===================== FRONT ===================== */
   .sigaflo-card.front .header {
-    position: absolute; top: 0; left: 0; right: 0; height: 7mm;
-    background: ${CARD_COLORS.green}; color: #fff;
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 0 3mm;
+    position: absolute; top: 0; left: 0; right: 0; height: 11mm;
+    display: flex; align-items: center; padding: 1.2mm 2.5mm 0;
+    background: #fff;
   }
-  .sigaflo-card.front .header .gov { font-size: 5.5pt; line-height: 1.15; letter-spacing: 0.4px; }
-  .sigaflo-card.front .header .gov b { display: block; font-size: 6pt; }
-  .sigaflo-card.front .header .wm { font-size: 9pt; font-weight: 800; letter-spacing: 2.5px; }
-  .sigaflo-card.front .footer {
-    position: absolute; left: 0; right: 0; bottom: 0; height: 1.6mm;
-    background: ${CARD_COLORS.green};
+  .sigaflo-card.front .header .gov {
+    display: flex; align-items: center; gap: 1.2mm;
+    width: 30%;
+  }
+  .sigaflo-card.front .header .gov .brasao { width: 7mm; height: 7mm; flex: none; }
+  .sigaflo-card.front .header .gov .gov-text {
+    font-size: 4.5pt; line-height: 1.15; color: ${CARD_COLORS.text};
+    letter-spacing: 0.3px;
+  }
+  .sigaflo-card.front .header .gov .gov-text b {
+    display: block; font-size: 5pt; font-weight: 700; color: ${CARD_COLORS.green};
+    letter-spacing: 0.6px;
+  }
+  .sigaflo-card.front .header .gov .gov-text span { font-size: 4pt; color: ${CARD_COLORS.textMuted}; }
+  .sigaflo-card.front .header .logo {
+    flex: 1; display: flex; justify-content: center;
+  }
+  .sigaflo-card.front .header .logo svg { height: 9mm; width: auto; }
+  .sigaflo-card.front .header .gov-badge {
+    width: 22%; display: flex; align-items: center; justify-content: flex-end; gap: 0.8mm;
+  }
+  .sigaflo-card.front .header .gov-badge .map { width: 7mm; height: 7mm; flex: none; }
+  .sigaflo-card.front .header .gov-badge .gov-tag {
+    background: ${CARD_COLORS.greenDark}; color: #fff;
+    padding: 0.6mm 1mm; font-size: 4pt; font-weight: 700;
+    line-height: 1.1; text-align: center; border-radius: 0.4mm;
+    letter-spacing: 0.4px;
+  }
+  .sigaflo-card.front .title {
+    position: absolute; top: 11mm; left: 8mm; right: 8mm; height: 4mm;
+    background: ${CARD_COLORS.green}; color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 0.6mm;
+    font-size: 6pt; font-weight: 700; letter-spacing: 0.8px;
   }
   .sigaflo-card.front .body {
-    position: absolute; top: 8mm; left: 3mm; right: 3mm; bottom: 2.5mm;
-    display: grid; grid-template-columns: 30% 45% 25%; gap: 2mm;
+    position: absolute; top: 16mm; left: 0; right: 0; bottom: 6mm;
+    display: grid; grid-template-columns: 22mm 1fr 23mm; gap: 1.5mm;
+    padding: 1.2mm 2.5mm 0;
   }
   .sigaflo-card.front .photo {
-    background: ${CARD_COLORS.muted};
-    border: 0.25mm solid #cfd4da; border-radius: 1.2mm;
+    background: ${CARD_COLORS.greenSoft};
+    border: 0.2mm solid ${CARD_COLORS.divider}; border-radius: 1mm;
     overflow: hidden; display: flex; align-items: center; justify-content: center;
-    aspect-ratio: 25 / 32;
+    height: 28mm;
   }
   .sigaflo-card.front .photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
-  .sigaflo-card.front .photo .ini { font-size: 16pt; font-weight: 700; color: #9aa1a9; }
-  .sigaflo-card.front .info { display: flex; flex-direction: column; min-width: 0; padding-top: 0.5mm; }
+  .sigaflo-card.front .photo .ini { font-size: 14pt; font-weight: 700; color: ${CARD_COLORS.green}; }
+
+  .sigaflo-card.front .info { display: flex; flex-direction: column; gap: 1.2mm; min-width: 0; padding-top: 0.5mm; }
+  .sigaflo-card.front .info .field { min-width: 0; }
+  .sigaflo-card.front .info .label,
+  .sigaflo-card.front .loc .label {
+    font-size: 4.5pt; font-weight: 700; color: ${CARD_COLORS.textMuted};
+    letter-spacing: 0.6px; text-transform: uppercase; margin-bottom: 0.2mm;
+  }
   .sigaflo-card.front .info .name {
-    font-size: 9.5pt; font-weight: 700; line-height: 1.1;
-    text-transform: uppercase; letter-spacing: 0.2px; color: ${CARD_COLORS.text};
+    font-size: 8pt; font-weight: 800; color: ${CARD_COLORS.text};
+    line-height: 1.05; text-transform: uppercase;
     overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
-    margin-bottom: 1mm;
   }
   .sigaflo-card.front .info .id {
     font-family: 'JetBrains Mono', 'Courier New', monospace;
-    font-size: 8pt; font-weight: 700; color: ${CARD_COLORS.green};
-    letter-spacing: 0.6px; margin-bottom: 1mm;
+    font-size: 7pt; font-weight: 700; color: ${CARD_COLORS.green};
+    letter-spacing: 0.6px;
   }
-  .sigaflo-card.front .info .row { font-size: 6.5pt; color: ${CARD_COLORS.text}; line-height: 1.25; }
-  .sigaflo-card.front .info .row b { color: ${CARD_COLORS.textMuted}; font-weight: 600; }
-  .sigaflo-card.front .right { display: flex; flex-direction: column; align-items: center; justify-content: space-between; }
-  .sigaflo-card.front .qr { width: 21mm; height: 21mm; background: #fff; padding: 0.4mm; border: 0.2mm solid #e2e6ea; border-radius: 0.6mm; }
+  .sigaflo-card.front .info .type {
+    font-size: 6.5pt; font-weight: 700; color: ${CARD_COLORS.text};
+    letter-spacing: 0.3px;
+  }
+
+  .sigaflo-card.front .loc { display: flex; flex-direction: column; gap: 1mm; padding-top: 0.5mm; }
+  .sigaflo-card.front .loc .row { display: flex; align-items: flex-start; gap: 0.8mm; }
+  .sigaflo-card.front .loc .row .ico {
+    color: ${CARD_COLORS.green}; font-size: 5.5pt; line-height: 1; padding-top: 0.4mm;
+  }
+  .sigaflo-card.front .loc .row .val {
+    font-size: 6pt; font-weight: 700; color: ${CARD_COLORS.text};
+    text-transform: uppercase; line-height: 1.1;
+  }
+
+  .sigaflo-card.front .qr-wrap {
+    position: absolute; right: 2.5mm; top: 28mm;
+    display: flex; align-items: center; gap: 0.8mm;
+  }
+  .sigaflo-card.front .qr {
+    width: 14mm; height: 14mm; background: #fff;
+    padding: 0.3mm; border: 0.2mm solid ${CARD_COLORS.divider}; border-radius: 0.5mm;
+  }
   .sigaflo-card.front .qr img, .sigaflo-card.front .qr svg { width: 100%; height: 100%; display: block; }
-  .sigaflo-card.front .right .crop { font-size: 6.5pt; text-align: center; line-height: 1.2; }
-  .sigaflo-card.front .right .crop b { display: block; font-size: 7pt; color: ${CARD_COLORS.green}; }
-
-  /* discreet watermark */
-  .sigaflo-card.front .wmbg {
-    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
-    pointer-events: none; opacity: 0.05; font-size: 28pt; font-weight: 900;
-    letter-spacing: 6px; color: ${CARD_COLORS.green}; transform: rotate(-18deg);
+  .sigaflo-card.front .qr-cap {
+    font-size: 3.8pt; font-weight: 600; color: ${CARD_COLORS.text};
+    line-height: 1.1; max-width: 8mm;
   }
 
-  /* ===== BACK ===== */
-  .sigaflo-card.back { background: ${CARD_COLORS.surface}; }
-  .sigaflo-card.back .top {
-    position: absolute; top: 0; left: 0; right: 0; height: 11mm;
-    background: ${CARD_COLORS.greenSoft}; padding: 1.6mm 3mm;
-    display: flex; align-items: center; justify-content: space-between; gap: 2mm;
+  .sigaflo-card.front .footer {
+    position: absolute; left: 0; right: 0; bottom: 0; height: 6mm;
+    overflow: hidden;
   }
-  .sigaflo-card.back .barcode { flex: 1; min-width: 0; }
-  .sigaflo-card.back .barcode svg { width: 100%; height: 7mm; display: block; }
-  .sigaflo-card.back .barcode .lbl { font-family: 'JetBrains Mono', monospace; font-size: 5.5pt; color: ${CARD_COLORS.text}; text-align: center; margin-top: 0.2mm; letter-spacing: 1.2px; }
-  .sigaflo-card.back .top .brand { font-size: 7pt; font-weight: 800; letter-spacing: 1.6px; color: ${CARD_COLORS.green}; }
-  .sigaflo-card.back .mid {
-    position: absolute; top: 11mm; left: 0; right: 0; height: 14mm;
-    padding: 1.5mm 3mm; display: flex; align-items: center; gap: 2mm; flex-wrap: wrap;
-    border-bottom: 0.15mm solid #e2e6ea;
+  .sigaflo-card.front .footer .scene { position: absolute; inset: 0; }
+  .sigaflo-card.front .footer .scene svg { width: 100%; height: 100%; }
+  .sigaflo-card.front .footer .pillars {
+    position: absolute; inset: 0; display: flex; align-items: center; justify-content: space-around;
+    color: #fff; font-size: 4.5pt; font-weight: 700; letter-spacing: 0.5px;
+    padding: 0 3mm;
   }
-  .sigaflo-card.back .pill {
-    font-size: 6pt; font-weight: 700; padding: 0.5mm 1.6mm; border-radius: 1mm;
-    text-transform: uppercase; letter-spacing: 0.6px;
+  .sigaflo-card.front .footer .pillars .p {
+    display: flex; align-items: center; gap: 0.6mm;
+    text-shadow: 0 0 1.5mm rgba(0,0,0,0.55);
   }
-  .sigaflo-card.back .pill.activo { background: #e7f7ec; color: #0c5128; border: 0.2mm solid #1f6b34; }
-  .sigaflo-card.back .pill.inactivo { background: #f1f3f5; color: #4b5563; border: 0.2mm solid #9aa1a9; }
-  .sigaflo-card.back .pill.revogado { background: #fdecec; color: #8a1a1a; border: 0.2mm solid #c0392b; }
-  .sigaflo-card.back .pill.nfc { background: #fff; color: ${CARD_COLORS.green}; border: 0.2mm solid ${CARD_COLORS.green}; }
-  .sigaflo-card.back .data { font-size: 6.5pt; color: ${CARD_COLORS.text}; width: 100%; margin-top: 0.6mm; line-height: 1.3; }
-  .sigaflo-card.back .data b { color: ${CARD_COLORS.textMuted}; font-weight: 600; }
-  .sigaflo-card.back .bot {
-    position: absolute; top: 25mm; left: 0; right: 0; bottom: 0;
-    padding: 1.6mm 3mm; display: grid; grid-template-columns: 1fr 1fr; gap: 2mm;
+  .sigaflo-card.front .footer .pillars .dot {
+    display: inline-block; width: 1.4mm; height: 1.4mm; border-radius: 50%;
+    background: rgba(255,255,255,0.85);
   }
-  .sigaflo-card.back .bot .col { font-size: 6pt; line-height: 1.35; color: ${CARD_COLORS.text}; }
-  .sigaflo-card.back .bot .col b { color: ${CARD_COLORS.textMuted}; font-weight: 600; }
-  .sigaflo-card.back .legal { font-size: 5pt; color: ${CARD_COLORS.textMuted}; line-height: 1.3; }
-  .sigaflo-card.back .stripe { position: absolute; left: 0; right: 0; bottom: 0; height: 1.4mm; background: ${CARD_COLORS.green}; }
+
+  /* ===================== BACK ===================== */
+  .sigaflo-card.back { background: #fff; display: flex; }
+  .sigaflo-card.back .left {
+    width: 38%; background: ${CARD_COLORS.greenDark}; color: #fff;
+    padding: 2.5mm 2.5mm; display: flex; flex-direction: column; justify-content: space-between;
+    position: relative; overflow: hidden;
+  }
+  .sigaflo-card.back .left::before {
+    content: ''; position: absolute; right: -10mm; bottom: -10mm; width: 40mm; height: 40mm;
+    background: radial-gradient(circle, rgba(255,255,255,0.06), transparent 70%);
+    pointer-events: none;
+  }
+  .sigaflo-card.back .left .item { margin-bottom: 1.6mm; }
+  .sigaflo-card.back .left .item .lbl {
+    font-size: 4.5pt; font-weight: 700; letter-spacing: 0.6px;
+    color: rgba(255,255,255,0.7); display: flex; align-items: center; gap: 0.8mm;
+  }
+  .sigaflo-card.back .left .item .lbl .ico { color: #d4a017; }
+  .sigaflo-card.back .left .item .val {
+    font-size: 7pt; font-weight: 700; color: #fff; margin-top: 0.2mm; letter-spacing: 0.3px;
+  }
+  .sigaflo-card.back .left .sign {
+    border-top: 0.2mm solid rgba(255,255,255,0.25); padding-top: 1mm;
+  }
+  .sigaflo-card.back .left .sign .signature {
+    font-family: 'Brush Script MT', cursive; font-size: 11pt; color: #fff;
+    line-height: 1; margin-bottom: 0.4mm;
+  }
+  .sigaflo-card.back .left .sign .auth {
+    font-size: 4.5pt; font-weight: 700; letter-spacing: 0.6px;
+    color: rgba(255,255,255,0.85);
+  }
+
+  .sigaflo-card.back .right {
+    flex: 1; padding: 2.5mm 3mm;
+    display: flex; flex-direction: column; gap: 1.5mm;
+  }
+  .sigaflo-card.back .right .barcode-block { text-align: center; }
+  .sigaflo-card.back .right .barcode-block .lbl {
+    font-size: 4.5pt; font-weight: 700; color: ${CARD_COLORS.textMuted};
+    letter-spacing: 0.6px; text-align: left; margin-bottom: 0.6mm;
+  }
+  .sigaflo-card.back .right .barcode-block svg { width: 100%; height: 7mm; display: block; }
+  .sigaflo-card.back .right .barcode-block .id {
+    font-family: 'JetBrains Mono', monospace; font-size: 6pt; color: ${CARD_COLORS.text};
+    margin-top: 0.4mm; letter-spacing: 1.2px; font-weight: 700;
+  }
+  .sigaflo-card.back .right .nfc {
+    display: flex; align-items: center; gap: 1mm;
+  }
+  .sigaflo-card.back .right .nfc .ico {
+    width: 4mm; height: 4mm; border-radius: 50%; background: ${CARD_COLORS.greenSoft};
+    color: ${CARD_COLORS.green}; display: flex; align-items: center; justify-content: center;
+    font-size: 5pt; font-weight: 700;
+  }
+  .sigaflo-card.back .right .nfc .txt { font-size: 5pt; color: ${CARD_COLORS.text}; }
+  .sigaflo-card.back .right .nfc .txt b { display: block; font-size: 5.5pt; color: ${CARD_COLORS.green}; letter-spacing: 0.5px; }
+
+  .sigaflo-card.back .right .support {
+    background: ${CARD_COLORS.greenSoft}; border-radius: 1mm;
+    padding: 1mm 1.5mm; display: flex; gap: 1mm; align-items: center;
+  }
+  .sigaflo-card.back .right .support .ico { color: ${CARD_COLORS.green}; font-size: 6pt; }
+  .sigaflo-card.back .right .support .body { font-size: 4.5pt; color: ${CARD_COLORS.text}; line-height: 1.3; }
+  .sigaflo-card.back .right .support .body b {
+    display: block; font-size: 5pt; font-weight: 700; color: ${CARD_COLORS.green};
+    letter-spacing: 0.5px; margin-bottom: 0.2mm;
+  }
+
+  .sigaflo-card.back .right .legal {
+    margin-top: auto;
+    background: ${CARD_COLORS.greenSoft}; border-left: 0.4mm solid ${CARD_COLORS.green};
+    padding: 0.8mm 1.2mm; font-size: 4pt; color: ${CARD_COLORS.text};
+    line-height: 1.3; border-radius: 0.4mm;
+  }
 `;
+
+// ---------- HTML render ----------
 
 export function renderCardFrontHtml(ctx: CardTemplateCtx, qrSrc: string): string {
   const { farmer, serial } = ctx;
@@ -157,91 +317,132 @@ export function renderCardFrontHtml(ctx: CardTemplateCtx, qrSrc: string): string
   const photo = farmer.photo_url
     ? `<img src="${farmer.photo_url}" crossorigin="anonymous" alt="" />`
     : `<span class="ini">${initials}</span>`;
-  const crop = (farmer.main_crops && farmer.main_crops[0]) || '—';
-  const area = (farmer as any).cultivated_area_ha ?? farmer.total_area_ha;
   const id = serial || farmer.registration_number || '—';
+  const farmerType = farmerTypeLabels[farmer.farmer_type] || (farmer.farmer_type ?? '—').toUpperCase();
 
   return `
   <div class="sigaflo-card front">
-    <div class="wmbg">SIGAFLO</div>
     <div class="header">
-      <div class="gov">REPÚBLICA DE ANGOLA<b>Min. Agricultura e Florestas</b></div>
-      <div class="wm">SIGAFLO</div>
+      <div class="gov">
+        <div class="brasao">${brasaoSvg}</div>
+        <div class="gov-text">
+          <b>REPÚBLICA DE ANGOLA</b>
+          <span>Ministério da Agricultura</span>
+          <span>e Florestas</span>
+        </div>
+      </div>
+      <div class="logo">${sigafloLogoSvg}</div>
+      <div class="gov-badge">
+        <div class="map">${mapaAngolaSvg}</div>
+        <div class="gov-tag">GOVERNO DE<br/>ANGOLA</div>
+      </div>
     </div>
+
+    <div class="title">CARTÃO DE IDENTIFICAÇÃO DO AGRICULTOR</div>
+
     <div class="body">
       <div class="photo">${photo}</div>
       <div class="info">
-        <div class="name">${farmer.name ?? '—'}</div>
-        <div class="id">${id}</div>
-        <div class="row"><b>Tipo:</b> ${farmerTypeLabels[farmer.farmer_type] || farmer.farmer_type || '—'}</div>
-        <div class="row"><b>Província:</b> ${farmer.provinces?.name ?? '—'}</div>
-        <div class="row"><b>Município:</b> ${farmer.municipalities?.name ?? '—'}</div>
-        <div class="row"><b>Comuna:</b> ${(farmer as any).communes?.name ?? '—'}</div>
+        <div class="field">
+          <div class="label">Nome Completo</div>
+          <div class="name">${farmer.name ?? '—'}</div>
+        </div>
+        <div class="field">
+          <div class="label">ID SIGAFLO</div>
+          <div class="id">${id}</div>
+        </div>
+        <div class="field">
+          <div class="label">Tipo de Produtor</div>
+          <div class="type">${farmerType}</div>
+        </div>
       </div>
-      <div class="right">
-        <div class="qr"><img src="${qrSrc}" alt="QR" /></div>
-        <div class="crop">
-          <b>${crop}</b>
-          ${area != null ? `${Number(area).toFixed(1)} ha` : ''}
+      <div class="loc">
+        <div>
+          <div class="label">Província</div>
+          <div class="row"><span class="ico">●</span><span class="val">${farmer.provinces?.name ?? '—'}</span></div>
+        </div>
+        <div>
+          <div class="label">Município</div>
+          <div class="row"><span class="ico">●</span><span class="val">${farmer.municipalities?.name ?? '—'}</span></div>
+        </div>
+        <div>
+          <div class="label">Comuna</div>
+          <div class="row"><span class="ico">●</span><span class="val">${(farmer as any).communes?.name ?? '—'}</span></div>
         </div>
       </div>
     </div>
-    <div class="footer"></div>
+
+    <div class="qr-wrap">
+      <div class="qr"><img src="${qrSrc}" alt="QR" /></div>
+      <div class="qr-cap">VERIFIQUE A AUTENTICIDADE DESTE CARTÃO</div>
+    </div>
+
+    <div class="footer">
+      <div class="scene">${ruralLandscapeSvg}</div>
+      <div class="pillars">
+        <div class="p"><span class="dot"></span>PRODUZIR</div>
+        <div class="p"><span class="dot"></span>PRESERVAR</div>
+        <div class="p"><span class="dot"></span>DESENVOLVER</div>
+        <div class="p"><span class="dot"></span>INCLUIR</div>
+      </div>
+    </div>
   </div>`;
 }
 
 export function renderCardBackHtml(ctx: CardTemplateCtx, barcodeSvg: string): string {
-  const { farmer, serial, status = 'activo', issuedAt, validUntil, hasNfc = false } = ctx;
+  const { farmer, serial, status = 'activo', issuedAt, validUntil, hasNfc = true } = ctx;
   const id = serial || farmer.registration_number || '—';
   const issued = issuedAt ?? new Date().toISOString();
   const valid = validUntil ?? addYears(issued, 5);
+  const statusLabel = status === 'activo' ? 'ATIVO' : status === 'revogado' ? 'REVOGADO' : 'INATIVO';
+
   return `
   <div class="sigaflo-card back">
-    <div class="top">
-      <div class="barcode">${barcodeSvg}<div class="lbl">${id}</div></div>
-      <div class="brand">SIGAFLO</div>
-    </div>
-    <div class="mid">
-      <span class="pill ${status}">${status === 'activo' ? '● ACTIVO' : status === 'revogado' ? '● REVOGADO' : '● INACTIVO'}</span>
-      ${hasNfc ? '<span class="pill nfc">⌬ NFC</span>' : ''}
-      <div class="data">
-        <b>BI/NIF:</b> ${fmtBI(farmer.bi_nif)} &nbsp; · &nbsp;
-        <b>Telefone:</b> ${farmer.phone || '—'} &nbsp; · &nbsp;
-        <b>Área:</b> ${farmer.total_area_ha ? `${farmer.total_area_ha.toFixed(1)} ha` : '—'}
+    <div class="left">
+      <div>
+        <div class="item">
+          <div class="lbl"><span class="ico">▣</span> DATA DE EMISSÃO</div>
+          <div class="val">${fmtDate(issued)}</div>
+        </div>
+        <div class="item">
+          <div class="lbl"><span class="ico">▣</span> DATA DE VALIDADE</div>
+          <div class="val">${fmtDate(valid)}</div>
+        </div>
+        <div class="item">
+          <div class="lbl"><span class="ico">✓</span> ESTADO DO REGISTO</div>
+          <div class="val">${statusLabel}</div>
+        </div>
+      </div>
+      <div class="sign">
+        <div class="signature">Autoridade</div>
+        <div class="auth">AUTORIDADE EMISSORA</div>
       </div>
     </div>
-    <div class="bot">
-      <div class="col">
-        <div><b>Emissão:</b> ${fmtDate(issued)}</div>
-        <div><b>Validade:</b> ${fmtDate(valid)}</div>
-        <div><b>Tel:</b> 923 000 000</div>
-        <div><b>Web:</b> sigaflo.gov.ao</div>
+    <div class="right">
+      <div class="barcode-block">
+        <div class="lbl">CÓDIGO DE BARRAS</div>
+        ${barcodeSvg}
+        <div class="id">${id}</div>
       </div>
-      <div class="col legal">
-        Documento intransmissível e de uso institucional. Em caso de
-        extravio ou roubo, devolva ao Ministério da Agricultura e Florestas
-        ou contacte o SIGAFLO. A autenticidade é verificável pelo QR no anverso.
+      ${hasNfc ? `
+      <div class="nfc">
+        <div class="ico">📡</div>
+        <div class="txt"><b>NFC</b>Aproxime para verificar</div>
+      </div>` : ''}
+      <div class="support">
+        <div class="ico">☎</div>
+        <div class="body">
+          <b>LINHA DE APOIO SIGAFLO</b>
+          923 123 456 · apoio@sigaflo.gov.ao<br/>www.sigaflo.gov.ao
+        </div>
+      </div>
+      <div class="legal">
+        Este cartão é pessoal e intransmissível. O uso indevido implica sanções nos termos da lei.
       </div>
     </div>
-    <div class="stripe"></div>
   </div>`;
 }
 
-export function makeBarcodeSvg(value: string): string {
-  // Lightweight Code128-ish visual using deterministic stripes.
-  // For real Code128 the runtime uses jsbarcode (see helper below).
-  const seed = value || 'SIGAFLO';
-  const bars: string[] = [];
-  let x = 0;
-  for (let i = 0; i < seed.length * 6; i++) {
-    const w = ((seed.charCodeAt(i % seed.length) + i) % 3) + 1; // 1..3
-    if (i % 2 === 0) bars.push(`<rect x="${x}" y="0" width="${w}" height="100" fill="#0c3d1a" />`);
-    x += w + 0.5;
-  }
-  return `<svg viewBox="0 0 ${x} 100" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">${bars.join('')}</svg>`;
-}
-
-// QR helper for browser-side print template (uses external service to keep
-// payload identical to legacy implementation and to avoid bundling QR libs).
+// QR helper for browser-side print template.
 export const qrServiceUrl = (payload: string) =>
   `https://api.qrserver.com/v1/create-qr-code/?size=300x300&margin=0&data=${encodeURIComponent(payload)}`;
