@@ -275,21 +275,24 @@ export const FarmerCard = ({ farmer, onPrint, showActions = true }: FarmerCardPr
         </div>
         <div class="chip-stripe"></div>
       </div></div>
+      ${duplexMode === 'simplex' ? '' : `
       <div class="card back">
-        <div class="back-grid">
-          <div class="back-info">
-            <div class="label">BI / NIF</div><div class="value">${formatBI(farmer.bi_nif)}</div>
-            <div class="label">Telefone</div><div class="value">${farmer.phone || '—'}</div>
-            <div class="label">Província / Município</div><div class="value">${farmer.provinces?.name || '—'} / ${farmer.municipalities?.name || '—'}</div>
-            <div class="label">Área Total</div><div class="value">${farmer.total_area_ha ? farmer.total_area_ha.toFixed(1) + ' ha' : '—'}</div>
+        <div class="back-content">
+          <div class="back-grid">
+            <div class="back-info">
+              <div class="label">BI / NIF</div><div class="value">${formatBI(farmer.bi_nif)}</div>
+              <div class="label">Telefone</div><div class="value">${farmer.phone || '—'}</div>
+              <div class="label">Província / Município</div><div class="value">${farmer.provinces?.name || '—'} / ${farmer.municipalities?.name || '—'}</div>
+              <div class="label">Área Total</div><div class="value">${farmer.total_area_ha ? farmer.total_area_ha.toFixed(1) + ' ha' : '—'}</div>
+            </div>
+            <div class="qr-wrap">
+              <img src="${qrSrc}" />
+              <div class="qr-label">Verificar</div>
+            </div>
           </div>
-          <div class="qr-wrap">
-            <img src="${qrSrc}" />
-            <div class="qr-label">Verificar</div>
-          </div>
+          <div class="back-footer">Válido enquanto o registo estiver activo · SIGAFLO · duplex ${duplexMode}</div>
         </div>
-        <div class="back-footer">Válido enquanto o registo estiver activo · SIGAFLO</div>
-      </div>
+      </div>`}
     </div>
   ` : `
     <div class="sheet">
