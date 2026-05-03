@@ -51,9 +51,10 @@ beforeEach(() => {
 
 describe('Insígnia: paridade entre cardTemplate e cardBatchExport', () => {
   it('cardTemplate inclui a insígnia oficial via <img src=...>', () => {
-    const html = renderCardFrontHtml({
-      farmer: { id: 'f1', name: 'Maria', registration_number: 'AO-1' } as any,
-    });
+    const html = renderCardFrontHtml(
+      { farmer: { id: 'f1', name: 'Maria', registration_number: 'AO-1' } as any },
+      'data:image/png;base64,QR==',
+    );
     expect(html).toContain('class="brasao"');
     expect(html).toContain(insigniaAngolaUrl);
     expect(html).toMatch(/<img[^>]+src="[^"]*insignia[^"]*"/i);
