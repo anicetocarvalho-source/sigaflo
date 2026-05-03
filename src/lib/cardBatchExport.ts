@@ -71,61 +71,147 @@ function drawCutGuides(pdf: jsPDF, x: number, y: number, opts: BatchExportOption
 
 async function drawCardFront(pdf: jsPDF, x: number, y: number, ctx: CardCtx) {
   const { farmer, card, verificationOrigin } = ctx;
-  // moldura
-  pdf.setDrawColor(200);
-  pdf.setLineWidth(0.2);
-  pdf.roundedRect(x, y, CARD_W, CARD_H, 2, 2);
+  // Background
+  pdf.setFillColor(255, 255, 255);
+  pdf.rect(x, y, CARD_W, CARD_H, 'F');
+  // Header band — verde institucional
+  pdf.setFillColor(31, 107, 52);
+  pdf.rect(x, y, CARD_W, 7, 'F');
+  pdf.setTextColor(255).setFont('helvetica', 'normal').setFontSize(5.2);
+  pdf.text('REPÚBLICA DE ANGOLA', x + 3, y + 3);
+  pdf.setFont('helvetica', 'bold').setFontSize(5.6);
+  pdf.text('Min. Agricultura e Florestas', x + 3, y + 5.6);
+  pdf.setFont('helvetica', 'bold').setFontSize(9);
+  pdf.text('SIGAFLO', x + CARD_W - 3, y + 5, { align: 'right' });
+  // Footer band
+  pdf.setFillColor(31, 107, 52);
+  pdf.rect(x, y + CARD_H - 1.6, CARD_W, 1.6, 'F');
 
-  // header
-  pdf.setFillColor(22, 101, 52);
-  pdf.rect(x, y, CARD_W, 9, 'F');
-  pdf.setTextColor(255).setFont('helvetica', 'bold').setFontSize(8);
-  pdf.text('SIGAFLO · CARTÃO DE AGRICULTOR', x + 3, y + 6);
+  // Watermark "SIGAFLO" diagonal
+  pdf.setTextColor(31, 107, 52);
+  pdf.setFont('helvetica', 'bold').setFontSize(28);
+  pdf.saveGraphicsState();
+  // @ts-ignore — jsPDF GState
+  pdf.setGState(new (jsPDF as any).GState({ opacity: 0.05 }));
+  pdf.text('SIGAFLO', x + CARD_W / 2, y + CARD_H / 2 + 4, { align: 'center', angle: -18 });
+  pdf.restoreGraphicsState();
 
-  // photo placeholder
-  pdf.setFillColor(230, 230, 230);
-  pdf.rect(x + 3, y + 12, 22, 28, 'F');
-  pdf.setTextColor(150, 150, 150).setFontSize(6);
-  pdf.text('FOTO', x + 11, y + 27);
+  // Layout — Zone 1 photo (30%), Zone 2 info (45%), Zone 3 right (25%)
+  const bodyTop = y + 8;
+  const bodyH = CARD_H - 10.5;
+  const z1W = (CARD_W - 6) * 0.30;
+  const z2W = (CARD_W - 6) * 0.45;
+  const z3W = (CARD_W - 6) * 0.25;
+  const z1X = x + 3;
+  const z2X = z1X + z1W + 1;
+  const z3X = z2X + z2W + 1;
 
-  // dados
-  pdf.setTextColor(0).setFont('helvetica', 'bold').setFontSize(9);
-  pdf.text((farmer.name ?? '').slice(0, 26), x + 27, y + 16);
-  pdf.setFont('helvetica', 'normal').setFontSize(7);
-  pdf.text(`Reg: ${farmer.registration_number ?? '—'}`, x + 27, y + 21);
-  pdf.text(
-    `${farmer.provinces?.name ?? ''} / ${farmer.municipalities?.name ?? ''}`.slice(0, 36),
-    x + 27, y + 25,
-  );
-  pdf.text(`Cultura: ${(farmer.main_crops?.[0]) ?? '—'}`, x + 27, y + 29);
-  pdf.text(`Área: ${farmer.cultivated_area_ha ?? 0} ha`, x + 27, y + 33);
+  // Photo placeholder (cinza neutro)
+  pdf.setFillColor(241, 243, 245);
+  pdf.setDrawColor(207, 212, 218);
+  pdf.setLineWidth(0.15);
+  const photoH = Math.min(bodyH, z1W * 32 / 25);
+  pdf.roundedRect(z1X, bodyTop, z1W - 1, photoH, 0.8, 0.8, 'FD');
+  pdf.setTextColor(154, 161, 169).setFontSize(5);
+  pdf.text('FOTO', z1X + (z1W - 1) / 2, bodyTop + photoH / 2, { align: 'center' });
 
-  if (card?.serial) {
-    pdf.setFont('courier', 'normal').setFontSize(6.5);
-    pdf.text(card.serial, x + 27, y + 38);
-  }
+  // Info zone
+  pdf.setTextColor(38, 48, 61).setFont('helvetica', 'bold').setFontSize(8.5);
+  const nameLines = pdf.splitTextToSize((farmer.name ?? '—').toUpperCase(), z2W - 1);
+  pdf.text(nameLines.slice(0, 2), z2X, bodyTop + 2.8);
 
-  // QR (verificação ou fallback JSON)
+  pdf.setFont('courier', 'bold').setTextColor(31, 107, 52).setFontSize(7.5);
+  pdf.text(card?.serial || farmer.registration_number || '—', z2X, bodyTop + 9);
+
+  pdf.setFont('helvetica', 'normal').setTextColor(38, 48, 61).setFontSize(5.8);
+  const lines = [
+    `Tipo: ${farmer.farmer_type || '—'}`,
+    `Província: ${farmer.provinces?.name ?? '—'}`,
+    `Município: ${farmer.municipalities?.name ?? '—'}`,
+    `Comuna: ${(farmer as any).communes?.name ?? '—'}`,
+  ];
+  lines.forEach((l, i) => pdf.text(l, z2X, bodyTop + 13 + i * 3));
+
+  // Right zone — QR + cultura/área
   const qrPayload = card?.qr_token
     ? `${verificationOrigin}/verificacao/${card.qr_token}`
     : JSON.stringify({ id: farmer.id, reg: farmer.registration_number });
   try {
     const qr = await makeQrDataUrl(qrPayload);
-    pdf.addImage(qr, 'PNG', x + CARD_W - 22, y + CARD_H - 22, 19, 19);
+    const qrSize = Math.min(z3W - 1, 21);
+    pdf.addImage(qr, 'PNG', z3X, bodyTop, qrSize, qrSize);
   } catch { /* ignore */ }
+
+  pdf.setTextColor(31, 107, 52).setFont('helvetica', 'bold').setFontSize(6.5);
+  pdf.text((farmer.main_crops?.[0] ?? '—'), z3X + (z3W - 1) / 2, bodyTop + 25, { align: 'center' });
+  pdf.setTextColor(38, 48, 61).setFont('helvetica', 'normal').setFontSize(6);
+  const area = (farmer as any).cultivated_area_ha ?? farmer.total_area_ha;
+  pdf.text(area != null ? `${Number(area).toFixed(1)} ha` : '', z3X + (z3W - 1) / 2, bodyTop + 28, { align: 'center' });
+}
+
+function drawBarcodeBars(pdf: jsPDF, value: string, x: number, y: number, w: number, h: number) {
+  // Visual barcode (deterministic stripes — for true Code128 the PDF preview is sufficient)
+  pdf.setFillColor(12, 61, 26);
+  const seed = value || 'SIGAFLO';
+  let cx = x;
+  for (let i = 0; i < seed.length * 6 && cx < x + w; i++) {
+    const bw = ((seed.charCodeAt(i % seed.length) + i) % 3) * 0.25 + 0.25;
+    if (i % 2 === 0) pdf.rect(cx, y, bw, h, 'F');
+    cx += bw + 0.18;
+  }
 }
 
 function drawCardBack(pdf: jsPDF, x: number, y: number, ctx: CardCtx) {
   const { farmer, card } = ctx;
-  pdf.setDrawColor(200); pdf.setLineWidth(0.2);
-  pdf.roundedRect(x, y, CARD_W, CARD_H, 2, 2);
-  pdf.setTextColor(0).setFont('helvetica', 'bold').setFontSize(8);
-  pdf.text('Verso · SIGAFLO', x + 3, y + 7);
-  pdf.setFont('helvetica', 'normal').setFontSize(7);
-  pdf.text(`ID: ${farmer.id.slice(0, 12)}`, x + 3, y + 14);
-  if (card?.serial) pdf.text(`Serial: ${card.serial}`, x + 3, y + 19);
-  pdf.setFontSize(6).setTextColor(100);
-  pdf.text('Em caso de extravio contacte 923 000 000 ou o ponto de atendimento mais próximo.', x + 3, y + CARD_H - 6, { maxWidth: CARD_W - 6 });
+  pdf.setFillColor(255, 255, 255);
+  pdf.rect(x, y, CARD_W, CARD_H, 'F');
+
+  // Top band — barcode
+  pdf.setFillColor(233, 243, 236);
+  pdf.rect(x, y, CARD_W, 11, 'F');
+  const bcId = card?.serial || farmer.registration_number || farmer.id.slice(0, 12);
+  drawBarcodeBars(pdf, bcId, x + 3, y + 1.8, CARD_W - 22, 6.5);
+  pdf.setTextColor(38, 48, 61).setFont('courier', 'normal').setFontSize(5.5);
+  pdf.text(bcId, x + 3 + (CARD_W - 22) / 2, y + 10, { align: 'center' });
+  pdf.setTextColor(31, 107, 52).setFont('helvetica', 'bold').setFontSize(7);
+  pdf.text('SIGAFLO', x + CARD_W - 3, y + 6.5, { align: 'right' });
+
+  // Status pill
+  pdf.setDrawColor(31, 107, 52).setFillColor(231, 247, 236).setLineWidth(0.15);
+  pdf.roundedRect(x + 3, y + 12.5, 16, 3.2, 0.6, 0.6, 'FD');
+  pdf.setTextColor(12, 81, 40).setFont('helvetica', 'bold').setFontSize(5.2);
+  pdf.text('● ACTIVO', x + 11, y + 14.7, { align: 'center' });
+
+  // Data row
+  pdf.setTextColor(38, 48, 61).setFont('helvetica', 'normal').setFontSize(5.8);
+  const phone = farmer.phone || '—';
+  const area = farmer.total_area_ha ? `${farmer.total_area_ha.toFixed(1)} ha` : '—';
+  pdf.text(`BI/NIF: ${farmer.bi_nif ?? '—'}   ·   Tel: ${phone}   ·   Área: ${area}`, x + 21, y + 14.7);
+
+  // Bottom — emissão/validade + nota legal
+  pdf.setDrawColor(226, 230, 234).setLineWidth(0.1);
+  pdf.line(x + 3, y + 16.8, x + CARD_W - 3, y + 16.8);
+
+  const issued = new Date();
+  const valid = new Date(issued); valid.setFullYear(valid.getFullYear() + 5);
+  const fmt = (d: Date) => d.toLocaleDateString('pt-PT');
+
+  pdf.setTextColor(38, 48, 61).setFontSize(5.8);
+  pdf.text(`Emissão: ${fmt(issued)}`, x + 3, y + 21);
+  pdf.text(`Validade: ${fmt(valid)}`, x + 3, y + 24);
+  pdf.text('Tel: 923 000 000', x + 3, y + 27);
+  pdf.text('Web: sigaflo.gov.ao', x + 3, y + 30);
+
+  pdf.setTextColor(107, 114, 128).setFontSize(5);
+  const legal = pdf.splitTextToSize(
+    'Documento intransmissível e de uso institucional. Em caso de extravio devolver ao Min. Agricultura e Florestas. Autenticidade verificável pelo QR no anverso.',
+    CARD_W / 2 - 4,
+  );
+  pdf.text(legal, x + CARD_W / 2, y + 21);
+
+  // Footer stripe
+  pdf.setFillColor(31, 107, 52);
+  pdf.rect(x, y + CARD_H - 1.4, CARD_W, 1.4, 'F');
 }
 
 async function buildA4Pdf(ctxs: CardCtx[], opts: BatchExportOptions, onProgress?: (p: BatchProgress) => void): Promise<Blob> {
