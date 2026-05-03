@@ -105,16 +105,35 @@ export const FarmerCard = ({ farmer, onPrint, showActions = true }: FarmerCardPr
 <meta charset="utf-8" />
 <title>Cartão SIGAFLO — ${farmer.name}</title>
 <style>
-  @page { size: ${isPvc ? '85.6mm 53.98mm' : 'A4'}; margin: ${isPvc ? '0' : '15mm'}; }
+  /* PVC: exact CR-80, no margins, one card per page (duplex front/back).
+     A4: landscape so both cards fit side-by-side within 297x210 minus margins. */
+  @page {
+    size: ${isPvc ? '85.6mm 53.98mm' : 'A4 landscape'};
+    margin: ${isPvc ? '0' : '12mm'};
+  }
   * { box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  html, body { margin: 0; padding: 0; background: ${isPvc ? '#0a3d1f' : '#f5f5f5'}; font-family: 'Helvetica Neue', Arial, sans-serif; color: #fff; }
-  .sheet { ${isPvc ? '' : 'display: flex; gap: 12mm; flex-wrap: wrap; padding: 0;'} }
+  html, body {
+    margin: 0; padding: 0;
+    background: ${isPvc ? 'transparent' : '#f5f5f5'};
+    font-family: 'Helvetica Neue', Arial, sans-serif; color: #fff;
+  }
+  .sheet {
+    ${isPvc
+      ? 'width: 85.6mm;'
+      : 'display: flex; gap: 10mm; flex-wrap: nowrap; align-items: flex-start; justify-content: center;'}
+  }
   .card {
     width: 85.6mm; height: 53.98mm; position: relative; overflow: hidden;
-    ${isPvc ? '' : 'box-shadow: 0 2px 6px rgba(0,0,0,0.15); border-radius: 3mm; outline: 1px dashed #888; outline-offset: 2mm;'}
+    flex-shrink: 0;
+    ${isPvc
+      ? 'display: block;'
+      : 'box-shadow: 0 2px 6px rgba(0,0,0,0.15); border-radius: 3mm; outline: 1px dashed #888; outline-offset: 2mm;'}
   }
-  .page { ${isPvc ? 'page-break-after: always;' : ''} }
-  .page:last-child { page-break-after: auto; }
+  ${isPvc ? `
+    /* Force exactly one card per page (front then back). */
+    .card { page-break-after: always; break-after: page; }
+    .card:last-of-type { page-break-after: auto; break-after: auto; }
+  ` : ''}
 
   /* FRONT */
   .front {
@@ -137,17 +156,18 @@ export const FarmerCard = ({ farmer, onPrint, showActions = true }: FarmerCardPr
     -webkit-background-clip: text; background-clip: text; color: transparent;
     padding: 1mm 2mm; border: 0.3mm solid rgba(253,230,138,0.45); border-radius: 1mm;
   }
-  .body { display: flex; gap: 3mm; margin-top: 2mm; flex: 1; align-items: stretch; }
+  .body { display: flex; gap: 3mm; margin-top: 2mm; flex: 1; align-items: stretch; min-height: 0; }
   .photo {
     width: 22mm; height: 28mm; border-radius: 1.5mm; overflow: hidden;
     border: 0.4mm solid rgba(253,230,138,0.6);
     box-shadow: inset 0 0 0 0.3mm rgba(0,0,0,0.3), 0 0 4mm rgba(0,0,0,0.4);
     background: rgba(255,255,255,0.08);
     display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
   }
   .photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
   .photo .initials { font-size: 18pt; font-weight: 700; color: rgba(255,255,255,0.6); }
-  .info { flex: 1; min-width: 0; }
+  .info { flex: 1; min-width: 0; display: flex; flex-direction: column; }
   .name { font-size: 11pt; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; line-height: 1.15; margin: 0 0 1.2mm; }
   .bi { font-size: 9pt; font-family: 'Courier New', monospace; letter-spacing: 1.5px; color: #fde68a; margin-bottom: 1.5mm; }
   .meta { font-size: 6.5pt; opacity: 0.92; margin-bottom: 0.8mm; display: flex; align-items: center; gap: 1mm; }
@@ -176,17 +196,17 @@ export const FarmerCard = ({ farmer, onPrint, showActions = true }: FarmerCardPr
     color: #1a1a1a; padding: 4mm 4.5mm; position: relative;
   }
   .back-grid { display: flex; gap: 3mm; height: 100%; }
-  .back-info { flex: 1; }
+  .back-info { flex: 1; min-width: 0; }
   .back-info .label { font-size: 6pt; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; }
   .back-info .value { font-size: 8pt; font-weight: 600; color: #111827; margin-bottom: 1.5mm; }
-  .qr-wrap { display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  .qr-wrap { display: flex; flex-direction: column; align-items: center; justify-content: center; flex-shrink: 0; }
   .qr-wrap img { width: 22mm; height: 22mm; }
   .qr-wrap .qr-label { font-size: 5pt; color: #6b7280; margin-top: 1mm; }
   .back-footer { position: absolute; bottom: 2mm; left: 4.5mm; right: 4.5mm; font-size: 5pt; color: #6b7280; text-align: center; }
 
   ${isPvc ? '' : `
-    h2 { font-size: 11pt; color: #111; margin: 0 0 4mm; }
-    .crop-marks { color: #888; }
+    .col { display: flex; flex-direction: column; align-items: center; }
+    h2 { font-size: 10pt; color: #111; margin: 0 0 4mm; letter-spacing: 1px; text-transform: uppercase; }
   `}
 </style>
 </head>
