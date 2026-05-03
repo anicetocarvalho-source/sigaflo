@@ -459,6 +459,34 @@ export const FarmerProfileComplete = () => {
 
         {(farmer.farmer_type === 'cooperative' || farmer.farmer_type === 'field_school') && (
           <TabsContent value="entity-details" className="space-y-6">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h3 className="text-lg font-semibold">
+                  {farmer.farmer_type === 'cooperative' ? 'Detalhes da Cooperativa' : 'Detalhes da Escola de Campo'}
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  Informações específicas {farmer.farmer_type === 'cooperative' ? 'da cooperativa agrícola' : 'do programa pedagógico (ECA)'}
+                </p>
+              </div>
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm" asChild>
+                  <Link to={`/agricultores/${farmer.id}`}>
+                    <Eye className="h-4 w-4 mr-2" />
+                    Ver Perfil
+                  </Link>
+                </Button>
+                <Button size="sm" asChild>
+                  <Link to={
+                    farmer.farmer_type === 'cooperative'
+                      ? `/agricultores/cooperativas/${farmer.id}/editar`
+                      : `/agricultores/escolas/${farmer.id}/editar`
+                  }>
+                    <Edit className="h-4 w-4 mr-2" />
+                    Editar {farmer.farmer_type === 'cooperative' ? 'Cooperativa' : 'ECA'}
+                  </Link>
+                </Button>
+              </div>
+            </div>
             {farmer.farmer_type === 'cooperative'
               ? <CooperativeDetailsCard farmerId={farmer.id} />
               : <FieldSchoolDetailsCard farmerId={farmer.id} />}
