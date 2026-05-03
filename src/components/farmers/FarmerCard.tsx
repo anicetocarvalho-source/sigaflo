@@ -168,6 +168,13 @@ export const FarmerCard = ({ farmer, onPrint, showActions = true }: FarmerCardPr
     /* Force exactly one card per page (front then back). */
     .card { page-break-after: always; break-after: page; }
     .card:last-of-type { page-break-after: auto; break-after: auto; }
+    /* Duplex alignment: rotate back when feeder flips along short edge,
+       and apply per-printer fine offset (mm) so front/back register perfectly. */
+    .back-content {
+      transform: rotate(${backRotation}deg) translate(${offsetX}mm, ${offsetY}mm);
+      transform-origin: center center;
+      width: 100%; height: 100%;
+    }
   ` : ''}
 
   /* FRONT */
