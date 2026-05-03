@@ -73,6 +73,9 @@ import { FarmerCard } from './FarmerCard';
 import { FarmerForecast } from './FarmerForecast';
 import { CooperativeDetailsCard } from './CooperativeDetailsCard';
 import { FieldSchoolDetailsCard } from './FieldSchoolDetailsCard';
+import { EntityDetailsConsistency } from './EntityDetailsConsistency';
+import { useCooperativeDetails } from '@/hooks/useCooperative';
+import { useFieldSchoolDetails } from '@/hooks/useFieldSchool';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 import mapboxgl from 'mapbox-gl';
@@ -131,6 +134,10 @@ export const FarmerProfileComplete = () => {
   const { technicians } = useTechnicians();
   const { data: serviceOrders } = useServiceOrders();
   const { scores, ndviReadings, alerts: monitoringAlerts } = useMonitoring();
+  const isCoop = farmer?.farmer_type === 'cooperative';
+  const isEca = farmer?.farmer_type === 'field_school';
+  const { data: coopDetails, isLoading: loadingCoopDetails } = useCooperativeDetails(isCoop ? id : undefined);
+  const { data: ecaDetails, isLoading: loadingEcaDetails } = useFieldSchoolDetails(isEca ? id : undefined);
 
   // Filter data for this farmer
   const farmerTechnician = technicians.find(t => t.id === farmer?.technician_id);
@@ -487,7 +494,28 @@ export const FarmerProfileComplete = () => {
                 </Button>
               </div>
             </div>
-            {farmer.farmer_type === 'cooperative'
+            {(() => {
+              const computedMembers = members.length;
+              const computedArea = members.reduce((s, m: any) => s + (Number(m.cultivated_area_ha) || 0), 0);
+              const discrepancies = isCoop
+                ? [
+                    { label: 'Total de cooperados', declared: coopDetails?.total_members, computed: computedMembers },
+                    { label: 'Área agregada (ha)', declared: coopDetails?.aggregated_area_ha, computed: computedArea, unit: 'ha', tolerance: 0.5 },
+                  ]
+                : [
+                    { label: 'Participantes', declared: ecaDetails?.participants_count, computed: computedMembers },
+                  ];
+              return (
+                <EntityDetailsConsistency
+                  farmerId={farmer.id}
+                  farmerType={isCoop ? 'cooperative' : 'field_school'}
+                  hasDetails={isCoop ? !!coopDetails : !!ecaDetails}
+                  isLoading={isCoop ? loadingCoopDetails : loadingEcaDetails}
+                  discrepancies={discrepancies}
+                />
+              );
+            })()}
+            {isCoop
               ? <CooperativeDetailsCard farmerId={farmer.id} />
               : <FieldSchoolDetailsCard farmerId={farmer.id} />}
           </TabsContent>
