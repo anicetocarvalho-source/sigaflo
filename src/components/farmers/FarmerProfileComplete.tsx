@@ -128,6 +128,8 @@ export const FarmerProfileComplete = () => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const [mapboxToken, setMapboxToken] = useState<string | null>(null);
+  const [photoDialogOpen, setPhotoDialogOpen] = useState(false);
+  const updateFarmer = useUpdateFarmer();
 
   const initialTab = (() => {
     const fromUrl = searchParams.get('tab');
