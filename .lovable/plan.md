@@ -1,103 +1,50 @@
-# Reorganização dos Perfis de Agricultor, Cooperativa e ECA
+# Foto no perfil + Redesign do cartão (PVC CR-80)
 
-## Problema atual
+## 1. Fotografia no perfil do agricultor
 
-A página `FarmerProfileComplete` usa **17+ abas em scroll horizontal** para todos os tipos de entidade (individual, family, company, cooperative, field_school). Isso causa:
+**Problema:** A `photo_url` só pode ser carregada via formulário de edição. No perfil (`FarmerProfileComplete.tsx`) o avatar do cabeçalho usa `farmer.photo_url`, mas se estiver vazia o utilizador não tem como carregar diretamente — e é a mesma foto que alimenta o cartão.
 
-- Sobrecarga cognitiva — muitas abas planas, sem hierarquia
-- Abas irrelevantes para o tipo (ex.: "Agregado" não faz sentido para cooperativa; "Mecanização" não se aplica a ECA)
-- Detalhes específicos de Cooperativa/ECA (`CooperativeDetailsCard`, `FieldSchoolDetailsCard`) ficam diluídos entre abas operacionais
-- Cards de KPI (Quick Stats) idênticos para todos os tipos, sem refletir métricas específicas (ex.: nº de cooperados, participantes da turma)
+**Solução:**
+- No cabeçalho do perfil, tornar o `Avatar` interativo (hover → ícone câmara) abrindo um pequeno diálogo com o componente existente `PhotoUpload`.
+- Ao gravar, fazer `update` em `farmers.photo_url` via `useUpdateFarmer` e invalidar a query do farmer para refletir imediatamente no cabeçalho **e** no cartão.
+- Mostrar fallback com iniciais quando ausente (já existe via `AvatarFallback`), mas adicionar badge "Adicionar foto" quando vazio e o utilizador tiver permissão de edição.
+- Respeitar permissões: só editores (mesmas regras do botão "Editar" já presente) veem o controlo.
 
-## Proposta: agrupar abas em 5 grupos lógicos + variantes por tipo
+## 2. Redesign da frente do cartão (FarmerCard.tsx)
 
-Substituir a fileira plana de abas por **grupos de nível 1** (tabs principais) e dentro de cada grupo **sub-abas** (segmented control). Os grupos e o conteúdo são adaptados ao `farmer_type`.
+Manter proporção CR-80 (1.585:1), mas elevar o nível visual:
 
-### Estrutura unificada (5 grupos principais)
+- **Fundo:** gradiente diagonal verde institucional + camada subtil de padrão geométrico (mapa estilizado de Angola ou linhas guilloché em SVG inline) com baixa opacidade — sensação de documento oficial.
+- **Banda superior:** brasão/escudo (placeholder SVG ou emoji 🇦🇴 estilizado), "REPÚBLICA DE ANGOLA" em letras finas espaçadas, "Ministério da Agricultura e Florestas" abaixo, e selo "SIGAFLO" como wordmark dentro de pílula com vidro fosco (`backdrop-blur`).
+- **Foto:** maior (72×88), borda dourada fina, cantos levemente arredondados, sombra interna.
+- **Hierarquia tipográfica:** nome em destaque (uppercase, tracking apertado), BI/NIF em monospace dourado, província/município com ícone pin minúsculo.
+- **Chip-stripe simulado:** rectângulo dourado com gradiente metálico no canto (à esquerda do nome) — leitura de "cartão real".
+- **Rodapé frontal:** número de registo em monospace + tipo de agricultor como pílula translúcida + indicador de biometria (verificado/pendente).
+- **Estados:** quando `status !== approved/issued`, manter overlay mas mais elegante (faixa diagonal "RASCUNHO" em vez de fundo preto).
 
-```text
-┌─ Identificação ─┬─ Operação ─┬─ Financeiro ─┬─ Monitoria ─┬─ Governança ─┐
-```
+Cores via tokens semânticos do design system (não hardcoded). Adicionar tokens de "card-gold" e "card-green-deep" em `index.css` se necessário (HSL).
 
-**1. Identificação** (sempre visível)
-- Dados gerais (contactos, localização, mapa)
-- Documentos
-- Cartão / QR
-- Biometria *(apenas individual/family)*
-- **Detalhes da Cooperativa** *(apenas cooperative — usa `CooperativeDetailsCard` + `EntityDetailsConsistency`)*
-- **Detalhes da ECA** *(apenas field_school — usa `FieldSchoolDetailsCard` + `EntityDetailsConsistency`)*
+## 3. Impressão no formato PVC padrão (CR-80)
 
-**2. Operação**
-- Parcelas (GIS)
-- Campanhas
-- Produção (histórico)
-- Mecanização *(oculto para ECA)*
-- Membros *(apenas cooperative/field_school — lista filtrada de `members`)*
+**Problema atual:** `handleDownload` abre janela com `padding: 20px` no body e `box-shadow`, o que não imprime correctamente em impressoras de cartão PVC (Zebra, Evolis, Fargo, etc.) que esperam o cartão a ocupar toda a página de 85.6×54 mm sem margens.
 
-**3. Financeiro**
-- AgroPay
-- Compras
-- Incentivos
-- Scores (crédito + seguro)
-- Certificados
-
-**4. Monitoria**
-- Ocorrências climáticas
-- NDVI / Alertas
-- Previsão (forecast)
-
-**5. Governança**
-- Representantes
-- Workflow / Auditoria (mover `WorkflowActions` para dentro deste grupo, em vez de card flutuante no topo)
-- Técnico responsável
-
-### Variantes de KPIs (Quick Stats) por tipo
-
-Substituir os 4 cards genéricos por um conjunto adaptado:
-
-- **Individual / Family**: Área cultivada · Score produtivo · Incentivos · Ocorrências
-- **Company**: Área cultivada · Produção anual · Faturação · Score crédito
-- **Cooperative**: Nº cooperados (declarado vs. computado) · Área agregada · Cultura focal · Ocorrências
-- **Field School (ECA)**: Participantes (M/F) · Cultura focal · Área demonstrativa · Duração restante
-
-### Páginas de listagem (Cooperativas / ECA)
-
-Manter a estrutura atual mas reordenar os cards de detalhe:
-
-- **CooperativesPage**: card de filtros colapsável no topo · KPIs gerais · tabela com colunas reorganizadas (Nome → NIF → Presidente → Membros → Área → Status → Ações)
-- **FieldSchoolsPage**: idem com (Nome → Cultura → Participantes → Início → Duração → Status → Ações)
+**Solução:**
+- Configurar `@page { size: 85.6mm 53.98mm; margin: 0; }` para impressão directa em cartão.
+- Oferecer dois modos no diálogo de download:
+  1. **Imprimir em cartão PVC** (CR-80, 1 face por página, sem margens, sem sombras).
+  2. **Imprimir em A4** (frente + verso lado-a-lado com guias de corte tracejadas, marcas de registo nos cantos, ideal para teste em papel).
+- Remover `box-shadow` e bordas arredondadas no `@media print` (impressoras PVC fazem o corte/canto físico).
+- Adicionar `-webkit-print-color-adjust: exact; print-color-adjust: exact;` para preservar cores.
+- Garantir que a frente e o verso ficam em páginas separadas (`page-break-after: always`) no modo PVC, para impressão duplex automática.
+- Embutir a foto como `<img>` com `crossOrigin` e o QR como SVG inline (em vez de depender de api.qrserver.com, que pode falhar offline) — usar `qrcode` para gerar dataURL.
 
 ## Detalhes técnicos
 
-### Componentes a criar
+- Ficheiros editados: `src/components/farmers/FarmerCard.tsx`, `src/components/farmers/FarmerProfileComplete.tsx`, possivelmente `src/index.css` (tokens dourado/verde profundo).
+- Sem migrações de DB (campo `photo_url` já existe).
+- Sem alterações de regras de negócio nem de RLS.
+- Reutilizar `PhotoUpload` existente, `useUpdateFarmer` existente, `qrcode.react` (frente do cartão pode incluir um micro-QR opcional além do verso).
 
-- `src/components/farmers/profile/ProfileTabGroups.tsx` — orquestrador dos 5 grupos com sub-abas
-- `src/components/farmers/profile/QuickStatsByType.tsx` — KPIs adaptados por `farmer_type`
-- `src/components/farmers/profile/IdentificationGroup.tsx` — agrupa dados gerais, docs, cartão, biometria, detalhes coop/ECA
-- `src/components/farmers/profile/OperationGroup.tsx`
-- `src/components/farmers/profile/FinancialGroup.tsx`
-- `src/components/farmers/profile/MonitoringGroup.tsx`
-- `src/components/farmers/profile/GovernanceGroup.tsx`
+## Perguntas em aberto
 
-### Componentes a refatorar
-
-- `FarmerProfileComplete.tsx` — reduzir para shell (header + KPIs + `<ProfileTabGroups>`); remover a `<TabsList>` plana atual
-- Reaproveitar tudo o que já existe: `FarmerParcels`, `FarmerCampaigns`, `FarmerAgroPay`, `FarmerPurchases`, `FarmerBiometry`, `FarmerCard`, `FarmerForecast`, `FarmerRepresentatives`, `CooperativeDetailsCard`, `FieldSchoolDetailsCard`, `EntityDetailsConsistency`, `WorkflowActions`
-
-### Sem mudanças de backend
-
-- Apenas reorganização de UI/apresentação
-- Hooks (`useCooperative`, `useFieldSchool`, etc.) e RLS permanecem inalterados
-- Nenhuma migração SQL
-
-### Acessibilidade e responsivo
-
-- Tabs principais: ícone + label visível em ≥ md, só ícone em mobile com tooltip
-- Sub-abas: `segmented control` (radix tabs com variant pill); em mobile vira `Select` dropdown
-- Preservar deep-link via query param `?tab=identification&sub=card` para abrir aba específica (útil para os botões "ver detalhes" já existentes)
-
-## Fora do âmbito
-
-- Não alterar lógica de negócio, validações Zod, ou políticas RLS
-- Não refatorar formulários de edição (`FarmerForm`, `CooperativeForm`, `FieldSchoolForm`)
-- Não mexer em `ProfilePage` (perfil do utilizador do sistema, não do agricultor)
+Nenhuma — a frente do cartão actual é genérica e o pedido de "design mais apelativo + impressão PVC padrão" é claro. Avanço com a interpretação institucional acima salvo indicação em contrário.

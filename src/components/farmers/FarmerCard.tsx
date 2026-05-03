@@ -2,7 +2,15 @@ import { useState } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Download, Printer, User, Fingerprint, Phone, Calendar, MapPin } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import { Download, Printer, Fingerprint, Phone, MapPin, CreditCard } from 'lucide-react';
 import type { Farmer } from '@/hooks/useFarmers';
 
 interface FarmerCardProps {
@@ -31,8 +39,43 @@ const farmerTypeLabels: Record<string, string> = {
   company: 'Empresa',
 };
 
+// Guilloché-style SVG pattern (subtle, security-document feel)
+const GuillocheBg = () => (
+  <svg
+    className="absolute inset-0 w-full h-full pointer-events-none"
+    viewBox="0 0 400 252"
+    preserveAspectRatio="none"
+    aria-hidden
+  >
+    <defs>
+      <pattern id="grid" width="14" height="14" patternUnits="userSpaceOnUse">
+        <path d="M 14 0 L 0 0 0 14" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="0.5" />
+      </pattern>
+      <radialGradient id="glow" cx="80%" cy="20%" r="60%">
+        <stop offset="0%" stopColor="rgba(255,255,255,0.18)" />
+        <stop offset="100%" stopColor="rgba(255,255,255,0)" />
+      </radialGradient>
+    </defs>
+    <rect width="400" height="252" fill="url(#grid)" />
+    <rect width="400" height="252" fill="url(#glow)" />
+    {/* concentric arcs */}
+    {Array.from({ length: 6 }).map((_, i) => (
+      <circle
+        key={i}
+        cx="-40"
+        cy="280"
+        r={120 + i * 24}
+        fill="none"
+        stroke="rgba(255,255,255,0.08)"
+        strokeWidth="0.6"
+      />
+    ))}
+  </svg>
+);
+
 export const FarmerCard = ({ farmer, onPrint, showActions = true }: FarmerCardProps) => {
   const [flipped, setFlipped] = useState(false);
+  const [printDialogOpen, setPrintDialogOpen] = useState(false);
 
   const qrPayload = JSON.stringify({
     plataforma: 'SIGAFLO',
@@ -45,93 +88,204 @@ export const FarmerCard = ({ farmer, onPrint, showActions = true }: FarmerCardPr
 
   const hasBiometry = !!(farmer as any).fingerprint_data;
 
-  const handlePrint = () => {
-    if (onPrint) {
-      onPrint();
-    } else {
-      window.print();
-    }
+  const buildPrintHtml = (mode: 'pvc' | 'a4') => {
+    const isPvc = mode === 'pvc';
+    const qrSrc = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(qrPayload)}`;
+    const photoHtml = farmer.photo_url
+      ? `<img src="${farmer.photo_url}" crossorigin="anonymous" />`
+      : `<div class="initials">${getInitials(farmer.name)}</div>`;
+
+    return `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>Cartão SIGAFLO — ${farmer.name}</title>
+<style>
+  @page { size: ${isPvc ? '85.6mm 53.98mm' : 'A4'}; margin: ${isPvc ? '0' : '15mm'}; }
+  * { box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  html, body { margin: 0; padding: 0; background: ${isPvc ? '#0a3d1f' : '#f5f5f5'}; font-family: 'Helvetica Neue', Arial, sans-serif; color: #fff; }
+  .sheet { ${isPvc ? '' : 'display: flex; gap: 12mm; flex-wrap: wrap; padding: 0;'} }
+  .card {
+    width: 85.6mm; height: 53.98mm; position: relative; overflow: hidden;
+    ${isPvc ? '' : 'box-shadow: 0 2px 6px rgba(0,0,0,0.15); border-radius: 3mm; outline: 1px dashed #888; outline-offset: 2mm;'}
+  }
+  .page { ${isPvc ? 'page-break-after: always;' : ''} }
+  .page:last-child { page-break-after: auto; }
+
+  /* FRONT */
+  .front {
+    background: linear-gradient(135deg, #052e14 0%, #0d4a22 45%, #166534 100%);
+    color: #fff; padding: 4mm 4.5mm; position: relative;
+  }
+  .front::before {
+    content: ''; position: absolute; inset: 0;
+    background:
+      radial-gradient(circle at 85% 15%, rgba(255,255,255,0.18), transparent 45%),
+      repeating-linear-gradient(45deg, rgba(255,255,255,0.04) 0 2px, transparent 2px 8px);
+  }
+  .front-inner { position: relative; height: 100%; display: flex; flex-direction: column; }
+  .topbar { display: flex; align-items: center; justify-content: space-between; }
+  .topbar .gov { font-size: 6pt; letter-spacing: 1.2px; opacity: 0.85; text-transform: uppercase; line-height: 1.3; }
+  .topbar .gov strong { font-size: 7pt; display: block; letter-spacing: 0.5px; }
+  .wordmark {
+    font-size: 9pt; font-weight: 800; letter-spacing: 3px;
+    background: linear-gradient(135deg, #fde68a, #f59e0b);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    padding: 1mm 2mm; border: 0.3mm solid rgba(253,230,138,0.45); border-radius: 1mm;
+  }
+  .body { display: flex; gap: 3mm; margin-top: 2mm; flex: 1; align-items: stretch; }
+  .photo {
+    width: 22mm; height: 28mm; border-radius: 1.5mm; overflow: hidden;
+    border: 0.4mm solid rgba(253,230,138,0.6);
+    box-shadow: inset 0 0 0 0.3mm rgba(0,0,0,0.3), 0 0 4mm rgba(0,0,0,0.4);
+    background: rgba(255,255,255,0.08);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .photo .initials { font-size: 18pt; font-weight: 700; color: rgba(255,255,255,0.6); }
+  .info { flex: 1; min-width: 0; }
+  .name { font-size: 11pt; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; line-height: 1.15; margin: 0 0 1.2mm; }
+  .bi { font-size: 9pt; font-family: 'Courier New', monospace; letter-spacing: 1.5px; color: #fde68a; margin-bottom: 1.5mm; }
+  .meta { font-size: 6.5pt; opacity: 0.92; margin-bottom: 0.8mm; display: flex; align-items: center; gap: 1mm; }
+  .reg { font-family: 'Courier New', monospace; font-size: 7pt; color: #fde68a; margin-top: 1mm; }
+  .chips { margin-top: auto; display: flex; gap: 1.5mm; flex-wrap: wrap; }
+  .chip { font-size: 5.5pt; padding: 0.6mm 1.6mm; border-radius: 1mm; background: rgba(255,255,255,0.18); border: 0.2mm solid rgba(255,255,255,0.25); }
+  .chip.gold { background: rgba(253,230,138,0.18); border-color: rgba(253,230,138,0.45); color: #fde68a; }
+  .chip-stripe {
+    position: absolute; bottom: 4mm; right: 4mm;
+    width: 14mm; height: 9mm; border-radius: 1mm;
+    background: linear-gradient(135deg, #fde68a, #b45309 60%, #fde68a);
+    opacity: 0.85;
+    box-shadow: 0 0 1mm rgba(0,0,0,0.4) inset;
+  }
+  .chip-stripe::after {
+    content: ''; position: absolute; inset: 1mm;
+    background-image:
+      linear-gradient(0deg, transparent 49%, rgba(0,0,0,0.25) 49% 51%, transparent 51%),
+      linear-gradient(90deg, transparent 49%, rgba(0,0,0,0.25) 49% 51%, transparent 51%);
+    background-size: 100% 2mm, 2mm 100%;
+  }
+
+  /* BACK */
+  .back {
+    background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+    color: #1a1a1a; padding: 4mm 4.5mm; position: relative;
+  }
+  .back-grid { display: flex; gap: 3mm; height: 100%; }
+  .back-info { flex: 1; }
+  .back-info .label { font-size: 6pt; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; }
+  .back-info .value { font-size: 8pt; font-weight: 600; color: #111827; margin-bottom: 1.5mm; }
+  .qr-wrap { display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  .qr-wrap img { width: 22mm; height: 22mm; }
+  .qr-wrap .qr-label { font-size: 5pt; color: #6b7280; margin-top: 1mm; }
+  .back-footer { position: absolute; bottom: 2mm; left: 4.5mm; right: 4.5mm; font-size: 5pt; color: #6b7280; text-align: center; }
+
+  ${isPvc ? '' : `
+    h2 { font-size: 11pt; color: #111; margin: 0 0 4mm; }
+    .crop-marks { color: #888; }
+  `}
+</style>
+</head>
+<body>
+  ${isPvc ? `
+    <div class="page"><div class="card front"><div class="front-inner">
+      <div class="topbar">
+        <div class="gov">República de Angola<strong>Min. da Agricultura e Florestas</strong></div>
+        <div class="wordmark">SIGAFLO</div>
+      </div>
+      <div class="body">
+        <div class="photo">${photoHtml}</div>
+        <div class="info">
+          <div class="name">${farmer.name}</div>
+          <div class="bi">${formatBI(farmer.bi_nif)}</div>
+          <div class="meta">📍 ${farmer.provinces?.name || '—'}, ${farmer.municipalities?.name || '—'}</div>
+          <div class="reg">Nº ${farmer.registration_number || '—'}</div>
+          <div class="chips">
+            <span class="chip gold">${farmerTypeLabels[farmer.farmer_type] || farmer.farmer_type}</span>
+            <span class="chip">${hasBiometry ? '✓ Biometria' : '⏳ Biometria'}</span>
+          </div>
+        </div>
+      </div>
+      <div class="chip-stripe"></div>
+    </div></div></div>
+    <div class="page"><div class="card back">
+      <div class="back-grid">
+        <div class="back-info">
+          <div class="label">BI / NIF</div><div class="value">${formatBI(farmer.bi_nif)}</div>
+          <div class="label">Telefone</div><div class="value">${farmer.phone || '—'}</div>
+          <div class="label">Província / Município</div><div class="value">${farmer.provinces?.name || '—'} / ${farmer.municipalities?.name || '—'}</div>
+          <div class="label">Área Total</div><div class="value">${farmer.total_area_ha ? farmer.total_area_ha.toFixed(1) + ' ha' : '—'}</div>
+        </div>
+        <div class="qr-wrap">
+          <img src="${qrSrc}" />
+          <div class="qr-label">Verificar</div>
+        </div>
+      </div>
+      <div class="back-footer">Válido enquanto o registo estiver activo · SIGAFLO</div>
+    </div></div>
+  ` : `
+    <div class="sheet">
+      <div>
+        <h2>Frente</h2>
+        <div class="card front"><div class="front-inner">
+          <div class="topbar">
+            <div class="gov">República de Angola<strong>Min. da Agricultura e Florestas</strong></div>
+            <div class="wordmark">SIGAFLO</div>
+          </div>
+          <div class="body">
+            <div class="photo">${photoHtml}</div>
+            <div class="info">
+              <div class="name">${farmer.name}</div>
+              <div class="bi">${formatBI(farmer.bi_nif)}</div>
+              <div class="meta">📍 ${farmer.provinces?.name || '—'}, ${farmer.municipalities?.name || '—'}</div>
+              <div class="reg">Nº ${farmer.registration_number || '—'}</div>
+              <div class="chips">
+                <span class="chip gold">${farmerTypeLabels[farmer.farmer_type] || farmer.farmer_type}</span>
+                <span class="chip">${hasBiometry ? '✓ Biometria' : '⏳ Biometria'}</span>
+              </div>
+            </div>
+          </div>
+          <div class="chip-stripe"></div>
+        </div></div>
+      </div>
+      <div>
+        <h2>Verso</h2>
+        <div class="card back">
+          <div class="back-grid">
+            <div class="back-info">
+              <div class="label">BI / NIF</div><div class="value">${formatBI(farmer.bi_nif)}</div>
+              <div class="label">Telefone</div><div class="value">${farmer.phone || '—'}</div>
+              <div class="label">Província / Município</div><div class="value">${farmer.provinces?.name || '—'} / ${farmer.municipalities?.name || '—'}</div>
+              <div class="label">Área Total</div><div class="value">${farmer.total_area_ha ? farmer.total_area_ha.toFixed(1) + ' ha' : '—'}</div>
+            </div>
+            <div class="qr-wrap">
+              <img src="${qrSrc}" />
+              <div class="qr-label">Verificar</div>
+            </div>
+          </div>
+          <div class="back-footer">Válido enquanto o registo estiver activo · SIGAFLO</div>
+        </div>
+      </div>
+    </div>
+  `}
+  <script>
+    window.addEventListener('load', () => setTimeout(() => window.print(), 400));
+  </script>
+</body>
+</html>`;
   };
 
-  const handleDownload = () => {
-    const printWindow = window.open('', '_blank');
-    if (printWindow) {
-      printWindow.document.write(`
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <title>Cartão do Agricultor - ${farmer.name}</title>
-          <style>
-            body { font-family: Arial, sans-serif; margin: 0; padding: 20px; display: flex; gap: 20px; }
-            .card { width: 85.6mm; height: 53.98mm; border-radius: 10px; overflow: hidden; position: relative; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
-            .front { background: linear-gradient(135deg, #166534 0%, #15803d 50%, #22c55e 100%); color: white; padding: 10px 14px; }
-            .back { background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 50%, #bbf7d0 100%); color: #1a1a1a; padding: 12px 14px; }
-            .header-line { font-size: 7px; opacity: 0.8; text-transform: uppercase; letter-spacing: 0.5px; }
-            .ministry { font-size: 8px; font-weight: 600; margin: 1px 0; }
-            .sigaflo { font-size: 9px; font-weight: 700; letter-spacing: 1px; }
-            .photo { width: 55px; height: 68px; border-radius: 6px; border: 2px solid rgba(255,255,255,0.4); overflow: hidden; background: rgba(255,255,255,0.15); display: flex; align-items: center; justify-content: center; }
-            .photo img { width: 100%; height: 100%; object-fit: cover; }
-            .name { font-size: 13px; font-weight: 700; margin-bottom: 2px; }
-            .bi { font-size: 11px; font-family: monospace; letter-spacing: 1.5px; opacity: 0.9; }
-            .detail { font-size: 8px; opacity: 0.8; margin-top: 2px; }
-            .reg { font-size: 9px; font-family: monospace; margin-top: 4px; }
-            .badge { display: inline-block; background: rgba(255,255,255,0.2); padding: 2px 6px; border-radius: 4px; font-size: 7px; }
-            .bio-badge { display: inline-flex; align-items: center; gap: 3px; font-size: 7px; padding: 2px 6px; border-radius: 4px; }
-            .bio-ok { background: rgba(255,255,255,0.25); }
-            .bio-pending { background: rgba(255,200,0,0.3); }
-            .back-label { font-size: 8px; color: #666; margin-bottom: 1px; }
-            .back-value { font-size: 10px; font-weight: 600; margin-bottom: 6px; }
-            .qr-section { position: absolute; bottom: 10px; right: 10px; }
-            .back-footer { position: absolute; bottom: 6px; left: 14px; right: 80px; font-size: 7px; color: #888; }
-          </style>
-        </head>
-        <body>
-          <div class="card front">
-            <div style="margin-bottom: 6px;">
-              <div class="header-line">República de Angola</div>
-              <div class="ministry">Ministério da Agricultura e Florestas</div>
-              <div class="sigaflo">SIGAFLO</div>
-            </div>
-            <div style="display: flex; gap: 10px;">
-              <div class="photo">
-                ${farmer.photo_url ? `<img src="${farmer.photo_url}" />` : `<span style="font-size:22px; color: rgba(255,255,255,0.5);">👤</span>`}
-              </div>
-              <div style="flex: 1;">
-                <div class="name">${farmer.name}</div>
-                <div class="bi">${formatBI(farmer.bi_nif)}</div>
-                <div class="detail">${farmer.provinces?.name || ''}, ${farmer.municipalities?.name || ''}</div>
-                <div class="reg">Nº ${farmer.registration_number || '—'}</div>
-                <div style="margin-top: 4px; display: flex; gap: 4px; flex-wrap: wrap;">
-                  <span class="badge">${farmerTypeLabels[farmer.farmer_type] || farmer.farmer_type}</span>
-                  <span class="bio-badge ${hasBiometry ? 'bio-ok' : 'bio-pending'}">${hasBiometry ? '✅ Biometria' : '⏳ Biometria'}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="card back" style="position: relative;">
-            <div style="display: flex; gap: 16px;">
-              <div style="flex: 1;">
-                <div class="back-label">BI / NIF</div>
-                <div class="back-value">${formatBI(farmer.bi_nif)}</div>
-                <div class="back-label">Telefone</div>
-                <div class="back-value">${farmer.phone || '—'}</div>
-                <div class="back-label">Província / Município</div>
-                <div class="back-value">${farmer.provinces?.name || '—'} / ${farmer.municipalities?.name || '—'}</div>
-                <div class="back-label">Área Total</div>
-                <div class="back-value">${farmer.total_area_ha ? farmer.total_area_ha.toFixed(1) + ' ha' : '—'}</div>
-              </div>
-            </div>
-            <div class="qr-section">
-              <img src="https://api.qrserver.com/v1/create-qr-code/?size=70x70&data=${encodeURIComponent(qrPayload)}" width="70" height="70" />
-            </div>
-            <div class="back-footer">Válido enquanto o registo estiver activo · SIGAFLO</div>
-          </div>
-        </body>
-        </html>
-      `);
-      printWindow.document.close();
-      setTimeout(() => printWindow.print(), 500);
-    }
+  const openPrintWindow = (mode: 'pvc' | 'a4') => {
+    const w = window.open('', '_blank');
+    if (!w) return;
+    w.document.write(buildPrintHtml(mode));
+    w.document.close();
+    setPrintDialogOpen(false);
+  };
+
+  const handlePrint = () => {
+    if (onPrint) onPrint();
+    else setPrintDialogOpen(true);
   };
 
   return (
@@ -150,47 +304,104 @@ export const FarmerCard = ({ farmer, onPrint, showActions = true }: FarmerCardPr
             transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
           }}
         >
-          {/* FRONT */}
+          {/* FRONT — redesigned */}
           <div
-            className="absolute inset-0 rounded-xl overflow-hidden shadow-lg"
+            className="absolute inset-0 rounded-xl overflow-hidden shadow-2xl"
             style={{ backfaceVisibility: 'hidden' }}
           >
-            <div className="w-full h-full bg-gradient-to-br from-green-800 via-green-700 to-green-500 text-white p-4 flex flex-col">
+            <div
+              className="relative w-full h-full text-white p-4 flex flex-col"
+              style={{
+                background:
+                  'linear-gradient(135deg, hsl(140 80% 8%) 0%, hsl(142 70% 18%) 45%, hsl(142 60% 28%) 100%)',
+              }}
+            >
+              <GuillocheBg />
+
               {/* Header */}
-              <div className="mb-3">
-                <p className="text-[9px] uppercase tracking-wider opacity-70">República de Angola</p>
-                <p className="text-[10px] font-semibold">Ministério da Agricultura e Florestas</p>
-                <p className="text-xs font-bold tracking-widest">SIGAFLO</p>
+              <div className="relative flex items-start justify-between mb-2">
+                <div className="leading-tight">
+                  <p className="text-[8px] uppercase tracking-[0.2em] opacity-80">República de Angola</p>
+                  <p className="text-[9px] font-semibold opacity-95">Ministério da Agricultura e Florestas</p>
+                </div>
+                <div
+                  className="text-[10px] font-extrabold tracking-[0.25em] px-2 py-0.5 rounded border"
+                  style={{
+                    background: 'linear-gradient(135deg, hsl(45 95% 70%), hsl(38 90% 50%))',
+                    WebkitBackgroundClip: 'text',
+                    backgroundClip: 'text',
+                    color: 'transparent',
+                    borderColor: 'hsl(45 95% 70% / 0.45)',
+                  }}
+                >
+                  SIGAFLO
+                </div>
               </div>
 
               {/* Body */}
-              <div className="flex gap-3 flex-1">
-                {/* Photo */}
-                <div className="w-16 h-20 rounded-lg border-2 border-white/30 overflow-hidden bg-white/10 flex items-center justify-center flex-shrink-0">
+              <div className="relative flex gap-3 flex-1">
+                {/* Photo with golden frame */}
+                <div
+                  className="w-[72px] h-[88px] rounded-md overflow-hidden flex-shrink-0 flex items-center justify-center"
+                  style={{
+                    border: '1.5px solid hsl(45 95% 70% / 0.6)',
+                    boxShadow: 'inset 0 0 0 1px rgba(0,0,0,0.3), 0 4px 14px rgba(0,0,0,0.4)',
+                    background: 'rgba(255,255,255,0.08)',
+                  }}
+                >
                   {farmer.photo_url ? (
-                    <img src={farmer.photo_url} alt={farmer.name} className="w-full h-full object-cover" />
+                    <img
+                      src={farmer.photo_url}
+                      alt={farmer.name}
+                      className="w-full h-full object-cover"
+                    />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-green-600 text-white text-lg font-bold">
+                    <span className="text-2xl font-bold opacity-60">
                       {getInitials(farmer.name)}
-                    </div>
+                    </span>
                   )}
                 </div>
 
                 {/* Info */}
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-bold truncate">{farmer.name}</p>
-                  <p className="text-xs font-mono tracking-widest opacity-90 mt-0.5">{formatBI(farmer.bi_nif)}</p>
-                  <p className="text-[9px] opacity-70 mt-1 flex items-center gap-1">
+                <div className="flex-1 min-w-0 flex flex-col">
+                  <p className="text-[13px] font-bold uppercase tracking-wide leading-tight truncate">
+                    {farmer.name}
+                  </p>
+                  <p
+                    className="text-xs font-mono tracking-[2px] mt-1"
+                    style={{ color: 'hsl(45 95% 75%)' }}
+                  >
+                    {formatBI(farmer.bi_nif)}
+                  </p>
+                  <p className="text-[9px] opacity-90 mt-1 flex items-center gap-1">
                     <MapPin className="h-2.5 w-2.5" />
                     {farmer.provinces?.name || '—'}, {farmer.municipalities?.name || '—'}
                   </p>
-                  <p className="text-[10px] font-mono mt-1 opacity-80">Nº {farmer.registration_number || '—'}</p>
+                  <p
+                    className="text-[10px] font-mono mt-0.5"
+                    style={{ color: 'hsl(45 95% 75%)' }}
+                  >
+                    Nº {farmer.registration_number || '—'}
+                  </p>
 
-                  <div className="flex gap-1.5 mt-2 flex-wrap">
-                    <span className="text-[8px] bg-white/20 px-1.5 py-0.5 rounded">
+                  <div className="flex gap-1.5 mt-auto pt-2 flex-wrap">
+                    <span
+                      className="text-[8px] px-1.5 py-0.5 rounded border"
+                      style={{
+                        background: 'hsl(45 95% 70% / 0.18)',
+                        borderColor: 'hsl(45 95% 70% / 0.45)',
+                        color: 'hsl(45 95% 80%)',
+                      }}
+                    >
                       {farmerTypeLabels[farmer.farmer_type] || farmer.farmer_type}
                     </span>
-                    <span className={`text-[8px] px-1.5 py-0.5 rounded flex items-center gap-0.5 ${hasBiometry ? 'bg-white/25' : 'bg-yellow-400/30'}`}>
+                    <span
+                      className={`text-[8px] px-1.5 py-0.5 rounded flex items-center gap-0.5 border ${
+                        hasBiometry
+                          ? 'bg-white/15 border-white/25'
+                          : 'bg-yellow-400/20 border-yellow-300/40'
+                      }`}
+                    >
                       <Fingerprint className="h-2 w-2" />
                       {hasBiometry ? 'Verificado' : 'Pendente'}
                     </span>
@@ -198,10 +409,41 @@ export const FarmerCard = ({ farmer, onPrint, showActions = true }: FarmerCardPr
                 </div>
               </div>
 
-              {/* Overlay if not issued */}
+              {/* Chip-stripe (simulated PVC chip) */}
+              <div
+                className="absolute bottom-3 right-3 w-[52px] h-[34px] rounded-[3px] overflow-hidden"
+                style={{
+                  background:
+                    'linear-gradient(135deg, hsl(45 95% 70%), hsl(35 80% 38%) 60%, hsl(45 95% 75%))',
+                  boxShadow: 'inset 0 0 2px rgba(0,0,0,0.5)',
+                  opacity: 0.92,
+                }}
+                aria-hidden
+              >
+                <div
+                  className="absolute inset-1"
+                  style={{
+                    backgroundImage:
+                      'linear-gradient(0deg, transparent 49%, rgba(0,0,0,0.3) 49% 51%, transparent 51%), linear-gradient(90deg, transparent 49%, rgba(0,0,0,0.3) 49% 51%, transparent 51%)',
+                    backgroundSize: '100% 7px, 7px 100%',
+                  }}
+                />
+              </div>
+
+              {/* Status overlay */}
               {farmer.status !== 'approved' && farmer.status !== 'issued' && (
-                <div className="absolute inset-0 bg-black/50 rounded-xl flex items-center justify-center">
-                  <Badge variant="secondary" className="text-sm px-3 py-1.5">Aguardando Validação</Badge>
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                  <div
+                    className="px-6 py-1 text-sm font-bold tracking-[0.4em] uppercase"
+                    style={{
+                      background: 'rgba(0,0,0,0.55)',
+                      color: 'hsl(45 95% 80%)',
+                      transform: 'rotate(-18deg)',
+                      border: '1px solid hsl(45 95% 70% / 0.6)',
+                    }}
+                  >
+                    Rascunho
+                  </div>
                 </div>
               )}
             </div>
@@ -213,7 +455,6 @@ export const FarmerCard = ({ farmer, onPrint, showActions = true }: FarmerCardPr
             style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}
           >
             <div className="w-full h-full bg-gradient-to-br from-green-50 via-green-100 to-green-50 p-4 flex">
-              {/* Info columns */}
               <div className="flex-1 space-y-3">
                 <div>
                   <p className="text-[9px] text-muted-foreground uppercase tracking-wide">BI / NIF</p>
@@ -236,18 +477,11 @@ export const FarmerCard = ({ farmer, onPrint, showActions = true }: FarmerCardPr
                 </div>
               </div>
 
-              {/* QR Code */}
               <div className="flex flex-col items-center justify-center ml-3">
-                <QRCodeSVG
-                  value={qrPayload}
-                  size={90}
-                  level="M"
-                  bgColor="transparent"
-                />
+                <QRCodeSVG value={qrPayload} size={90} level="M" bgColor="transparent" />
                 <p className="text-[7px] text-muted-foreground mt-1">Verificar</p>
               </div>
 
-              {/* Footer */}
               <p className="absolute bottom-2 left-4 right-4 text-[7px] text-muted-foreground">
                 Válido enquanto o registo estiver activo · SIGAFLO · Sistema Nacional de Registo Agroflorestal
               </p>
@@ -258,19 +492,60 @@ export const FarmerCard = ({ farmer, onPrint, showActions = true }: FarmerCardPr
 
       <p className="text-xs text-center text-muted-foreground">Clique no cartão para virar</p>
 
-      {/* Action buttons */}
       {showActions && (
         <div className="flex gap-2 justify-center">
           <Button variant="outline" size="sm" onClick={handlePrint}>
             <Printer className="h-4 w-4 mr-2" />
             Imprimir
           </Button>
-          <Button variant="default" size="sm" onClick={handleDownload}>
+          <Button variant="default" size="sm" onClick={() => setPrintDialogOpen(true)}>
             <Download className="h-4 w-4 mr-2" />
-            Download PDF
+            Download / Imprimir
           </Button>
         </div>
       )}
+
+      <Dialog open={printDialogOpen} onOpenChange={setPrintDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Imprimir cartão</DialogTitle>
+            <DialogDescription>
+              Escolha o formato. Para impressoras de cartão (Zebra, Evolis, Fargo) use <strong>Cartão PVC</strong>.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 py-2">
+            <button
+              type="button"
+              onClick={() => openPrintWindow('pvc')}
+              className="border rounded-lg p-4 text-left hover:border-primary hover:bg-accent transition"
+            >
+              <div className="flex items-center gap-2 mb-1">
+                <CreditCard className="h-5 w-5 text-primary" />
+                <span className="font-semibold">Cartão PVC</span>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                CR-80 · 85,6 × 53,98 mm · sem margens · frente e verso em páginas separadas (duplex).
+              </p>
+            </button>
+            <button
+              type="button"
+              onClick={() => openPrintWindow('a4')}
+              className="border rounded-lg p-4 text-left hover:border-primary hover:bg-accent transition"
+            >
+              <div className="flex items-center gap-2 mb-1">
+                <Printer className="h-5 w-5 text-primary" />
+                <span className="font-semibold">A4 (teste)</span>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Frente e verso lado-a-lado em A4, com guias de corte. Ideal para impressão em papel.
+              </p>
+            </button>
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setPrintDialogOpen(false)}>Cancelar</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
