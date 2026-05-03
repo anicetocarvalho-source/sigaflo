@@ -11,7 +11,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { CreditCard, Download, FileDown, Loader2, Sparkles, Search, Eye, ScanLine, History as HistoryIcon, BellRing } from 'lucide-react';
+import { CreditCard, FileDown, Loader2, Sparkles, Search, Eye, ScanLine, BellRing } from 'lucide-react';
 import { useGenerateCard, useCardStats, type CardStatus, type FarmerCard } from '@/hooks/useFarmerCards';
 import { useLocationCascade } from '@/hooks/useLocationCascade';
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip } from 'recharts';
