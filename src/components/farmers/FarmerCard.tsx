@@ -90,8 +90,12 @@ export const FarmerCard = ({ farmer, onPrint, showActions = true }: FarmerCardPr
   const [duplexMode, setDuplexMode] = useState<DuplexMode>('long-edge');
   const [offsetX, setOffsetX] = useState(0); // mm — ajuste fino do verso
   const [offsetY, setOffsetY] = useState(0); // mm
+  // Linhas de corte (sangria) configuráveis por modo
+  const [cutA4Visible, setCutA4Visible] = useState(true);
+  const [cutA4Offset, setCutA4Offset] = useState(1); // mm fora do cartão
+  const [cutPvcVisible, setCutPvcVisible] = useState(false); // PVC normalmente sem guias
+  const [cutPvcOffset, setCutPvcOffset] = useState(0);
 
-  // Carrega preferências e auto-detecta duplex (heurística pela user-agent / impressora padrão)
   useEffect(() => {
     try {
       const d = localStorage.getItem(DUPLEX_KEY) as DuplexMode | null;
@@ -102,6 +106,14 @@ export const FarmerCard = ({ farmer, onPrint, showActions = true }: FarmerCardPr
         setOffsetX(parsed.x ?? 0);
         setOffsetY(parsed.y ?? 0);
       }
+      const c = localStorage.getItem(CUT_KEY);
+      if (c) {
+        const parsed = JSON.parse(c);
+        if (typeof parsed.a4Visible === 'boolean') setCutA4Visible(parsed.a4Visible);
+        if (typeof parsed.a4Offset === 'number') setCutA4Offset(parsed.a4Offset);
+        if (typeof parsed.pvcVisible === 'boolean') setCutPvcVisible(parsed.pvcVisible);
+        if (typeof parsed.pvcOffset === 'number') setCutPvcOffset(parsed.pvcOffset);
+      }
     } catch {}
   }, []);
 
@@ -111,6 +123,14 @@ export const FarmerCard = ({ farmer, onPrint, showActions = true }: FarmerCardPr
   useEffect(() => {
     try { localStorage.setItem(OFFSET_KEY, JSON.stringify({ x: offsetX, y: offsetY })); } catch {}
   }, [offsetX, offsetY]);
+  useEffect(() => {
+    try {
+      localStorage.setItem(CUT_KEY, JSON.stringify({
+        a4Visible: cutA4Visible, a4Offset: cutA4Offset,
+        pvcVisible: cutPvcVisible, pvcOffset: cutPvcOffset,
+      }));
+    } catch {}
+  }, [cutA4Visible, cutA4Offset, cutPvcVisible, cutPvcOffset]);
 
   // Para impressoras de cartão CR-80 com duplex pela borda curta (padrão Zebra/Evolis),
   // o verso precisa ser rodado 180° para ficar alinhado com a frente após o flip.
