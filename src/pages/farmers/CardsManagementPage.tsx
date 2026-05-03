@@ -12,8 +12,8 @@ import { CreditCard, Download, FileDown, Loader2, Sparkles, Search } from 'lucid
 import { useFarmers, useProvinces, type Farmer } from '@/hooks/useFarmers';
 import { useGenerateCard, useCardStats, type CardStatus } from '@/hooks/useFarmerCards';
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip } from 'recharts';
-import jsPDF from 'jspdf';
 import { toast } from 'sonner';
+import CardBatchExportDialog from '@/components/farmers/CardBatchExportDialog';
 
 const STATUS_LABELS: Record<CardStatus, string> = {
   rascunho: 'Rascunho', gerado: 'Gerado', impresso: 'Impresso', entregue: 'Entregue', revogado: 'Revogado',
