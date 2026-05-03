@@ -93,6 +93,70 @@ const buildBarcodeSvgString = (value: string): string => {
   }
 };
 
+// CR-80 preview at 2× scale (171.2 × 107.96 mm visual → ~647 × 408 px @ 96dpi).
+// We render the exact HTML template scaled with CSS transform so the digital
+// preview matches the print/PDF output pixel-for-pixel.
+const PREVIEW_SCALE = 4.2; // mm → px
+
+const CardPreview3D = ({
+  frontHtml,
+  backHtml,
+  flipped,
+  onClick,
+}: {
+  frontHtml: string;
+  backHtml: string;
+  flipped: boolean;
+  onClick: () => void;
+}) => {
+  const w = 85.6 * PREVIEW_SCALE;
+  const h = 53.98 * PREVIEW_SCALE;
+  return (
+    <div className="mx-auto w-full" style={{ maxWidth: w }}>
+      <style>{cardCss}</style>
+      <div
+        className="relative cursor-pointer mx-auto"
+        style={{ perspective: '1200px', width: w, height: h }}
+        onClick={onClick}
+        title="Clique para virar o cartão"
+      >
+        <div
+          className="relative w-full h-full transition-transform duration-700"
+          style={{
+            transformStyle: 'preserve-3d',
+            transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
+          }}
+        >
+          <div
+            className="absolute inset-0 rounded-[10px] overflow-hidden shadow-2xl bg-white"
+            style={{ backfaceVisibility: 'hidden' }}
+          >
+            <div
+              style={{
+                transform: `scale(${PREVIEW_SCALE / (96 / 25.4)})`,
+                transformOrigin: 'top left',
+              }}
+              dangerouslySetInnerHTML={{ __html: frontHtml }}
+            />
+          </div>
+          <div
+            className="absolute inset-0 rounded-[10px] overflow-hidden shadow-2xl bg-white"
+            style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}
+          >
+            <div
+              style={{
+                transform: `scale(${PREVIEW_SCALE / (96 / 25.4)})`,
+                transformOrigin: 'top left',
+              }}
+              dangerouslySetInnerHTML={{ __html: backHtml }}
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 type DuplexMode = 'long-edge' | 'short-edge' | 'simplex';
 const DUPLEX_KEY = 'sigaflo.card.duplex';
 const OFFSET_KEY = 'sigaflo.card.offset';
