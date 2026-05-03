@@ -75,11 +75,11 @@ export const PrintPreviewDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-5xl">
+      <DialogContent className={liveControls ? 'max-w-6xl' : 'max-w-5xl'}>
         <DialogHeader>
           <DialogTitle>Pré-visualização da impressão</DialogTitle>
           <DialogDescription>
-            {page.label} · margens {page.margin}mm · use o zoom e as guias para validar antes de exportar.
+            {page.label} · margens {page.margin}mm · ajustes aplicam-se em tempo real à pré-visualização e ao PDF.
           </DialogDescription>
         </DialogHeader>
 
