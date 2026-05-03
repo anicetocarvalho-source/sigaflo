@@ -206,7 +206,7 @@ const CooperativesPage = () => {
                   Excel
                 </Button>
                 <Button asChild>
-                  <Link to="/agricultores/novo?type=cooperative">
+                  <Link to="/agricultores/cooperativas/nova">
                     <Plus className="mr-2 h-4 w-4" />
                     Nova Cooperativa
                   </Link>
@@ -241,7 +241,7 @@ const CooperativesPage = () => {
                     : 'Comece por registar uma nova cooperativa'}
                 </p>
                 <Button asChild className="mt-4">
-                  <Link to="/agricultores/novo?type=cooperative">
+                  <Link to="/agricultores/cooperativas/nova">
                     <Plus className="mr-2 h-4 w-4" />
                     Registar Cooperativa
                   </Link>

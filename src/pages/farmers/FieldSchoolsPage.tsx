@@ -189,7 +189,7 @@ const FieldSchoolsPage = () => {
                   Excel
                 </Button>
                 <Button asChild>
-                  <Link to="/agricultores/novo?type=field_school">
+                  <Link to="/agricultores/escolas/nova">
                     <Plus className="mr-2 h-4 w-4" />
                     Nova ECA
                   </Link>
@@ -224,7 +224,7 @@ const FieldSchoolsPage = () => {
                     : 'Comece por registar uma nova Escola de Campo'}
                 </p>
                 <Button asChild className="mt-4">
-                  <Link to="/agricultores/novo?type=field_school">
+                  <Link to="/agricultores/escolas/nova">
                     <Plus className="mr-2 h-4 w-4" />
                     Registar ECA
                   </Link>
