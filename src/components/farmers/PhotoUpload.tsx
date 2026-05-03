@@ -39,18 +39,22 @@ export const PhotoUpload = ({ value, onChange, disabled }: PhotoUploadProps) => 
   const uploadFile = async (file: File) => {
     setIsUploading(true);
     try {
-      const fileExt = file.name.split('.').pop();
+      const fileExt = (file.name.split('.').pop() || 'jpg').toLowerCase();
       const fileName = `${crypto.randomUUID()}.${fileExt}`;
-      const filePath = `photos/${fileName}`;
+      const filePath = fileName;
 
       const { error: uploadError } = await supabase.storage
-        .from('farmer-documents')
-        .upload(filePath, file);
+        .from('farmer-photos')
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: false,
+          contentType: file.type || 'image/jpeg',
+        });
 
       if (uploadError) throw uploadError;
 
       const { data } = supabase.storage
-        .from('farmer-documents')
+        .from('farmer-photos')
         .getPublicUrl(filePath);
 
       onChange(data.publicUrl);
