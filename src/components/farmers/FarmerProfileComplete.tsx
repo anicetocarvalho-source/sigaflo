@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -77,6 +77,9 @@ import { EntityDetailsConsistency } from './EntityDetailsConsistency';
 import { useCooperativeDetails } from '@/hooks/useCooperative';
 import { useFieldSchoolDetails } from '@/hooks/useFieldSchool';
 import { Skeleton } from '@/components/ui/skeleton';
+import { QuickStats } from './profile/QuickStats';
+import { ProfileGroupedNav } from './profile/ProfileGroupedNav';
+import { ALL_TAB_VALUES } from './profile/profileTabsConfig';
 import { toast } from 'sonner';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -119,6 +122,7 @@ export const FarmerProfileComplete = () => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const [mapboxToken, setMapboxToken] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<string>('identification');
   
   const { data: farmer, isLoading } = useFarmer(id!);
   const { data: productionHistory } = useProductionHistory(id);
@@ -306,162 +310,34 @@ export const FarmerProfileComplete = () => {
         </CardContent>
       </Card>
 
-      {/* Quick Stats */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-primary/10 rounded-lg">
-                <Leaf className="h-5 w-5 text-primary" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">
-                  {farmer.cultivated_area_ha?.toFixed(1) || '—'} ha
-                </p>
-                <p className="text-sm text-muted-foreground">Área Cultivada</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+      {/* Quick Stats — type-aware */}
+      <QuickStats
+        farmer={farmer}
+        members={members}
+        coopDetails={coopDetails}
+        ecaDetails={ecaDetails}
+        creditScore={creditScore}
+        getScoreColor={getScoreColor}
+        getScoreIcon={getScoreIcon}
+        totalIncentivesReceived={totalIncentivesReceived}
+        farmerOccurrencesCount={farmerOccurrences.length}
+      />
 
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-3">
-              <div className={`p-2 rounded-lg ${getScoreColor(creditScore)}`}>
-                {getScoreIcon(creditScore)}
-              </div>
-              <div>
-                <p className="text-2xl font-bold">{creditScore || '—'}</p>
-                <p className="text-sm text-muted-foreground">Score Produtivo</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+      {/* Main Content — grouped 2-level navigation */}
+      <ProfileGroupedNav
+        farmer={farmer}
+        membersCount={members.length}
+        farmerOrdersCount={farmerOrders.length}
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+      />
 
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-green-100 rounded-lg">
-                <Wallet className="h-5 w-5 text-green-600" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">
-                  {totalIncentivesReceived > 0 
-                    ? `${(totalIncentivesReceived / 1000000).toFixed(1)}M` 
-                    : '0'}
-                </p>
-                <p className="text-sm text-muted-foreground">Incentivos (AOA)</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-orange-100 rounded-lg">
-                <CloudRain className="h-5 w-5 text-orange-600" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">{farmerOccurrences.length}</p>
-                <p className="text-sm text-muted-foreground">Ocorrências Climáticas</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Main Content Tabs */}
-      <Tabs defaultValue="identification" className="w-full">
-        <TabsList className="flex w-full overflow-x-auto flex-nowrap gap-1 scrollbar-thin scrollbar-thumb-muted">
-          <TabsTrigger value="identification" className="flex items-center gap-1 flex-shrink-0">
-            <User className="h-4 w-4" />
-            <span className="hidden sm:inline">Identificação</span>
-          </TabsTrigger>
-          {(farmer.farmer_type === 'individual') && (
-            <TabsTrigger value="household" className="flex items-center gap-1 flex-shrink-0">
-              <Home className="h-4 w-4" />
-              <span className="hidden sm:inline">Agregado</span>
-            </TabsTrigger>
-          )}
-          <TabsTrigger value="documents" className="flex items-center gap-1 flex-shrink-0">
-            <FileText className="h-4 w-4" />
-            <span className="hidden sm:inline">Documentos</span>
-          </TabsTrigger>
-          <TabsTrigger value="card" className="flex items-center gap-1 flex-shrink-0">
-            <CreditCard className="h-4 w-4" />
-            <span className="hidden sm:inline">Cartão</span>
-          </TabsTrigger>
-          <TabsTrigger value="production" className="flex items-center gap-1 flex-shrink-0">
-            <Calendar className="h-4 w-4" />
-            <span className="hidden sm:inline">Produção</span>
-          </TabsTrigger>
-          <TabsTrigger value="certificates" className="flex items-center gap-1 flex-shrink-0">
-            <Award className="h-4 w-4" />
-            <span className="hidden sm:inline">Certificados</span>
-          </TabsTrigger>
-          <TabsTrigger value="occurrences" className="flex items-center gap-1 flex-shrink-0">
-            <CloudRain className="h-4 w-4" />
-            <span className="hidden sm:inline">Ocorrências</span>
-          </TabsTrigger>
-          <TabsTrigger value="incentives" className="flex items-center gap-1 flex-shrink-0">
-            <Wallet className="h-4 w-4" />
-            <span className="hidden sm:inline">Incentivos</span>
-          </TabsTrigger>
-          <TabsTrigger value="scores" className="flex items-center gap-1 flex-shrink-0">
-            <BarChart3 className="h-4 w-4" />
-            <span className="hidden sm:inline">Scores</span>
-          </TabsTrigger>
-          <TabsTrigger value="representatives" className="flex items-center gap-1 flex-shrink-0">
-            <Users className="h-4 w-4" />
-            <span className="hidden sm:inline">Representantes</span>
-          </TabsTrigger>
-          <TabsTrigger value="parcels" className="flex items-center gap-1 flex-shrink-0">
-            <LandPlot className="h-4 w-4" />
-            <span className="hidden sm:inline">Parcelas</span>
-          </TabsTrigger>
-          <TabsTrigger value="campaigns" className="flex items-center gap-1 flex-shrink-0">
-            <Calendar className="h-4 w-4" />
-            <span className="hidden sm:inline">Campanhas</span>
-          </TabsTrigger>
-          <TabsTrigger value="agropay" className="flex items-center gap-1 flex-shrink-0">
-            <Wallet className="h-4 w-4" />
-            <span className="hidden sm:inline">AgroPay</span>
-          </TabsTrigger>
-          <TabsTrigger value="purchases" className="flex items-center gap-1 flex-shrink-0">
-            <ShoppingCart className="h-4 w-4" />
-            <span className="hidden sm:inline">Compras</span>
-          </TabsTrigger>
-          <TabsTrigger value="biometry" className="flex items-center gap-1 flex-shrink-0">
-            <Fingerprint className="h-4 w-4" />
-            <span className="hidden sm:inline">Biometria</span>
-          </TabsTrigger>
-          <TabsTrigger value="forecast" className="flex items-center gap-1 flex-shrink-0">
-            <Eye className="h-4 w-4" />
-            <span className="hidden sm:inline">Previsão</span>
-          </TabsTrigger>
-          <TabsTrigger value="mechanization" className="flex items-center gap-1 flex-shrink-0">
-            <Tractor className="h-4 w-4" />
-            <span className="hidden sm:inline">Mecanização</span>
-            {farmerOrders.length > 0 && <Badge variant="secondary" className="ml-1 text-xs">{farmerOrders.length}</Badge>}
-          </TabsTrigger>
-          <TabsTrigger value="monitoring" className="flex items-center gap-1 flex-shrink-0">
-            <Activity className="h-4 w-4" />
-            <span className="hidden sm:inline">Monitoria</span>
-          </TabsTrigger>
-          {(farmer.farmer_type === 'cooperative' || farmer.farmer_type === 'field_school') && (
-            <>
-              <TabsTrigger value="entity-details" className="flex items-center gap-1 flex-shrink-0">
-                <Building2 className="h-4 w-4" />
-                <span className="hidden sm:inline">{farmer.farmer_type === 'cooperative' ? 'Cooperativa' : 'ECA'}</span>
-              </TabsTrigger>
-              <TabsTrigger value="members" className="flex items-center gap-1 flex-shrink-0">
-                <Users className="h-4 w-4" />
-                <span className="hidden sm:inline">Membros</span>
-                <Badge variant="secondary" className="ml-1 text-xs">{members.length}</Badge>
-              </TabsTrigger>
-            </>
-          )}
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        {/* Hidden TabsList kept for radix state; visible nav above */}
+        <TabsList className="sr-only">
+          {ALL_TAB_VALUES.map((v) => (
+            <TabsTrigger key={v} value={v}>{v}</TabsTrigger>
+          ))}
         </TabsList>
 
         {(farmer.farmer_type === 'cooperative' || farmer.farmer_type === 'field_school') && (
