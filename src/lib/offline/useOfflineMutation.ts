@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient, type UseMutationOptions } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { enqueueMutation } from './db';
+import { enqueueMutation, type ConflictStrategy } from './db';
 import { toast } from 'sonner';
 
 interface OfflineMutationConfig<TVars> {
@@ -9,6 +9,12 @@ interface OfflineMutationConfig<TVars> {
   operation: 'insert' | 'update' | 'delete';
   buildPayload: (vars: TVars) => any;
   buildMatchKey?: (vars: TVars) => { column: string; value: any };
+  /** Snapshot of the row as it existed when the user started editing offline.
+   *  Required for 3-way conflict detection on UPDATE operations. */
+  buildBaseRow?: (vars: TVars) => Record<string, any> | null | undefined;
+  /** Strategy used when the server row diverged from baseRow before sync.
+   *  Defaults to 'merge' (3-way field-level merge). */
+  conflictStrategy?: ConflictStrategy;
   invalidateKeys?: string[][];
   successMessage?: string;
 }
@@ -24,6 +30,7 @@ export function useOfflineMutation<TVars = any>(
       const matchKey = config.buildMatchKey?.(vars);
 
       if (!navigator.onLine) {
+        const baseRow = config.buildBaseRow?.(vars) ?? null;
         await enqueueMutation({
           module: config.module,
           table: config.table,
@@ -31,6 +38,9 @@ export function useOfflineMutation<TVars = any>(
           payload,
           matchKey,
           invalidateKeys: config.invalidateKeys,
+          baseRow,
+          baseUpdatedAt: baseRow?.updated_at ?? null,
+          conflictStrategy: config.conflictStrategy ?? 'merge',
         });
         toast.info('Guardado offline — será sincronizado ao restabelecer a ligação');
         return { offline: true, payload };
