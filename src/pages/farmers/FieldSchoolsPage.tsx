@@ -240,9 +240,11 @@ const FieldSchoolsPage = () => {
                     <TableRow>
                       <TableHead>Nº Registo</TableHead>
                       <TableHead>Nome da ECA</TableHead>
+                      <TableHead>Cultura Focal</TableHead>
+                      <TableHead>Início</TableHead>
                       <TableHead>Localização</TableHead>
-                      <TableHead>Membros</TableHead>
-                      <TableHead>Área (ha)</TableHead>
+                      <TableHead>Participantes</TableHead>
+                      <TableHead>Parcela (ha)</TableHead>
                       <TableHead>Estado</TableHead>
                       <TableHead className="text-right">Acções</TableHead>
                     </TableRow>
@@ -250,7 +252,7 @@ const FieldSchoolsPage = () => {
                   <TableBody>
                     {filteredSchools.map((school) => {
                       const memberCount = allFarmers?.filter(f => f.field_school_id === school.id)?.length || 0;
-                      
+                      const det = detailsMap?.[school.id];
                       return (
                         <TableRow key={school.id}>
                           <TableCell className="font-mono text-sm">
@@ -265,6 +267,10 @@ const FieldSchoolsPage = () => {
                             </div>
                           </TableCell>
                           <TableCell>
+                            {det?.focus_crop ? <Badge variant="outline">{det.focus_crop}</Badge> : '-'}
+                          </TableCell>
+                          <TableCell className="text-xs">{det?.start_date || '-'}</TableCell>
+                          <TableCell>
                             <div className="text-sm">
                               <div>{school.provinces?.name || '-'}</div>
                               <div className="text-muted-foreground text-xs">
@@ -275,11 +281,11 @@ const FieldSchoolsPage = () => {
                           <TableCell>
                             <Badge variant="secondary">
                               <Users className="mr-1 h-3 w-3" />
-                              {memberCount}
+                              {det?.participants_count ?? memberCount}
                             </Badge>
                           </TableCell>
                           <TableCell>
-                            {school.cultivated_area_ha?.toLocaleString() || '-'}
+                            {(det?.demo_parcel_area_ha ?? school.cultivated_area_ha)?.toLocaleString() || '-'}
                           </TableCell>
                           <TableCell>
                             <WorkflowStatusBadge status={school.status} />
