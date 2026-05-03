@@ -394,43 +394,100 @@ export type Database = {
         }
         Relationships: []
       }
+      card_export_job_logs: {
+        Row: {
+          created_at: string
+          farmer_id: string | null
+          id: string
+          job_id: string
+          level: Database["public"]["Enums"]["card_export_log_level"]
+          message: string
+          metadata: Json
+        }
+        Insert: {
+          created_at?: string
+          farmer_id?: string | null
+          id?: string
+          job_id: string
+          level?: Database["public"]["Enums"]["card_export_log_level"]
+          message: string
+          metadata?: Json
+        }
+        Update: {
+          created_at?: string
+          farmer_id?: string | null
+          id?: string
+          job_id?: string
+          level?: Database["public"]["Enums"]["card_export_log_level"]
+          message?: string
+          metadata?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "card_export_job_logs_farmer_id_fkey"
+            columns: ["farmer_id"]
+            isOneToOne: false
+            referencedRelation: "farmers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "card_export_job_logs_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "card_export_jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       card_export_jobs: {
         Row: {
           created_at: string
           error_message: string | null
+          failed: number
           farmer_ids: string[]
           file_path: string | null
+          finished_at: string | null
           id: string
           options: Json | null
           processed: number
           requested_by: string
+          started_at: string | null
           status: Database["public"]["Enums"]["export_job_status"]
+          succeeded: number
           total: number
           updated_at: string
         }
         Insert: {
           created_at?: string
           error_message?: string | null
+          failed?: number
           farmer_ids?: string[]
           file_path?: string | null
+          finished_at?: string | null
           id?: string
           options?: Json | null
           processed?: number
           requested_by: string
+          started_at?: string | null
           status?: Database["public"]["Enums"]["export_job_status"]
+          succeeded?: number
           total?: number
           updated_at?: string
         }
         Update: {
           created_at?: string
           error_message?: string | null
+          failed?: number
           farmer_ids?: string[]
           file_path?: string | null
+          finished_at?: string | null
           id?: string
           options?: Json | null
           processed?: number
           requested_by?: string
+          started_at?: string | null
           status?: Database["public"]["Enums"]["export_job_status"]
+          succeeded?: number
           total?: number
           updated_at?: string
         }
@@ -7310,6 +7367,7 @@ export type Database = {
         | "reissued"
         | "qr_regenerated"
         | "scanned"
+      card_export_log_level: "info" | "warning" | "error"
       card_status: "rascunho" | "gerado" | "impresso" | "entregue" | "revogado"
       certificate_type:
         | "production"
@@ -7537,6 +7595,7 @@ export const Constants = {
         "qr_regenerated",
         "scanned",
       ],
+      card_export_log_level: ["info", "warning", "error"],
       card_status: ["rascunho", "gerado", "impresso", "entregue", "revogado"],
       certificate_type: [
         "production",
