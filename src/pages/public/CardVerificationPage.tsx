@@ -1,14 +1,93 @@
 import { useParams } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle2, ShieldX, MapPin, Sprout, User, AlertTriangle } from 'lucide-react';
+import { CheckCircle2, ShieldX, MapPin, Sprout, User, AlertTriangle, Clock, ShieldQuestion } from 'lucide-react';
 import { useCardVerification } from '@/hooks/useFarmerCards';
 import { Skeleton } from '@/components/ui/skeleton';
-import { format } from 'date-fns';
+import { format, differenceInYears, formatDistanceToNow } from 'date-fns';
+import { pt } from 'date-fns/locale';
+import { useMemo } from 'react';
+
+// Cartão válido por 5 anos a partir da emissão
+const CARD_VALIDITY_YEARS = 5;
+
+type VerificationStatus = 'invalid_token' | 'not_found' | 'revoked' | 'expired' | 'valid';
+
+interface StatusMeta {
+  status: VerificationStatus;
+  label: string;
+  description: string;
+  icon: typeof CheckCircle2;
+  tone: 'success' | 'destructive' | 'warning' | 'muted';
+}
+
+const TOKEN_REGEX = /^[a-f0-9]{32}$/i;
+
+const toneStyles: Record<StatusMeta['tone'], { header: string; iconColor: string; badge: 'default' | 'destructive' | 'secondary' | 'outline' }> = {
+  success: { header: 'bg-green-50 dark:bg-green-950/30', iconColor: 'text-green-600', badge: 'default' },
+  destructive: { header: 'bg-red-50 dark:bg-red-950/30', iconColor: 'text-red-600', badge: 'destructive' },
+  warning: { header: 'bg-amber-50 dark:bg-amber-950/30', iconColor: 'text-amber-600', badge: 'secondary' },
+  muted: { header: 'bg-muted', iconColor: 'text-muted-foreground', badge: 'outline' },
+};
 
 export default function CardVerificationPage() {
   const { token } = useParams<{ token: string }>();
-  const { data, isLoading, error } = useCardVerification(token);
+  const tokenIsValid = !!token && TOKEN_REGEX.test(token);
+  const { data, isLoading, error } = useCardVerification(tokenIsValid ? token : undefined);
+
+  const meta: StatusMeta | null = useMemo(() => {
+    if (!tokenIsValid) {
+      return {
+        status: 'invalid_token',
+        label: 'Token inválido',
+        description: 'O link de verificação não tem o formato esperado.',
+        icon: ShieldQuestion,
+        tone: 'muted',
+      };
+    }
+    if (isLoading) return null;
+    if (error || !data) {
+      return {
+        status: 'not_found',
+        label: 'Cartão não encontrado',
+        description: 'Este código QR não corresponde a nenhum cartão emitido pelo SIGAFLO.',
+        icon: AlertTriangle,
+        tone: 'destructive',
+      };
+    }
+    if (data.card_status === 'revogado' || data.is_active === false) {
+      return {
+        status: 'revoked',
+        label: 'Cartão revogado',
+        description: 'Este cartão foi revogado e já não é válido. Contacte o ponto de atendimento mais próximo.',
+        icon: ShieldX,
+        tone: 'destructive',
+      };
+    }
+    if (data.issued_at) {
+      const yrs = differenceInYears(new Date(), new Date(data.issued_at));
+      if (yrs >= CARD_VALIDITY_YEARS) {
+        return {
+          status: 'expired',
+          label: 'Cartão expirado',
+          description: `Cartão emitido há ${yrs} anos. Validade máxima: ${CARD_VALIDITY_YEARS} anos.`,
+          icon: Clock,
+          tone: 'warning',
+        };
+      }
+    }
+    return {
+      status: 'valid',
+      label: 'Cartão válido',
+      description: 'Cartão activo e em conformidade com o registo SIGAFLO.',
+      icon: CheckCircle2,
+      tone: 'success',
+    };
+  }, [tokenIsValid, isLoading, error, data]);
+
+  const expiresAt = data?.issued_at
+    ? new Date(new Date(data.issued_at).setFullYear(new Date(data.issued_at).getFullYear() + CARD_VALIDITY_YEARS))
+    : null;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 to-background py-12 px-4">
@@ -22,31 +101,27 @@ export default function CardVerificationPage() {
 
         {isLoading && <Skeleton className="h-96 w-full" />}
 
-        {(error || (!isLoading && !data)) && (
+        {!isLoading && meta && (meta.status === 'invalid_token' || meta.status === 'not_found') && (
           <Card className="border-destructive">
             <CardContent className="p-8 text-center space-y-3">
-              <AlertTriangle className="h-12 w-12 mx-auto text-destructive" />
-              <h2 className="text-xl font-semibold">Cartão não encontrado</h2>
-              <p className="text-sm text-muted-foreground">
-                O código QR é inválido ou já não está ativo. Contacte o ponto de atendimento mais próximo.
-              </p>
+              <meta.icon className={`h-12 w-12 mx-auto ${toneStyles[meta.tone].iconColor}`} />
+              <h2 className="text-xl font-semibold">{meta.label}</h2>
+              <p className="text-sm text-muted-foreground">{meta.description}</p>
             </CardContent>
           </Card>
         )}
 
-        {data && (
+        {!isLoading && data && meta && meta.status !== 'invalid_token' && meta.status !== 'not_found' && (
           <Card className="overflow-hidden">
-            <CardHeader className={data.is_active ? 'bg-green-50 dark:bg-green-950/30' : 'bg-red-50 dark:bg-red-950/30'}>
-              <div className="flex items-center justify-between">
+            <CardHeader className={toneStyles[meta.tone].header}>
+              <div className="flex items-center justify-between gap-3 flex-wrap">
                 <CardTitle className="flex items-center gap-2">
-                  {data.is_active ? (
-                    <><CheckCircle2 className="h-6 w-6 text-green-600" /> Cartão Activo</>
-                  ) : (
-                    <><ShieldX className="h-6 w-6 text-red-600" /> Cartão Revogado</>
-                  )}
+                  <meta.icon className={`h-6 w-6 ${toneStyles[meta.tone].iconColor}`} />
+                  {meta.label}
                 </CardTitle>
                 <Badge variant="outline" className="font-mono">{data.serial}</Badge>
               </div>
+              <p className="text-sm text-muted-foreground mt-2">{meta.description}</p>
             </CardHeader>
 
             <CardContent className="p-6 space-y-4">
@@ -69,6 +144,18 @@ export default function CardVerificationPage() {
                 <InfoRow icon={Sprout} label="Cultura principal" value={(data.main_crops?.[0]) || '—'} />
                 <InfoRow icon={Sprout} label="Área cultivada" value={data.cultivated_area_ha ? `${data.cultivated_area_ha} ha` : '—'} />
                 <InfoRow label="Versão do cartão" value={`v${data.version}`} />
+                <InfoRow
+                  icon={Clock}
+                  label="Emitido em"
+                  value={data.issued_at ? format(new Date(data.issued_at), 'dd/MM/yyyy') : '—'}
+                />
+                {expiresAt && (
+                  <InfoRow
+                    icon={Clock}
+                    label={meta.status === 'expired' ? 'Expirou em' : 'Válido até'}
+                    value={`${format(expiresAt, 'dd/MM/yyyy')} (${formatDistanceToNow(expiresAt, { locale: pt, addSuffix: true })})`}
+                  />
+                )}
               </div>
 
               <div className="pt-4 border-t text-xs text-muted-foreground">
@@ -79,7 +166,7 @@ export default function CardVerificationPage() {
         )}
 
         <p className="text-center text-xs text-muted-foreground">
-          Esta verificação não expõe dados pessoais sensíveis.
+          Esta verificação não expõe dados pessoais sensíveis. SIGAFLO · República de Angola
         </p>
       </div>
     </div>
