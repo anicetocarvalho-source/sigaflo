@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Camera, Upload, X, User } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { PhotoCropDialog } from './PhotoCropDialog';
 
 const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
 const ALLOWED_IMAGE_EXTENSIONS = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
@@ -12,11 +13,14 @@ interface PhotoUploadProps {
   value?: string | null;
   onChange: (url: string | null) => void;
   disabled?: boolean;
+  /** Aspect of the cropper. Default 3/4 (CR-80 ID portrait). */
+  aspect?: number;
 }
 
-export const PhotoUpload = ({ value, onChange, disabled }: PhotoUploadProps) => {
+export const PhotoUpload = ({ value, onChange, disabled, aspect = 3 / 4 }: PhotoUploadProps) => {
   const [isUploading, setIsUploading] = useState(false);
   const [showCamera, setShowCamera] = useState(false);
+  const [cropSrc, setCropSrc] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -36,26 +40,23 @@ export const PhotoUpload = ({ value, onChange, disabled }: PhotoUploadProps) => 
     return null;
   };
 
-  const uploadFile = async (file: File) => {
+  const uploadBlob = async (blob: Blob) => {
     setIsUploading(true);
     try {
-      const fileExt = (file.name.split('.').pop() || 'jpg').toLowerCase();
-      const fileName = `${crypto.randomUUID()}.${fileExt}`;
-      const filePath = fileName;
-
+      const fileName = `${crypto.randomUUID()}.jpg`;
       const { error: uploadError } = await supabase.storage
         .from('farmer-photos')
-        .upload(filePath, file, {
+        .upload(fileName, blob, {
           cacheControl: '3600',
           upsert: false,
-          contentType: file.type || 'image/jpeg',
+          contentType: 'image/jpeg',
         });
 
       if (uploadError) throw uploadError;
 
       const { data } = supabase.storage
         .from('farmer-photos')
-        .getPublicUrl(filePath);
+        .getPublicUrl(fileName);
 
       onChange(data.publicUrl);
       toast.success('Foto carregada com sucesso');
@@ -64,6 +65,14 @@ export const PhotoUpload = ({ value, onChange, disabled }: PhotoUploadProps) => 
     } finally {
       setIsUploading(false);
     }
+  };
+
+  const openCropperFromFile = (file: File) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result === 'string') setCropSrc(reader.result);
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -77,13 +86,14 @@ export const PhotoUpload = ({ value, onChange, disabled }: PhotoUploadProps) => 
       return;
     }
 
-    uploadFile(file);
+    openCropperFromFile(file);
+    if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   const startCamera = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { facingMode: 'user', width: 640, height: 480 } 
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'user', width: 640, height: 480 },
       });
       streamRef.current = stream;
       if (videoRef.current) {
@@ -97,7 +107,7 @@ export const PhotoUpload = ({ value, onChange, disabled }: PhotoUploadProps) => 
 
   const stopCamera = () => {
     if (streamRef.current) {
-      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current.getTracks().forEach((track) => track.stop());
       streamRef.current = null;
     }
     setShowCamera(false);
@@ -112,13 +122,9 @@ export const PhotoUpload = ({ value, onChange, disabled }: PhotoUploadProps) => 
       const ctx = canvas.getContext('2d');
       if (ctx) {
         ctx.drawImage(video, 0, 0);
-        canvas.toBlob(async (blob) => {
-          if (blob) {
-            const file = new File([blob], 'photo.jpg', { type: 'image/jpeg' });
-            await uploadFile(file);
-            stopCamera();
-          }
-        }, 'image/jpeg', 0.8);
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.92);
+        stopCamera();
+        setCropSrc(dataUrl);
       }
     }
   };
@@ -130,12 +136,16 @@ export const PhotoUpload = ({ value, onChange, disabled }: PhotoUploadProps) => 
   return (
     <div className="space-y-3">
       <div className="flex items-center gap-4">
-        <div className="relative w-32 h-32 rounded-lg border-2 border-dashed border-muted-foreground/25 overflow-hidden bg-muted/50 flex items-center justify-center">
+        <div
+          className="relative rounded-md border-2 border-dashed border-muted-foreground/25 overflow-hidden bg-muted/50 flex items-center justify-center"
+          style={{ width: 96, height: 128 }}
+          title="Pré-visualização — formato cartão (3:4)"
+        >
           {value ? (
             <>
-              <img 
-                src={value} 
-                alt="Foto do agricultor" 
+              <img
+                src={value}
+                alt="Foto do agricultor"
                 className="w-full h-full object-cover"
               />
               {!disabled && (
@@ -153,7 +163,7 @@ export const PhotoUpload = ({ value, onChange, disabled }: PhotoUploadProps) => 
           )}
         </div>
 
-        {!disabled && !value && (
+        {!disabled && (
           <div className="flex flex-col gap-2">
             <Button
               type="button"
@@ -163,7 +173,7 @@ export const PhotoUpload = ({ value, onChange, disabled }: PhotoUploadProps) => 
               disabled={isUploading}
             >
               <Camera className="h-4 w-4 mr-2" />
-              Tirar Foto
+              {value ? 'Substituir (câmara)' : 'Tirar Foto'}
             </Button>
             <Button
               type="button"
@@ -173,7 +183,7 @@ export const PhotoUpload = ({ value, onChange, disabled }: PhotoUploadProps) => 
               disabled={isUploading}
             >
               <Upload className="h-4 w-4 mr-2" />
-              {isUploading ? 'A carregar...' : 'Carregar'}
+              {isUploading ? 'A carregar...' : value ? 'Substituir (ficheiro)' : 'Carregar'}
             </Button>
             <input
               ref={fileInputRef}
@@ -211,6 +221,17 @@ export const PhotoUpload = ({ value, onChange, disabled }: PhotoUploadProps) => 
           </div>
         </div>
       )}
+
+      <PhotoCropDialog
+        open={!!cropSrc}
+        imageSrc={cropSrc}
+        aspect={aspect}
+        onCancel={() => setCropSrc(null)}
+        onConfirm={async (blob) => {
+          setCropSrc(null);
+          await uploadBlob(blob);
+        }}
+      />
     </div>
   );
 };
