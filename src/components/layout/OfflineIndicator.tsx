@@ -11,11 +11,10 @@ export function OfflineIndicator() {
   const [online, setOnline] = useState(navigator.onLine);
   const [, force] = useState(0);
 
-  const pending = useLiveQuery<QueuedMutation[]>(
+  const pending = useLiveQuery(
     () => offlineDB.mutationQueue.toArray(),
-    [],
-    [] as QueuedMutation[]
-  );
+    []
+  ) as QueuedMutation[] | undefined;
 
   useEffect(() => {
     const on = () => setOnline(true);
