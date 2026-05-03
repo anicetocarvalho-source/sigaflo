@@ -656,8 +656,43 @@ export const FarmerCard = ({ farmer, onPrint, showActions = true }: FarmerCardPr
               </p>
             </button>
           </div>
+          <div className="border-t pt-3">
+            <p className="text-xs font-medium text-muted-foreground mb-2">
+              Exportar para PDF (mesmo layout, frente e verso)
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={() => exportPdf('pvc')}
+                disabled={exporting !== null}
+              >
+                {exporting === 'pvc' ? (
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                ) : (
+                  <FileDown className="h-4 w-4 mr-2" />
+                )}
+                PDF Cartão PVC (CR-80)
+              </Button>
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={() => exportPdf('a4')}
+                disabled={exporting !== null}
+              >
+                {exporting === 'a4' ? (
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                ) : (
+                  <FileDown className="h-4 w-4 mr-2" />
+                )}
+                PDF A4 (teste)
+              </Button>
+            </div>
+          </div>
           <DialogFooter>
-            <Button variant="ghost" onClick={() => setPrintDialogOpen(false)}>Cancelar</Button>
+            <Button variant="ghost" onClick={() => setPrintDialogOpen(false)} disabled={exporting !== null}>
+              Cancelar
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
