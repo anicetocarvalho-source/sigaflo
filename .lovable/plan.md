@@ -1,218 +1,99 @@
-# Módulo: Geração Automática do Cartão ID do Agricultor
+## Redesign do Cartão de Identificação do Agricultor (SIGAFLO)
 
-Atualmente já existe `FarmerCard.tsx` (931 linhas) com layout CR-80, frente/verso, exportação PDF, duplex, guias de corte e pré-visualização. Este plano **estende** o que existe, adicionando ciclo de vida do cartão, QR público verificável, geração em lote, dashboard e auditoria — sem refazer o que já funciona.
+Aplicar o novo padrão visual ao componente `FarmerCard` (preview 3D), aos templates de impressão (HTML PVC/A4) e à geração em lote (`cardBatchExport.ts`), garantindo consistência total entre preview digital, PDF print-ready e exportação em massa.
 
-## 1. Base de Dados (migração)
+### 1. Frente — layout institucional em 3 zonas
 
-Nova tabela `farmer_cards` (1 ativo por agricultor + histórico de revogações):
-
-- `id`, `farmer_id` (FK farmers)
-- `card_status`: enum `rascunho | gerado | impresso | entregue | revogado`
-- `qr_token` (texto único, 32 chars, gerado server-side, indexado UNIQUE)
-- `serial` (sequencial CART-AAAA-NNNNNN via trigger)
-- `issued_at`, `printed_at`, `delivered_at`, `revoked_at`, `revoked_reason`
-- `issued_by`, `printed_by`, `delivered_by`, `revoked_by` (FK profiles)
-- `snapshot` (jsonb com nome, província, cultura, área, score no momento da emissão — para reimpressão fiel)
-- `version` (int, incrementa em cada regeneração)
-
-Nova tabela `farmer_card_events` (log imutável):
-
-- `card_id`, `event_type` (`generated | printed | delivered | revoked | reissued | qr_regenerated | scanned`), `actor_id`, `metadata` jsonb, `created_at`
-
-RLS:
-
-- Leitura: técnicos/admins respeitando jurisdição (reusar `can_access_province`/`can_access_municipality`)
-- Escrita: apenas técnicos/admins (`is_technician_or_admin`)
-- View pública `public.card_verification_view` com `security_invoker = on` expondo APENAS: nome, província, tipo de produtor, cultura principal, status (ativo/revogado), elegibilidade crédito/incentivo, última atualização — usada pela página `/verificacao/:qrToken` sem auth
-
-Função SQL:
-
-- `generate_card_serial()` trigger BEFORE INSERT
-- `regenerate_card_qr(card_id)` SECURITY DEFINER — só técnicos, gera novo `qr_token`, incrementa `version`, regista evento `qr_regenerated`
-- `revoke_card(card_id, reason)` — muda status, regista evento, mantém histórico
-- Todas com `SET search_path = public`
-
-Auditoria via trigger em `farmer_cards` que insere em `audit_log` (padrão SIGAFLO).
-
-## 2. Hook `useFarmerCards`
-
-`src/hooks/useFarmerCards.ts`:
-
-- `useFarmerCard(farmerId)` — cartão ativo
-- `useFarmerCardHistory(farmerId)` — histórico
-- `useGenerateCard()` — cria cartão `gerado` com snapshot dos dados
-- `useUpdateCardStatus()` — `gerado → impresso → entregue`
-- `useRevokeCard()` — revogar com motivo
-- `useRegenerateQR()` — chama RPC
-- `useCardStats()` — para dashboard
-- `useBatchGenerateCards(farmerIds[])` — gera N cartões + PDF agrupado
-
-## 3. UI — Tab Cartão (extensão de FarmerCard.tsx)
-
-Adicionar barra de estado acima do cartão:
-
-- Badge do `card_status` com cores semânticas
-- Botão **Gerar cartão** (se inexistente / rascunho)
-- Botões **Marcar impresso**, **Marcar entregue**, **Revogar** (com diálogo de motivo)
-- Botão **Regenerar QR** (com confirmação — invalida cartões físicos antigos)
-- Histórico de eventos (timeline colapsável)
-
-QR atual passa a usar `qr_token` real apontando para URL pública:
-`https://{domain}/verificacao/{qr_token}`
-
-## 4. Página pública de verificação
-
-`src/pages/public/CardVerificationPage.tsx` em rota `/verificacao/:token` (sem auth, dentro de `PublicLayout`):
-
-- Consulta `card_verification_view` por token
-- Mostra: foto (se pública), nome, província/município, tipo, cultura principal, estado (Ativo/Revogado com cor), elegibilidade crédito, elegibilidade incentivo, "Última atualização"
-- Estado vazio claro se token inválido / revogado
-- Sem dados sensíveis (BI, telefone, email, coordenadas)
-- Regista evento `scanned` (edge function leve, opcional)
-
-## 5. Página de Cartões e Operação em Lote
-
-`src/pages/farmers/CardsManagementPage.tsx` rota `/agricultores/cartoes`:
-
-- Tabela paginada (server-side, padrão `usePaginatedQuery`) com filtros: estado, província, município, tipo
-- Seleção massiva (checkboxes)
-- Ações em lote: **Gerar cartões selecionados**, **Marcar impressos**, **Exportar PDF agrupado**
-- Geração em lote usa Web Worker no cliente (jsPDF) iterando os agricultores selecionados, uma página A4 com 10 cartões CR-80 (5x2) com guias de corte
-- Para >500 cartões: invoca edge function `generate-cards-batch` que processa em fila e devolve URL de download (Storage privado `card-exports`)
-
-## 6. Edge Function `generate-cards-batch`
-
-`supabase/functions/generate-cards-batch/index.ts`:
-
-- Recebe array de `farmer_ids` + opções (formato A4/CR80, frente/verso)
-- Valida JWT, valida jurisdição
-- Cria registos em `farmer_cards` (status `gerado`)
-- Gera PDF server-side com pdf-lib (suporta 300 DPI, embed PNGs do QR)
-- Upload para bucket privado `card-exports`, devolve signed URL (24h)
-- Suporta lotes grandes via processamento por chunks de 100 + retorno assíncrono com `job_id`
-
-Nova tabela `card_export_jobs`: `id, requested_by, status (pending|processing|done|error), total, processed, file_path, created_at`
-
-## 7. Dashboard de Cartões
-
-Nova secção em `FarmersDashboard.tsx` (ou nova página `CardsDashboardPage`):
-
-- KPIs: Total gerados, Ativos, Impressos, Entregues, Revogados
-- Taxa de emissão por província (barras horizontais — reutiliza padrão Recharts)
-- Taxa de entrega (gerados vs entregues)
-- Cartões revogados últimos 30 dias
-
-## 8. Storage
-
-Bucket privado `card-exports` (PDFs em lote, signed URLs 24h).
-Bucket existente `farmer-photos` (já público) é usado para a foto no cartão.
-
-## 9. Segurança
-
-- `qr_token`: 32 chars aleatórios via `gen_random_bytes(16)::text` (encode hex), UNIQUE
-- Token nunca exposto em listagens — só na geração e no QR
-- Página pública usa apenas a view sanitizada
-- Logs de geração/impressão imutáveis em `farmer_card_events` + `audit_log`
-- Regenerar QR exige confirmação dupla e revoga implicitamente cartões físicos anteriores (status anterior fica `revogado` com motivo "QR regenerado")
-
-## 10. Performance (10.000+ cartões)
-
-- Geração em lote >500: edge function assíncrona com job tracking
-- Cliente faz polling do `card_export_jobs.status`
-- PDF server-side com pdf-lib (streaming, memória controlada)
-- Inserts em `farmer_cards` em batch (1 transação por chunk de 100)
-- Índices: `farmer_cards(farmer_id, card_status)`, `farmer_cards(qr_token)`, `farmer_card_events(card_id, created_at)`
-
-## Detalhes técnicos
+Substituir o layout actual (foto+info+chip dourado) por uma grelha rígida 30/45/25 dentro da safe-zone de 3 mm:
 
 ```text
-Fluxo de geração individual:
-  UI (Tab Cartão) → useGenerateCard()
-    → INSERT farmer_cards (status=gerado, qr_token=random, snapshot=...)
-    → trigger gera serial CART-2026-NNNNNN
-    → trigger insere audit_log + farmer_card_events
-    → invalida queries → UI mostra cartão com QR real
-
-Fluxo verificação pública:
-  Cidadão escaneia QR → /verificacao/{token}
-    → SELECT card_verification_view WHERE qr_token = token
-    → mostra dados sanitizados + edge function regista scan (fire-and-forget)
-
-Fluxo lote grande (>500):
-  Seleção → POST edge fn generate-cards-batch → cria job → 202 + job_id
-  Worker processa chunks → atualiza progresso → finaliza com signed URL
-  UI faz polling → mostra progresso → botão Download
+┌─ HEADER (faixa verde 6mm) ─────────────────────────────┐
+│ República de Angola · MINAGRIF        [SIGAFLO wordmark]│
+├──────────┬───────────────────────┬─────────────────────┤
+│          │ NOME COMPLETO (11pt)  │   ▢ QR (22×22 mm)   │
+│  FOTO    │ ID SIGAF (bold mono)  │                     │
+│ 25×32 mm │ Tipo de produtor      │   Cultura principal │
+│  (cinza) │ Província/Município/  │   Área: X.X ha      │
+│          │ Comuna                │                     │
+└──────────┴───────────────────────┴─────────────────────┘
 ```
 
-## Ficheiros a criar/editar
+- Reduzir gradientes: fundo branco com faixa institucional verde no topo (6 mm) e rodapé fino (1.5 mm). Eliminar o padrão guilloché agressivo da frente; substituir por marca-d’água SIGAFLO discreta (≤ 6% opacidade) no fundo branco.
+- Foto com moldura cinza neutro (sem dourado), 25×32 mm.
+- Nome em uppercase 11pt bold; ID SIGAF em mono 10pt bold verde institucional; subtítulos em 7pt cinza-700.
+- QR movido para a frente (zona 3) com mínimo 20×20 mm — exigido pelo brief para leitura rápida.
+- Remover chip PVC simulado e badge "Verificado/Pendente" da frente (ruído visual); estado migra para o verso.
 
-**Novos**
+### 2. Verso — estrutura clara
 
-- Migração SQL (tabelas, view, funções, triggers, RLS, bucket)
-- `src/hooks/useFarmerCards.ts`
-- `src/pages/public/CardVerificationPage.tsx`
-- `src/pages/farmers/CardsManagementPage.tsx`
-- `src/components/farmers/CardStatusBar.tsx`
-- `src/components/farmers/CardHistoryTimeline.tsx`
-- `src/components/farmers/RevokeCardDialog.tsx`
-- `src/components/farmers/BatchCardGenerator.tsx`
-- `src/components/farmers/CardsDashboard.tsx`
-- `supabase/functions/generate-cards-batch/index.ts`
+```text
+┌────────────────────────────────────────────────┐
+│ ▮▮▮▮▮▮▮ Code128: ID SIGAF        SIGAFLO logo │
+├────────────────────────────────────────────────┤
+│ Estado: ●ACTIVO    NFC: ⌬ disponível          │
+│ BI/NIF · Telefone · Área total                 │
+├────────────────────────────────────────────────┤
+│ Emissão: dd/mm/aaaa   │ Nota legal:           │
+│ Validade: dd/mm/aaaa  │ Documento intransmis- │
+│ ☎ 923 000 000         │ sível. Uso institucio-│
+│ sigaflo.gov.ao        │ nal. Devolver ao MINAG│
+└────────────────────────────────────────────────┘
+```
 
-**Editar**
+- Adicionar `jsbarcode` (ou render SVG manual Code128) para o código de barras topo.
+- Indicador NFC textual "⌬ NFC" (apenas badge — sem hardware real).
+- Pílula `ACTIVO/INACTIVO/REVOGADO` com cor semântica (verde/cinza/vermelho).
+- Datas obtidas de `activeCard.issued_at` e regra de validade (default: 5 anos).
+- Nota legal compactada à direita, 5pt.
 
-- `src/components/farmers/FarmerCard.tsx` — usar `qr_token` real, integrar `CardStatusBar`
-- `src/App.tsx` — rotas `/verificacao/:token` (pública) e `/agricultores/cartoes`
-- `src/components/layout/Sidebar.tsx` — entrada "Cartões"
-- `mem://index.md` + memórias relevantes
+### 3. Paleta e tipografia (design tokens)
 
-## Confirmação necessária
+Adicionar ao `index.css` / `tailwind.config.ts` tokens dedicados (HSL):
 
-Antes de implementar, confirma:
+- `--card-sigaflo-green`: hsl(142 72% 22%) — verde institucional dominante
+- `--card-sigaflo-green-dark`: hsl(142 80% 14%) — faixa header
+- `--card-sigaflo-gold`: hsl(45 90% 55%) — apenas detalhe selo (1 linha)
+- `--card-sigaflo-surface`: hsl(0 0% 100%) — fundo principal
+- `--card-sigaflo-muted`: hsl(220 14% 96%) — fundo foto/secções
+- `--card-sigaflo-text`: hsl(220 13% 18%)
 
-1. **URL pública de verificação**: `/verificacao/{token}` (token aleatório) — preferes `/verificacao/{registration_number}` (mais legível mas menos seguro)?
-2. **Geração em lote >500**: edge function assíncrona com job + signed URL — ok?
-3. **Foto na página pública** de verificação: mostrar ou ocultar por privacidade?
+Tipografia: Inter (já presente). Hierarquia: Nome 11pt/700, ID 10pt/700 mono, dados 7.5pt/500, labels 6pt/600 uppercase.
 
-# LAYOUT PRINT-READY (EXACTO)
+### 4. Compatibilidade print-ready
 
-## 📏 Dimensões finais
+- Manter `@page 85.6mm 53.98mm`, margem 0, com safe-zone CSS de 3 mm (padding interno).
+- Adicionar guias visuais opcionais de sangria (3 mm) para o modo PVC no preview de impressão.
+- Forçar `print-color-adjust: exact`. Usar apenas cores sólidas (sem gradientes complexos) → melhor conversão para CMYK em RIPs externos.
+- Render `html2canvas` aumentado para `scale: 5` (~300 DPI em 85.6 mm).
 
-- **85.60 × 53.98 mm**
-- Sangria: **3 mm**
-- Ficheiro: **91.60 × 59.98 mm**
+### 5. Versão digital (preview 3D)
 
----
+- Refazer JSX da frente/verso em `FarmerCard.tsx` espelhando exactamente o template HTML para evitar discrepâncias entre preview e PDF.
+- Manter flip 3D, mas remover o badge dourado e overlay "Rascunho" → mover para `CardStatusBar`.
+- Mobile: garantir que o card (380×240 px) escala com `max-w-full` e `aspect-[1.586]`.
 
-## 🎨 Frente (estrutura fixa)
+### 6. Exportação em lote
 
-### Zonas (proporção real):
+Actualizar `src/lib/cardBatchExport.ts` (`drawCardFront` e `drawCardBack`) com o mesmo layout 30/45/25, código de barras no verso, paleta institucional e tipografia. Manter compatibilidade com `BatchExportOptions` actual.
 
+### 7. Template reutilizável
 
-| Zona           | Conteúdo              |
-| -------------- | --------------------- |
-| Esquerda (30%) | Foto                  |
-| Centro (45%)   | Nome, ID, localização |
-| Direita (25%)  | QR + cultura + área   |
+Extrair o markup HTML do cartão para `src/lib/cardTemplate.ts` exportando `renderCardFrontHtml(ctx)` e `renderCardBackHtml(ctx)` reutilizado por:
+- `FarmerCard.tsx` (impressão single)
+- futuras integrações (e-mail, partilha pública)
 
+### Ficheiros a alterar
 
----
+- `src/components/farmers/FarmerCard.tsx` — preview 3D + `buildPrintHtml`
+- `src/lib/cardTemplate.ts` — **novo**, markup partilhado
+- `src/lib/cardBatchExport.ts` — sincronizar `drawCardFront`/`drawCardBack`
+- `src/index.css` + `tailwind.config.ts` — tokens `--card-sigaflo-*`
+- `package.json` — adicionar `jsbarcode`
 
-## 🟫 Verso
+### Validação final
 
-
-| Zona   | Conteúdo            |
-| ------ | ------------------- |
-| Topo   | Código de barras    |
-| Centro | NFC / ID            |
-| Base   | Validade + contacto |
-
-
----
-
-## 🖨️ Configuração gráfica
-
-- 300 DPI
-- CMYK
-- Fontes bold (mín 8pt)
-- QR mínimo: **20x20 mm**
+- Preview digital idêntico ao PDF gerado (frente + verso).
+- QR ≥ 20 mm, código de barras legível.
+- Nenhum elemento crítico fora da safe-zone de 3 mm.
+- Contraste WCAG AA em todos os textos sobre verde/branco.
+- Geração em lote (A4 grid e CR80) usa o mesmo layout.
