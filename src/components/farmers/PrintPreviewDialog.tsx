@@ -123,6 +123,7 @@ export const PrintPreviewDialog = ({
           aria-hidden
         />
 
+        <div className={liveControls ? 'grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-3' : ''}>
         {/* Preview canvas */}
         <div
           className="relative overflow-auto bg-[hsl(var(--muted))] rounded-md border"
