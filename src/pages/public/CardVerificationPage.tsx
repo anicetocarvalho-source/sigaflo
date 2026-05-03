@@ -2,11 +2,12 @@ import { useParams } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { CheckCircle2, ShieldX, MapPin, Sprout, User, AlertTriangle, Clock, ShieldQuestion } from 'lucide-react';
-import { useCardVerification } from '@/hooks/useFarmerCards';
+import { useCardVerification, useCardVerificationByCode } from '@/hooks/useFarmerCards';
 import { Skeleton } from '@/components/ui/skeleton';
 import { format, differenceInYears, formatDistanceToNow } from 'date-fns';
 import { pt } from 'date-fns/locale';
 import { useMemo } from 'react';
+import { qrTokenSchema, anyCardCodeSchema } from '@/lib/cardCodes';
 
 // Cartão válido por 5 anos a partir da emissão
 const CARD_VALIDITY_YEARS = 5;
@@ -21,8 +22,6 @@ interface StatusMeta {
   tone: 'success' | 'destructive' | 'warning' | 'muted';
 }
 
-const TOKEN_REGEX = /^[a-f0-9]{32}$/i;
-
 const toneStyles: Record<StatusMeta['tone'], { header: string; iconColor: string; badge: 'default' | 'destructive' | 'secondary' | 'outline' }> = {
   success: { header: 'bg-green-50 dark:bg-green-950/30', iconColor: 'text-green-600', badge: 'default' },
   destructive: { header: 'bg-red-50 dark:bg-red-950/30', iconColor: 'text-red-600', badge: 'destructive' },
@@ -31,16 +30,26 @@ const toneStyles: Record<StatusMeta['tone'], { header: string; iconColor: string
 };
 
 export default function CardVerificationPage() {
-  const { token } = useParams<{ token: string }>();
-  const tokenIsValid = !!token && TOKEN_REGEX.test(token);
-  const { data, isLoading, error } = useCardVerification(tokenIsValid ? token : undefined);
+  const { token, code } = useParams<{ token?: string; code?: string }>();
+  // Modo `:token` aceita apenas tokens QR; modo `:code` aceita token, serial ou registo.
+  const tokenParse = token ? qrTokenSchema.safeParse(token) : null;
+  const codeParse = code ? anyCardCodeSchema.safeParse(code) : null;
+  const tokenIsValid = !!tokenParse?.success;
+  const codeIsValid = !!codeParse?.success;
+  const inputIsValid = !!token ? tokenIsValid : codeIsValid;
+
+  const tokenQuery = useCardVerification(tokenIsValid ? tokenParse!.data : undefined);
+  const codeQuery = useCardVerificationByCode(codeIsValid ? codeParse!.data : undefined);
+  const { data, isLoading, error } = token ? tokenQuery : codeQuery;
 
   const meta: StatusMeta | null = useMemo(() => {
-    if (!tokenIsValid) {
+    if (!inputIsValid) {
       return {
         status: 'invalid_token',
-        label: 'Token inválido',
-        description: 'O link de verificação não tem o formato esperado.',
+        label: 'Código inválido',
+        description: token
+          ? 'O link de verificação não tem o formato esperado (token de 32 caracteres).'
+          : 'O código fornecido não corresponde a um token QR, número de série ou nº de registo válido.',
         icon: ShieldQuestion,
         tone: 'muted',
       };
@@ -83,7 +92,7 @@ export default function CardVerificationPage() {
       icon: CheckCircle2,
       tone: 'success',
     };
-  }, [tokenIsValid, isLoading, error, data]);
+  }, [inputIsValid, isLoading, error, data, token]);
 
   const expiresAt = data?.issued_at
     ? new Date(new Date(data.issued_at).setFullYear(new Date(data.issued_at).getFullYear() + CARD_VALIDITY_YEARS))
