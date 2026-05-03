@@ -441,13 +441,27 @@ export const FarmerProfileComplete = () => {
             <span className="hidden sm:inline">Monitoria</span>
           </TabsTrigger>
           {(farmer.farmer_type === 'cooperative' || farmer.farmer_type === 'field_school') && (
-            <TabsTrigger value="members" className="flex items-center gap-1 flex-shrink-0">
-              <Users className="h-4 w-4" />
-              <span className="hidden sm:inline">Membros</span>
-              <Badge variant="secondary" className="ml-1 text-xs">{members.length}</Badge>
-            </TabsTrigger>
+            <>
+              <TabsTrigger value="entity-details" className="flex items-center gap-1 flex-shrink-0">
+                <Building2 className="h-4 w-4" />
+                <span className="hidden sm:inline">{farmer.farmer_type === 'cooperative' ? 'Cooperativa' : 'ECA'}</span>
+              </TabsTrigger>
+              <TabsTrigger value="members" className="flex items-center gap-1 flex-shrink-0">
+                <Users className="h-4 w-4" />
+                <span className="hidden sm:inline">Membros</span>
+                <Badge variant="secondary" className="ml-1 text-xs">{members.length}</Badge>
+              </TabsTrigger>
+            </>
           )}
         </TabsList>
+
+        {(farmer.farmer_type === 'cooperative' || farmer.farmer_type === 'field_school') && (
+          <TabsContent value="entity-details" className="space-y-6">
+            {farmer.farmer_type === 'cooperative'
+              ? <CooperativeDetailsCard farmerId={farmer.id} />
+              : <FieldSchoolDetailsCard farmerId={farmer.id} />}
+          </TabsContent>
+        )}
 
         {/* Tab 1: Identification & Location */}
         <TabsContent value="identification" className="space-y-6">
