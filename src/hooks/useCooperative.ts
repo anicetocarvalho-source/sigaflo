@@ -84,6 +84,6 @@ export const useSaveCooperative = () => {
       qc.invalidateQueries({ queryKey: ['cooperative-details', farmerId] });
       toast.success('Cooperativa guardada com sucesso');
     },
-    onError: (e) => toast.error(getCrudErrorMessage('save', 'cooperativa', e)),
+    onError: (e) => toast.error(getCrudErrorMessage('update', 'cooperativa', e)),
   });
 };
