@@ -269,7 +269,7 @@ const CooperativesPage = () => {
                   <TableBody>
                     {filteredCoops.map((coop) => {
                       const memberCount = allFarmers?.filter(f => f.parent_cooperative_id === coop.id)?.length || 0;
-                      
+                      const det = detailsMap?.[coop.id];
                       return (
                         <TableRow key={coop.id}>
                           <TableCell className="font-mono text-sm">
@@ -288,6 +288,13 @@ const CooperativesPage = () => {
                               </div>
                             </div>
                           </TableCell>
+                          <TableCell className="font-mono text-xs">{det?.nif || '-'}</TableCell>
+                          <TableCell className="text-sm">
+                            {det?.president_name || '-'}
+                            {det?.president_phone && (
+                              <p className="text-xs text-muted-foreground">{det.president_phone}</p>
+                            )}
+                          </TableCell>
                           <TableCell>
                             <div className="text-sm">
                               <div>{coop.provinces?.name || '-'}</div>
@@ -297,27 +304,13 @@ const CooperativesPage = () => {
                             </div>
                           </TableCell>
                           <TableCell>
-                            <div className="flex flex-wrap gap-1 max-w-[150px]">
-                              {coop.main_crops?.slice(0, 2).map((crop, i) => (
-                                <Badge key={i} variant="outline" className="text-xs">
-                                  {crop}
-                                </Badge>
-                              ))}
-                              {(coop.main_crops?.length || 0) > 2 && (
-                                <Badge variant="outline" className="text-xs">
-                                  +{(coop.main_crops?.length || 0) - 2}
-                                </Badge>
-                              )}
-                            </div>
-                          </TableCell>
-                          <TableCell>
                             <Badge variant="secondary">
                               <Users className="mr-1 h-3 w-3" />
-                              {memberCount}
+                              {det?.total_members ?? memberCount}
                             </Badge>
                           </TableCell>
                           <TableCell>
-                            {coop.cultivated_area_ha?.toLocaleString() || '-'}
+                            {(det?.aggregated_area_ha ?? coop.cultivated_area_ha)?.toLocaleString() || '-'}
                           </TableCell>
                           <TableCell>
                             <WorkflowStatusBadge status={coop.status} />
