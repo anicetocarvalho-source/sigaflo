@@ -5,12 +5,21 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient } from "@tanstack/react-query";
 import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
 import { createSyncStoragePersister } from "@tanstack/query-sync-storage-persister";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useParams } from "react-router-dom";
 import { useEffect } from "react";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { ScrollToTop } from "@/components/layout/ScrollToTop";
 import { initSyncEngine } from "@/lib/offline/syncEngine";
+
+const CooperativeAliasRedirect = () => {
+  const { id } = useParams();
+  return <Navigate to={`/agricultores/cooperativas/${id}/editar`} replace />;
+};
+const FieldSchoolAliasRedirect = () => {
+  const { id } = useParams();
+  return <Navigate to={`/agricultores/escolas/${id}/editar`} replace />;
+};
 
 // Pages
 import Index from "./pages/Index";
@@ -190,6 +199,13 @@ const App = () => {
             <Route path="/agricultores/cooperativas/:id/editar" element={<ProtectedRoute requiredRoles={TECHNICIAN_AND_ADMIN}><CooperativeFormPage mode="edit" /></ProtectedRoute>} />
             <Route path="/agricultores/escolas/nova" element={<ProtectedRoute requiredRoles={TECHNICIAN_AND_ADMIN}><FieldSchoolFormPage mode="new" /></ProtectedRoute>} />
             <Route path="/agricultores/escolas/:id/editar" element={<ProtectedRoute requiredRoles={TECHNICIAN_AND_ADMIN}><FieldSchoolFormPage mode="edit" /></ProtectedRoute>} />
+            {/* Aliases curtos para compatibilidade */}
+            <Route path="/cooperativas" element={<Navigate to="/agricultores/cooperativas" replace />} />
+            <Route path="/cooperativas/nova" element={<Navigate to="/agricultores/cooperativas/nova" replace />} />
+            <Route path="/cooperativas/:id/editar" element={<CooperativeAliasRedirect />} />
+            <Route path="/escolas-campo" element={<Navigate to="/agricultores/escolas" replace />} />
+            <Route path="/escolas-campo/nova" element={<Navigate to="/agricultores/escolas/nova" replace />} />
+            <Route path="/escolas-campo/:id/editar" element={<FieldSchoolAliasRedirect />} />
             <Route path="/agricultores/:id" element={<ProtectedRoute requiredRoles={ALL_INTERNAL}><FarmerDetailPage /></ProtectedRoute>} />
             <Route path="/agricultores/:id/editar" element={<ProtectedRoute requiredRoles={TECHNICIAN_AND_ADMIN}><FarmerEditPage /></ProtectedRoute>} />
             <Route path="/agricultores/:id/membros" element={<ProtectedRoute requiredRoles={TECHNICIAN_AND_ADMIN}><AddMembersPage /></ProtectedRoute>} />
