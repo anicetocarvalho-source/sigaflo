@@ -11,6 +11,8 @@ jobs:
     name: Vitest (offline sync)
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    env:
+      CI: "true"
 
     steps:
       - name: Checkout
@@ -24,11 +26,47 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
+      - name: Prepare artefact directories
+        run: mkdir -p test-results test-artifacts/logs test-artifacts/snapshots
+
       - name: Run offline sync tests (gating)
+        id: offline_tests
         # Falha o build se qualquer teste de sincronização offline quebrar.
-        run: bunx vitest run src/lib/offline/__tests__ --reporter=verbose
+        # Capturamos stdout/stderr para upload em caso de falha.
+        run: |
+          set -o pipefail
+          bunx vitest run src/lib/offline/__tests__ \
+            --reporter=verbose \
+            --reporter=json --outputFile=test-results/offline-results.json \
+            2>&1 | tee test-artifacts/logs/offline-tests.log
+
+      - name: Collect failure snapshot (offline tests)
+        if: failure() && steps.offline_tests.outcome == 'failure'
+        run: |
+          echo "=== Node / Bun versions ===" > test-artifacts/snapshots/env.txt
+          (node --version && bun --version) >> test-artifacts/snapshots/env.txt 2>&1 || true
+          echo "=== Git HEAD ===" >> test-artifacts/snapshots/env.txt
+          git rev-parse HEAD >> test-artifacts/snapshots/env.txt || true
+          echo "=== Offline test files ===" >> test-artifacts/snapshots/env.txt
+          ls -la src/lib/offline/__tests__ >> test-artifacts/snapshots/env.txt || true
+          # Snapshot dos ficheiros-fonte da sync engine para diagnóstico.
+          cp -r src/lib/offline test-artifacts/snapshots/offline-src || true
 
       - name: Run full test suite
+        id: full_tests
         # Continua a correr a suite completa para feedback adicional;
         # já falhámos cedo se os testes offline quebrarem.
-        run: bunx vitest run
+        run: |
+          set -o pipefail
+          bunx vitest run 2>&1 | tee test-artifacts/logs/full-tests.log
+
+      - name: Upload test artefacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vitest-failure-artifacts-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            test-artifacts/**
+            test-results/**
+          retention-days: 14
+          if-no-files-found: warn
