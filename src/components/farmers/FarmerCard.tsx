@@ -296,6 +296,15 @@ ${isPvc ? `
     setPrintDialogOpen(false);
   };
 
+  const requestPrint = (mode: 'pvc' | 'a4') => {
+    if (duplexMode !== 'simplex') {
+      setPendingPrintMode(mode);
+      setWizardOpen(true);
+    } else {
+      openPrintWindow(mode);
+    }
+  };
+
   const exportPdf = async (mode: 'pvc' | 'a4') => {
     setExporting(mode);
     const iframe = document.createElement('iframe');
