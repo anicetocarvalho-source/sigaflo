@@ -79,7 +79,7 @@ import { useFieldSchoolDetails } from '@/hooks/useFieldSchool';
 import { Skeleton } from '@/components/ui/skeleton';
 import { QuickStats } from './profile/QuickStats';
 import { ProfileGroupedNav } from './profile/ProfileGroupedNav';
-import { ALL_TAB_VALUES } from './profile/profileTabsConfig';
+import { ALL_TAB_VALUES, PROFILE_GROUPS, getVisibleTabs, findGroupForTab, type FarmerType as ProfileFarmerType } from './profile/profileTabsConfig';
 import { toast } from 'sonner';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
