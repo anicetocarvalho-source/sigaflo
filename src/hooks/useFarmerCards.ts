@@ -192,21 +192,46 @@ export const useCardStats = () => {
   });
 };
 
+import { qrTokenSchema, anyCardCodeSchema } from '@/lib/cardCodes';
+
 export const useCardVerification = (token?: string) => {
   return useQuery({
     queryKey: ['card-verification', token],
     queryFn: async () => {
-      if (!token) return null;
+      const parsed = qrTokenSchema.safeParse(token ?? '');
+      if (!parsed.success) return null;
+      const safeToken = parsed.data;
       const { data, error } = await supabase
         .from('card_verification_view' as any)
         .select('*')
-        .eq('qr_token', token)
+        .eq('qr_token', safeToken)
         .maybeSingle();
       if (error) throw error;
-      // fire-and-forget scan log
-      try { await supabase.rpc('log_card_scan' as any, { _qr_token: token, _meta: {} }); } catch {}
+      // fire-and-forget scan log (token already validated)
+      try { await supabase.rpc('log_card_scan' as any, { _qr_token: safeToken, _meta: {} }); } catch {}
       return data as any;
     },
     enabled: !!token,
+  });
+};
+
+/** Verificação por qualquer código (token QR, serial Code128 ou nº de registo). */
+export const useCardVerificationByCode = (code?: string) => {
+  return useQuery({
+    queryKey: ['card-verification-code', code],
+    queryFn: async () => {
+      const parsed = anyCardCodeSchema.safeParse(code ?? '');
+      if (!parsed.success) return null;
+      const { data, error } = await supabase.rpc('verify_card_by_code' as any, { _code: parsed.data });
+      if (error) throw error;
+      const row = Array.isArray(data) ? data[0] : data;
+      if (!row) return null;
+      // fire-and-forget scan log (apenas se temos token)
+      if (row.qr_token) {
+        try { await supabase.rpc('log_card_scan' as any, { _qr_token: row.qr_token, _meta: { match_kind: row.match_kind } }); } catch {}
+      }
+      return row as any;
+    },
+    enabled: !!code,
   });
 };
