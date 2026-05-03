@@ -170,9 +170,9 @@ export default function CardsManagementPage() {
                 {generate.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
                 Gerar cartões
               </Button>
-              <Button size="sm" variant="outline" onClick={handleBatchExportPdf} disabled={!selected.size || batchExporting}>
+              <Button size="sm" variant="outline" onClick={() => setExportDialogOpen(true)} disabled={!selected.size || batchExporting}>
                 {batchExporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileDown className="h-4 w-4" />}
-                Exportar PDF agrupado
+                Exportar lote (PDF/ZIP)
               </Button>
             </div>
           </div>
