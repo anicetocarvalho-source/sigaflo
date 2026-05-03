@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useFarmers, useProvinces } from '@/hooks/useFarmers';
+import { useFieldSchoolDetailsBulk } from '@/hooks/useFieldSchool';
 import { WorkflowStatusBadge } from '@/components/farmers/WorkflowStatusBadge';
 import { 
   Search, 
