@@ -186,7 +186,6 @@ const App = () => {
             <Route path="/agricultores/novo" element={<ProtectedRoute requiredRoles={TECHNICIAN_AND_ADMIN}><FarmerNewPage /></ProtectedRoute>} />
             <Route path="/agricultores/escolas" element={<ProtectedRoute requiredRoles={ALL_INTERNAL}><FieldSchoolsPage /></ProtectedRoute>} />
             <Route path="/agricultores/cooperativas" element={<ProtectedRoute requiredRoles={ALL_INTERNAL}><CooperativesPage /></ProtectedRoute>} />
-            <Route path="/agricultores/cooperativas" element={<ProtectedRoute requiredRoles={ALL_INTERNAL}><CooperativesPage /></ProtectedRoute>} />
             <Route path="/agricultores/cooperativas/nova" element={<ProtectedRoute requiredRoles={TECHNICIAN_AND_ADMIN}><CooperativeFormPage mode="new" /></ProtectedRoute>} />
             <Route path="/agricultores/cooperativas/:id/editar" element={<ProtectedRoute requiredRoles={TECHNICIAN_AND_ADMIN}><CooperativeFormPage mode="edit" /></ProtectedRoute>} />
             <Route path="/agricultores/escolas/nova" element={<ProtectedRoute requiredRoles={TECHNICIAN_AND_ADMIN}><FieldSchoolFormPage mode="new" /></ProtectedRoute>} />
