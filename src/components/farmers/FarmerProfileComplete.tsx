@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { Link, useParams, useNavigate } from 'react-router-dom';
+import { Link, useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
