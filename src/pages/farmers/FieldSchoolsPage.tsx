@@ -38,7 +38,9 @@ const FieldSchoolsPage = () => {
 
   // Get associated farmers count (farmers that belong to field schools)
   const { data: allFarmers } = useFarmers({});
-  
+  const schoolIds = useMemo(() => (fieldSchools || []).map(s => s.id), [fieldSchools]);
+  const { data: detailsMap } = useFieldSchoolDetailsBulk(schoolIds);
+
   const filteredSchools = useMemo(() => {
     if (!fieldSchools) return [];
     return fieldSchools.filter(school => 
