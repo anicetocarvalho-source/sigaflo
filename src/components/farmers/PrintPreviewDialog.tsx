@@ -42,6 +42,8 @@ export const PrintPreviewDialog = ({
   onPrint,
   onExportPdf,
   exporting,
+  liveControls,
+  controlsKey,
 }: PrintPreviewDialogProps) => {
   const [zoom, setZoom] = useState(mode === 'pvc' ? 2.5 : 1);
   const [showMargins, setShowMargins] = useState(true);
