@@ -57,6 +57,7 @@ export const useSaveFieldSchool = () => {
     mutationFn: async ({ id, base, details, memberIds }: FieldSchoolPayload & { id?: string }) => {
       const baseData = { ...base, farmer_type: 'field_school' as const };
       let farmerId = id;
+      const createdNew = !id;
 
       if (id) {
         const { error } = await supabase.from('farmers').update(baseData as any).eq('id', id);
@@ -69,14 +70,25 @@ export const useSaveFieldSchool = () => {
 
       if (!farmerId) throw new Error('Falha ao obter ID da escola de campo');
 
-      const detailsRow = { farmer_id: farmerId, ...details };
-      const { error: dErr } = await supabase
-        .from('field_school_details')
-        .upsert(detailsRow as any, { onConflict: 'farmer_id' });
-      if (dErr) throw dErr;
+      try {
+        const detailsRow = { farmer_id: farmerId, ...details };
+        const { error: dErr } = await supabase
+          .from('field_school_details')
+          .upsert(detailsRow as any, { onConflict: 'farmer_id' });
+        if (dErr) throw dErr;
 
-      if (memberIds && memberIds.length > 0) {
-        await supabase.from('farmers').update({ field_school_id: farmerId }).in('id', memberIds);
+        if (memberIds && memberIds.length > 0) {
+          const { error: mErr } = await supabase
+            .from('farmers')
+            .update({ field_school_id: farmerId })
+            .in('id', memberIds);
+          if (mErr) throw mErr;
+        }
+      } catch (err) {
+        if (createdNew && farmerId) {
+          await supabase.from('farmers').delete().eq('id', farmerId);
+        }
+        throw err;
       }
 
       return farmerId;
