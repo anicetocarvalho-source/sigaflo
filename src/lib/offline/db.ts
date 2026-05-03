@@ -1,6 +1,6 @@
 import Dexie, { Table } from 'dexie';
 
-export type ConflictStrategy = 'server-wins' | 'local-wins' | 'merge' | 'manual';
+export type ConflictStrategy = 'server-wins' | 'local-wins' | 'merge' | 'manual' | 'last-write-wins';
 
 export interface QueuedMutation {
   id?: number;
