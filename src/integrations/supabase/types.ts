@@ -7336,6 +7336,26 @@ export type Database = {
         Args: { _pin_hash: string; _wallet_id: string }
         Returns: undefined
       }
+      verify_card_by_code: {
+        Args: { _code: string }
+        Returns: {
+          card_status: string
+          cultivated_area_ha: number
+          farmer_name: string
+          farmer_type: string
+          is_active: boolean
+          issued_at: string
+          main_crops: string[]
+          match_kind: string
+          municipality_name: string
+          photo_url: string
+          province_name: string
+          qr_token: string
+          serial: string
+          updated_at: string
+          version: number
+        }[]
+      }
       verify_farmer_wallet_pin: {
         Args: { _pin_hash: string; _wallet_id: string }
         Returns: boolean
