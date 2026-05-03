@@ -11,7 +11,8 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Download, Printer, CreditCard, FileDown, Loader2, Eye } from 'lucide-react';
+import { Download, Printer, CreditCard, FileDown, Loader2, Eye, Wand2 } from 'lucide-react';
+import { DuplexAlignmentWizard } from './DuplexAlignmentWizard';
 import { toast } from 'sonner';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
@@ -168,6 +169,8 @@ export const FarmerCard = ({ farmer, onPrint, showActions = true }: FarmerCardPr
   const [printDialogOpen, setPrintDialogOpen] = useState(false);
   const [exporting, setExporting] = useState<null | 'pvc' | 'a4'>(null);
   const [previewMode, setPreviewMode] = useState<null | 'pvc' | 'a4'>(null);
+  const [wizardOpen, setWizardOpen] = useState(false);
+  const [pendingPrintMode, setPendingPrintMode] = useState<null | 'pvc' | 'a4'>(null);
   const [duplexMode, setDuplexMode] = useState<DuplexMode>('long-edge');
   const [offsetX, setOffsetX] = useState(0); // mm — ajuste fino do verso
   const [offsetY, setOffsetY] = useState(0); // mm
@@ -291,6 +294,15 @@ ${isPvc ? `
     w.document.write(buildPrintHtml(mode));
     w.document.close();
     setPrintDialogOpen(false);
+  };
+
+  const requestPrint = (mode: 'pvc' | 'a4') => {
+    if (duplexMode !== 'simplex') {
+      setPendingPrintMode(mode);
+      setWizardOpen(true);
+    } else {
+      openPrintWindow(mode);
+    }
   };
 
   const exportPdf = async (mode: 'pvc' | 'a4') => {
@@ -472,7 +484,7 @@ ${isPvc ? `
                         <Eye className="h-3.5 w-3.5 mr-1" />
                         Pré-visualizar
                       </Button>
-                      <Button size="sm" variant="ghost" onClick={() => openPrintWindow('pvc')}>
+                      <Button size="sm" variant="ghost" onClick={() => requestPrint('pvc')}>
                         <Printer className="h-3.5 w-3.5 mr-1" />
                         Imprimir
                       </Button>
@@ -491,7 +503,7 @@ ${isPvc ? `
                         <Eye className="h-3.5 w-3.5 mr-1" />
                         Pré-visualizar
                       </Button>
-                      <Button size="sm" variant="ghost" onClick={() => openPrintWindow('a4')}>
+                      <Button size="sm" variant="ghost" onClick={() => requestPrint('a4')}>
                         <Printer className="h-3.5 w-3.5 mr-1" />
                         Imprimir
                       </Button>
@@ -501,6 +513,16 @@ ${isPvc ? `
               </TabsContent>
 
               <TabsContent value="calibracao" className="mt-0 space-y-3">
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setWizardOpen(true)}
+                  className="w-full"
+                >
+                  <Wand2 className="h-4 w-4 mr-2" />
+                  Assistente de alinhamento duplex
+                </Button>
                 <p className="text-xs font-medium text-muted-foreground">
                   Modo duplex (alinhamento frente/verso)
                 </p>
@@ -739,6 +761,27 @@ ${isPvc ? `
           }
         />
       )}
+
+      <DuplexAlignmentWizard
+        open={wizardOpen}
+        onOpenChange={(v) => {
+          setWizardOpen(v);
+          if (!v) setPendingPrintMode(null);
+        }}
+        duplexMode={duplexMode}
+        setDuplexMode={setDuplexMode}
+        offsetX={offsetX}
+        setOffsetX={setOffsetX}
+        offsetY={offsetY}
+        setOffsetY={setOffsetY}
+        onConfirmed={() => {
+          if (pendingPrintMode) {
+            const m = pendingPrintMode;
+            setPendingPrintMode(null);
+            setTimeout(() => openPrintWindow(m), 100);
+          }
+        }}
+      />
     </div>
   );
 };
