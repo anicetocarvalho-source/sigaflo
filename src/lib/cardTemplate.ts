@@ -114,7 +114,8 @@ export const cardCss = `
     display: flex; align-items: center; gap: 1.2mm;
     width: 30%;
   }
-  .sigaflo-card.front .header .gov .brasao { width: 7mm; height: 7mm; flex: none; }
+  .sigaflo-card.front .header .gov .brasao { width: 7mm; height: 7mm; flex: none; display: flex; align-items: center; justify-content: center; }
+  .sigaflo-card.front .header .gov .brasao img { width: 100%; height: 100%; object-fit: contain; display: block; }
   .sigaflo-card.front .header .gov .gov-text {
     font-size: 4.5pt; line-height: 1.15; color: ${CARD_COLORS.text};
     letter-spacing: 0.3px;
