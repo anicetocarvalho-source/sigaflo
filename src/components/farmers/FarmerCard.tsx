@@ -440,156 +440,168 @@ ${isPvc ? `
       )}
 
       <Dialog open={printDialogOpen} onOpenChange={setPrintDialogOpen}>
-        <DialogContent>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
           <DialogHeader>
             <DialogTitle>Imprimir cartão</DialogTitle>
             <DialogDescription>
               Escolha o formato. Para impressoras de cartão (Zebra, Evolis, Fargo) use <strong>Cartão PVC</strong>.
             </DialogDescription>
           </DialogHeader>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 py-2">
-            <div className="border rounded-lg p-4 hover:border-primary transition">
-              <div className="flex items-center gap-2 mb-1">
-                <CreditCard className="h-5 w-5 text-primary" />
-                <span className="font-semibold">Cartão PVC</span>
-              </div>
-              <p className="text-xs text-muted-foreground mb-3">
-                CR-80 · 85,6 × 53,98 mm · sem margens · frente e verso em páginas separadas (duplex).
-              </p>
-              <div className="flex gap-2">
-                <Button size="sm" variant="outline" onClick={() => setPreviewMode('pvc')}>
-                  <Eye className="h-3.5 w-3.5 mr-1" />
-                  Pré-visualizar
-                </Button>
-                <Button size="sm" variant="ghost" onClick={() => openPrintWindow('pvc')}>
-                  <Printer className="h-3.5 w-3.5 mr-1" />
-                  Imprimir
-                </Button>
-              </div>
-            </div>
-            <div className="border rounded-lg p-4 hover:border-primary transition">
-              <div className="flex items-center gap-2 mb-1">
-                <Printer className="h-5 w-5 text-primary" />
-                <span className="font-semibold">A4 (teste)</span>
-              </div>
-              <p className="text-xs text-muted-foreground mb-3">
-                Frente e verso lado-a-lado em A4, com guias de corte. Ideal para impressão em papel.
-              </p>
-              <div className="flex gap-2">
-                <Button size="sm" variant="outline" onClick={() => setPreviewMode('a4')}>
-                  <Eye className="h-3.5 w-3.5 mr-1" />
-                  Pré-visualizar
-                </Button>
-                <Button size="sm" variant="ghost" onClick={() => openPrintWindow('a4')}>
-                  <Printer className="h-3.5 w-3.5 mr-1" />
-                  Imprimir
-                </Button>
-              </div>
-            </div>
-          </div>
 
-          {/* Configuração duplex (alinhamento frente/verso) */}
-          <div className="border-t pt-3 space-y-2">
-            <p className="text-xs font-medium text-muted-foreground">
-              Modo duplex (alinhamento frente/verso)
-            </p>
-            <div className="grid grid-cols-3 gap-2">
-              {([
-                { v: 'long-edge', l: 'Borda longa', d: 'Padrão A4 / livro' },
-                { v: 'short-edge', l: 'Borda curta', d: 'Cartão PVC (Zebra/Evolis)' },
-                { v: 'simplex', l: 'Simplex', d: 'Imprimir só a frente' },
-              ] as const).map((o) => (
-                <button
-                  key={o.v}
-                  type="button"
-                  onClick={() => setDuplexMode(o.v)}
-                  className={`text-left border rounded-md p-2 transition ${
-                    duplexMode === o.v ? 'border-primary bg-primary/5' : 'hover:border-primary/50'
-                  }`}
-                >
-                  <div className="text-xs font-semibold">{o.l}</div>
-                  <div className="text-[10px] text-muted-foreground">{o.d}</div>
-                </button>
-              ))}
-            </div>
-            {duplexMode !== 'simplex' && (
-              <div className="grid grid-cols-2 gap-3 pt-1">
-                <div>
-                  <label className="text-[10px] text-muted-foreground uppercase tracking-wide">
-                    Ajuste fino X (mm): <span className="font-mono">{offsetX.toFixed(1)}</span>
-                  </label>
-                  <input
-                    type="range" min={-3} max={3} step={0.1}
-                    value={offsetX}
-                    onChange={(e) => setOffsetX(parseFloat(e.target.value))}
-                    className="w-full"
-                  />
-                </div>
-                <div>
-                  <label className="text-[10px] text-muted-foreground uppercase tracking-wide">
-                    Ajuste fino Y (mm): <span className="font-mono">{offsetY.toFixed(1)}</span>
-                  </label>
-                  <input
-                    type="range" min={-3} max={3} step={0.1}
-                    value={offsetY}
-                    onChange={(e) => setOffsetY(parseFloat(e.target.value))}
-                    className="w-full"
-                  />
-                </div>
-                <button
-                  type="button"
-                  onClick={() => { setOffsetX(0); setOffsetY(0); }}
-                  className="col-span-2 text-[10px] text-primary hover:underline text-left"
-                >
-                  Repor calibração
-                </button>
-              </div>
-            )}
-            <p className="text-[10px] text-muted-foreground">
-              Estas preferências ficam guardadas neste dispositivo. Use a borda curta para impressoras de cartão CR-80.
-            </p>
-          </div>
+          <Tabs defaultValue="formato" className="flex-1 overflow-hidden flex flex-col">
+            <TabsList className="grid grid-cols-3 w-full">
+              <TabsTrigger value="formato">Formato</TabsTrigger>
+              <TabsTrigger value="calibracao">Calibração</TabsTrigger>
+              <TabsTrigger value="corte">Guias de corte</TabsTrigger>
+            </TabsList>
 
-          {/* Linhas de corte / sangria */}
-          <div className="border-t pt-3 space-y-3">
-            <p className="text-xs font-medium text-muted-foreground">
-              Linhas de corte (sangria)
-            </p>
-            {([
-              { key: 'a4', label: 'A4', visible: cutA4Visible, setVisible: setCutA4Visible, offset: cutA4Offset, setOffset: setCutA4Offset },
-              { key: 'pvc', label: 'CR-80 (PVC)', visible: cutPvcVisible, setVisible: setCutPvcVisible, offset: cutPvcOffset, setOffset: setCutPvcOffset },
-            ] as const).map((cfg) => (
-              <div key={cfg.key}>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    checked={cfg.visible}
-                    onChange={(e) => cfg.setVisible(e.target.checked)}
-                    id={`cut-${cfg.key}`}
-                  />
-                  <label htmlFor={`cut-${cfg.key}`} className="text-xs font-medium cursor-pointer">
-                    Mostrar guias · {cfg.label}
-                  </label>
+            <div className="flex-1 overflow-y-auto pr-1 mt-3">
+              <TabsContent value="formato" className="mt-0">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="border rounded-lg p-4 hover:border-primary transition">
+                    <div className="flex items-center gap-2 mb-1">
+                      <CreditCard className="h-5 w-5 text-primary" />
+                      <span className="font-semibold">Cartão PVC</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground mb-3">
+                      CR-80 · 85,6 × 53,98 mm · sem margens · frente e verso em páginas separadas (duplex).
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      <Button size="sm" variant="outline" onClick={() => setPreviewMode('pvc')}>
+                        <Eye className="h-3.5 w-3.5 mr-1" />
+                        Pré-visualizar
+                      </Button>
+                      <Button size="sm" variant="ghost" onClick={() => openPrintWindow('pvc')}>
+                        <Printer className="h-3.5 w-3.5 mr-1" />
+                        Imprimir
+                      </Button>
+                    </div>
+                  </div>
+                  <div className="border rounded-lg p-4 hover:border-primary transition">
+                    <div className="flex items-center gap-2 mb-1">
+                      <Printer className="h-5 w-5 text-primary" />
+                      <span className="font-semibold">A4 (teste)</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground mb-3">
+                      Frente e verso lado-a-lado em A4, com guias de corte. Ideal para impressão em papel.
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      <Button size="sm" variant="outline" onClick={() => setPreviewMode('a4')}>
+                        <Eye className="h-3.5 w-3.5 mr-1" />
+                        Pré-visualizar
+                      </Button>
+                      <Button size="sm" variant="ghost" onClick={() => openPrintWindow('a4')}>
+                        <Printer className="h-3.5 w-3.5 mr-1" />
+                        Imprimir
+                      </Button>
+                    </div>
+                  </div>
                 </div>
-                {cfg.visible && (
-                  <div className="mt-1 pl-6">
-                    <label className="text-[10px] text-muted-foreground uppercase tracking-wide">
-                      Offset (mm fora do cartão): <span className="font-mono">{cfg.offset.toFixed(1)}</span>
-                    </label>
-                    <input
-                      type="range" min={0} max={5} step={0.1}
-                      value={cfg.offset}
-                      onChange={(e) => cfg.setOffset(parseFloat(e.target.value))}
-                      className="w-full"
-                    />
+              </TabsContent>
+
+              <TabsContent value="calibracao" className="mt-0 space-y-3">
+                <p className="text-xs font-medium text-muted-foreground">
+                  Modo duplex (alinhamento frente/verso)
+                </p>
+                <div className="grid grid-cols-3 gap-2">
+                  {([
+                    { v: 'long-edge', l: 'Borda longa', d: 'Padrão A4 / livro' },
+                    { v: 'short-edge', l: 'Borda curta', d: 'Cartão PVC (Zebra/Evolis)' },
+                    { v: 'simplex', l: 'Simplex', d: 'Imprimir só a frente' },
+                  ] as const).map((o) => (
+                    <button
+                      key={o.v}
+                      type="button"
+                      onClick={() => setDuplexMode(o.v)}
+                      className={`text-left border rounded-md p-2 transition ${
+                        duplexMode === o.v ? 'border-primary bg-primary/5' : 'hover:border-primary/50'
+                      }`}
+                    >
+                      <div className="text-xs font-semibold">{o.l}</div>
+                      <div className="text-[10px] text-muted-foreground">{o.d}</div>
+                    </button>
+                  ))}
+                </div>
+                {duplexMode !== 'simplex' && (
+                  <div className="grid grid-cols-2 gap-3 pt-1">
+                    <div>
+                      <label className="text-[10px] text-muted-foreground uppercase tracking-wide">
+                        Ajuste fino X (mm): <span className="font-mono">{offsetX.toFixed(1)}</span>
+                      </label>
+                      <input
+                        type="range" min={-3} max={3} step={0.1}
+                        value={offsetX}
+                        onChange={(e) => setOffsetX(parseFloat(e.target.value))}
+                        className="w-full"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[10px] text-muted-foreground uppercase tracking-wide">
+                        Ajuste fino Y (mm): <span className="font-mono">{offsetY.toFixed(1)}</span>
+                      </label>
+                      <input
+                        type="range" min={-3} max={3} step={0.1}
+                        value={offsetY}
+                        onChange={(e) => setOffsetY(parseFloat(e.target.value))}
+                        className="w-full"
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => { setOffsetX(0); setOffsetY(0); }}
+                      className="col-span-2 text-[10px] text-primary hover:underline text-left"
+                    >
+                      Repor calibração
+                    </button>
                   </div>
                 )}
-              </div>
-            ))}
-            <p className="text-[10px] text-muted-foreground">
-              Linhas tracejadas a 0,3mm aplicadas em volta de cada cartão na pré-visualização, impressão e PDF.
-            </p>
-          </div>
+                <p className="text-[10px] text-muted-foreground">
+                  Estas preferências ficam guardadas neste dispositivo. Use a borda curta para impressoras de cartão CR-80.
+                </p>
+              </TabsContent>
+
+              <TabsContent value="corte" className="mt-0 space-y-3">
+                <p className="text-xs font-medium text-muted-foreground">
+                  Linhas de corte (sangria)
+                </p>
+                {([
+                  { key: 'a4', label: 'A4', visible: cutA4Visible, setVisible: setCutA4Visible, offset: cutA4Offset, setOffset: setCutA4Offset },
+                  { key: 'pvc', label: 'CR-80 (PVC)', visible: cutPvcVisible, setVisible: setCutPvcVisible, offset: cutPvcOffset, setOffset: setCutPvcOffset },
+                ] as const).map((cfg) => (
+                  <div key={cfg.key}>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        checked={cfg.visible}
+                        onChange={(e) => cfg.setVisible(e.target.checked)}
+                        id={`cut-${cfg.key}`}
+                      />
+                      <label htmlFor={`cut-${cfg.key}`} className="text-xs font-medium cursor-pointer">
+                        Mostrar guias · {cfg.label}
+                      </label>
+                    </div>
+                    {cfg.visible && (
+                      <div className="mt-1 pl-6">
+                        <label className="text-[10px] text-muted-foreground uppercase tracking-wide">
+                          Offset (mm fora do cartão): <span className="font-mono">{cfg.offset.toFixed(1)}</span>
+                        </label>
+                        <input
+                          type="range" min={0} max={5} step={0.1}
+                          value={cfg.offset}
+                          onChange={(e) => cfg.setOffset(parseFloat(e.target.value))}
+                          className="w-full"
+                        />
+                      </div>
+                    )}
+                  </div>
+                ))}
+                <p className="text-[10px] text-muted-foreground">
+                  Linhas tracejadas a 0,3mm aplicadas em volta de cada cartão na pré-visualização, impressão e PDF.
+                </p>
+              </TabsContent>
+            </div>
+          </Tabs>
+
           <div className="border-t pt-3">
             <p className="text-xs font-medium text-muted-foreground mb-2">
               Exportar para PDF (mesmo layout, frente e verso)
