@@ -69,84 +69,145 @@ function drawCutGuides(pdf: jsPDF, x: number, y: number, opts: BatchExportOption
   });
 }
 
+const farmerTypeLabel = (t?: string | null) => {
+  const m: Record<string, string> = {
+    individual: 'PEQUENO PRODUTOR',
+    family: 'AGRICULTURA FAMILIAR',
+    cooperative: 'COOPERATIVA',
+    field_school: 'ESCOLA DE CAMPO',
+    company: 'EMPRESA',
+  };
+  return m[t || ''] || (t || '—').toUpperCase();
+};
+
 async function drawCardFront(pdf: jsPDF, x: number, y: number, ctx: CardCtx) {
   const { farmer, card, verificationOrigin } = ctx;
-  // Background
+
+  // Background branco
   pdf.setFillColor(255, 255, 255);
   pdf.rect(x, y, CARD_W, CARD_H, 'F');
-  // Header band — verde institucional
+
+  // ===== HEADER (branco) =====
+  // Brasão (placeholder círculo verde com escudo simplificado)
+  pdf.setFillColor(255, 255, 255);
+  pdf.setDrawColor(31, 107, 52).setLineWidth(0.2);
+  pdf.circle(x + 4.5, y + 4, 2.6, 'FD');
   pdf.setFillColor(31, 107, 52);
-  pdf.rect(x, y, CARD_W, 7, 'F');
-  pdf.setTextColor(255).setFont('helvetica', 'normal').setFontSize(5.2);
-  pdf.text('REPÚBLICA DE ANGOLA', x + 3, y + 3);
-  pdf.setFont('helvetica', 'bold').setFontSize(5.6);
-  pdf.text('Min. Agricultura e Florestas', x + 3, y + 5.6);
-  pdf.setFont('helvetica', 'bold').setFontSize(9);
-  pdf.text('SIGAFLO', x + CARD_W - 3, y + 5, { align: 'right' });
-  // Footer band
+  pdf.triangle(x + 3, y + 3, x + 6, y + 3, x + 4.5, y + 6, 'F');
+
+  pdf.setTextColor(31, 107, 52).setFont('helvetica', 'bold').setFontSize(4.6);
+  pdf.text('REPÚBLICA DE ANGOLA', x + 7.6, y + 2.6);
+  pdf.setTextColor(38, 48, 61).setFont('helvetica', 'normal').setFontSize(3.8);
+  pdf.text('Ministério da Agricultura', x + 7.6, y + 4.4);
+  pdf.text('e Florestas', x + 7.6, y + 5.6);
+
+  // Logo SIGAFLO centro
+  pdf.setTextColor(31, 107, 52).setFont('helvetica', 'bold').setFontSize(13);
+  pdf.text('SIGAFLO', x + CARD_W / 2, y + 4.6, { align: 'center' });
+  pdf.setFont('helvetica', 'bold').setFontSize(3.5).setTextColor(12, 61, 26);
+  pdf.text('SISTEMA INTEGRADO DE GESTÃO AGRO FLORESTAL', x + CARD_W / 2, y + 7.2, { align: 'center' });
+
+  // Mapa Angola + GOVERNO badge (canto direito)
   pdf.setFillColor(31, 107, 52);
-  pdf.rect(x, y + CARD_H - 1.6, CARD_W, 1.6, 'F');
+  pdf.roundedRect(x + CARD_W - 11.5, y + 1.5, 4.2, 5, 0.5, 0.5, 'F');
+  pdf.setFillColor(212, 160, 23);
+  pdf.circle(x + CARD_W - 9.4, y + 4, 0.6, 'F');
+  pdf.setFillColor(12, 61, 26);
+  pdf.roundedRect(x + CARD_W - 7, y + 1.5, 6.5, 5, 0.5, 0.5, 'F');
+  pdf.setTextColor(255).setFont('helvetica', 'bold').setFontSize(3.4);
+  pdf.text('GOVERNO DE', x + CARD_W - 3.75, y + 3.5, { align: 'center' });
+  pdf.text('ANGOLA', x + CARD_W - 3.75, y + 5.2, { align: 'center' });
 
-  // Watermark "SIGAFLO" diagonal
-  pdf.setTextColor(31, 107, 52);
-  pdf.setFont('helvetica', 'bold').setFontSize(28);
-  pdf.saveGraphicsState();
-  // @ts-ignore — jsPDF GState
-  pdf.setGState(new (jsPDF as any).GState({ opacity: 0.05 }));
-  pdf.text('SIGAFLO', x + CARD_W / 2, y + CARD_H / 2 + 4, { align: 'center', angle: -18 });
-  pdf.restoreGraphicsState();
+  // ===== Título (faixa verde central) =====
+  pdf.setFillColor(31, 107, 52);
+  pdf.roundedRect(x + 8, y + 11, CARD_W - 16, 4, 0.6, 0.6, 'F');
+  pdf.setTextColor(255).setFont('helvetica', 'bold').setFontSize(6);
+  pdf.text('CARTÃO DE IDENTIFICAÇÃO DO AGRICULTOR', x + CARD_W / 2, y + 13.7, { align: 'center' });
 
-  // Layout — Zone 1 photo (30%), Zone 2 info (45%), Zone 3 right (25%)
-  const bodyTop = y + 8;
-  const bodyH = CARD_H - 10.5;
-  const z1W = (CARD_W - 6) * 0.30;
-  const z2W = (CARD_W - 6) * 0.45;
-  const z3W = (CARD_W - 6) * 0.25;
-  const z1X = x + 3;
-  const z2X = z1X + z1W + 1;
-  const z3X = z2X + z2W + 1;
+  // ===== Body — 3 colunas =====
+  const bodyTop = y + 16.5;
+  const z1X = x + 2.5;
+  const z1W = 19;          // foto
+  const z2X = z1X + z1W + 1.5;
+  const z2W = 33;          // info
+  const z3X = x + CARD_W - 23;
+  const z3W = 16;          // localização
 
-  // Photo placeholder (cinza neutro)
-  pdf.setFillColor(241, 243, 245);
-  pdf.setDrawColor(207, 212, 218);
-  pdf.setLineWidth(0.15);
-  const photoH = Math.min(bodyH, z1W * 32 / 25);
-  pdf.roundedRect(z1X, bodyTop, z1W - 1, photoH, 0.8, 0.8, 'FD');
-  pdf.setTextColor(154, 161, 169).setFontSize(5);
-  pdf.text('FOTO', z1X + (z1W - 1) / 2, bodyTop + photoH / 2, { align: 'center' });
+  // Foto
+  pdf.setFillColor(240, 247, 241);
+  pdf.setDrawColor(226, 230, 234).setLineWidth(0.15);
+  pdf.roundedRect(z1X, bodyTop, z1W, 25, 0.8, 0.8, 'FD');
+  pdf.setTextColor(31, 107, 52).setFont('helvetica', 'bold').setFontSize(8);
+  pdf.text('FOTO', z1X + z1W / 2, bodyTop + 13, { align: 'center' });
 
-  // Info zone
-  pdf.setTextColor(38, 48, 61).setFont('helvetica', 'bold').setFontSize(8.5);
-  const nameLines = pdf.splitTextToSize((farmer.name ?? '—').toUpperCase(), z2W - 1);
-  pdf.text(nameLines.slice(0, 2), z2X, bodyTop + 2.8);
+  // Info
+  pdf.setTextColor(107, 114, 128).setFont('helvetica', 'bold').setFontSize(4.2);
+  pdf.text('NOME COMPLETO', z2X, bodyTop + 2);
+  pdf.setTextColor(26, 32, 48).setFont('helvetica', 'bold').setFontSize(7.5);
+  const nameLines = pdf.splitTextToSize((farmer.name ?? '—').toUpperCase(), z2W);
+  pdf.text(nameLines.slice(0, 2), z2X, bodyTop + 5);
 
-  pdf.setFont('courier', 'bold').setTextColor(31, 107, 52).setFontSize(7.5);
-  pdf.text(card?.serial || farmer.registration_number || '—', z2X, bodyTop + 9);
+  pdf.setTextColor(107, 114, 128).setFont('helvetica', 'bold').setFontSize(4.2);
+  pdf.text('ID SIGAFLO', z2X, bodyTop + 11);
+  pdf.setTextColor(31, 107, 52).setFont('courier', 'bold').setFontSize(7);
+  pdf.text(card?.serial || farmer.registration_number || '—', z2X, bodyTop + 14.2);
 
-  pdf.setFont('helvetica', 'normal').setTextColor(38, 48, 61).setFontSize(5.8);
-  const lines = [
-    `Tipo: ${farmer.farmer_type || '—'}`,
-    `Província: ${farmer.provinces?.name ?? '—'}`,
-    `Município: ${farmer.municipalities?.name ?? '—'}`,
-    `Comuna: ${(farmer as any).communes?.name ?? '—'}`,
+  pdf.setTextColor(107, 114, 128).setFont('helvetica', 'bold').setFontSize(4.2);
+  pdf.text('TIPO DE PRODUTOR', z2X, bodyTop + 18.5);
+  pdf.setTextColor(26, 32, 48).setFont('helvetica', 'bold').setFontSize(6);
+  pdf.text(farmerTypeLabel(farmer.farmer_type), z2X, bodyTop + 21.5);
+
+  // Localização (col direita superior)
+  const locItems = [
+    ['PROVÍNCIA', farmer.provinces?.name ?? '—'],
+    ['MUNICÍPIO', farmer.municipalities?.name ?? '—'],
+    ['COMUNA', (farmer as any).communes?.name ?? '—'],
   ];
-  lines.forEach((l, i) => pdf.text(l, z2X, bodyTop + 13 + i * 3));
+  locItems.forEach(([lbl, val], i) => {
+    const ty = bodyTop + i * 6.5;
+    pdf.setTextColor(107, 114, 128).setFont('helvetica', 'bold').setFontSize(4.2);
+    pdf.text(lbl, z3X, ty + 2);
+    pdf.setFillColor(31, 107, 52);
+    pdf.circle(z3X + 0.7, ty + 4.7, 0.5, 'F');
+    pdf.setTextColor(26, 32, 48).setFont('helvetica', 'bold').setFontSize(5.5);
+    const v = pdf.splitTextToSize(String(val).toUpperCase(), z3W - 2);
+    pdf.text(v[0] || '', z3X + 1.8, ty + 5);
+  });
 
-  // Right zone — QR + cultura/área
+  // ===== QR + caption (canto inferior direito sobre rodapé) =====
   const qrPayload = card?.qr_token
     ? `${verificationOrigin}/verificacao/${card.qr_token}`
     : JSON.stringify({ id: farmer.id, reg: farmer.registration_number });
   try {
     const qr = await makeQrDataUrl(qrPayload);
-    const qrSize = Math.min(z3W - 1, 21);
-    pdf.addImage(qr, 'PNG', z3X, bodyTop, qrSize, qrSize);
+    const qrSize = 11;
+    const qrX = x + CARD_W - qrSize - 8;
+    const qrY = y + CARD_H - qrSize - 7.5;
+    pdf.setFillColor(255, 255, 255);
+    pdf.rect(qrX - 0.4, qrY - 0.4, qrSize + 0.8, qrSize + 0.8, 'F');
+    pdf.addImage(qr, 'PNG', qrX, qrY, qrSize, qrSize);
+    pdf.setTextColor(26, 32, 48).setFont('helvetica', 'bold').setFontSize(3.4);
+    pdf.text('VERIFIQUE A', qrX + qrSize + 0.6, qrY + 2.5);
+    pdf.text('AUTENTICIDADE', qrX + qrSize + 0.6, qrY + 4.5);
+    pdf.text('DESTE CARTÃO', qrX + qrSize + 0.6, qrY + 6.5);
   } catch { /* ignore */ }
 
-  pdf.setTextColor(31, 107, 52).setFont('helvetica', 'bold').setFontSize(6.5);
-  pdf.text((farmer.main_crops?.[0] ?? '—'), z3X + (z3W - 1) / 2, bodyTop + 25, { align: 'center' });
-  pdf.setTextColor(38, 48, 61).setFont('helvetica', 'normal').setFontSize(6);
-  const area = (farmer as any).cultivated_area_ha ?? farmer.total_area_ha;
-  pdf.text(area != null ? `${Number(area).toFixed(1)} ha` : '', z3X + (z3W - 1) / 2, bodyTop + 28, { align: 'center' });
+  // ===== Rodapé verde (paisagem + 4 pilares) =====
+  const fY = y + CARD_H - 6;
+  pdf.setFillColor(12, 61, 26);
+  pdf.rect(x, fY, CARD_W, 6, 'F');
+  // gradiente "morros" simulado
+  pdf.setFillColor(31, 107, 52);
+  pdf.rect(x, fY, CARD_W, 2.5, 'F');
+
+  pdf.setTextColor(255).setFont('helvetica', 'bold').setFontSize(4.5);
+  const pillars = ['PRODUZIR', 'PRESERVAR', 'DESENVOLVER', 'INCLUIR'];
+  pillars.forEach((p, i) => {
+    const px = x + 6 + i * ((CARD_W - 12) / 3);
+    pdf.setFillColor(255, 255, 255);
+    pdf.circle(px - 2, fY + 3.5, 0.5, 'F');
+    pdf.text(p, px, fY + 4, { align: 'center' });
+  });
 }
 
 function drawBarcodeBars(pdf: jsPDF, value: string, x: number, y: number, w: number, h: number) {
