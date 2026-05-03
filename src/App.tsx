@@ -353,6 +353,9 @@ const App = () => {
             <Route path="/verificar" element={<Navigate to="/portal/verificar" replace />} />
             <Route path="/verificar/*" element={<Navigate to="/portal/verificar" replace />} />
             
+            {/* Dev / QA — sem auth para testes cross-browser */}
+            <Route path="/dev/print-test" element={<PrintTestPage />} />
+
             {/* Catch-all */}
             <Route path="*" element={<NotFound />} />
           </Routes>
