@@ -134,6 +134,10 @@ export const FarmerProfileComplete = () => {
   const { technicians } = useTechnicians();
   const { data: serviceOrders } = useServiceOrders();
   const { scores, ndviReadings, alerts: monitoringAlerts } = useMonitoring();
+  const isCoop = farmer?.farmer_type === 'cooperative';
+  const isEca = farmer?.farmer_type === 'field_school';
+  const { data: coopDetails, isLoading: loadingCoopDetails } = useCooperativeDetails(isCoop ? id : undefined);
+  const { data: ecaDetails, isLoading: loadingEcaDetails } = useFieldSchoolDetails(isEca ? id : undefined);
 
   // Filter data for this farmer
   const farmerTechnician = technicians.find(t => t.id === farmer?.technician_id);
