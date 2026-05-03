@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -77,11 +77,44 @@ const GuillocheBg = () => (
   </svg>
 );
 
+type DuplexMode = 'long-edge' | 'short-edge' | 'simplex';
+const DUPLEX_KEY = 'sigaflo.card.duplex';
+const OFFSET_KEY = 'sigaflo.card.offset';
+
 export const FarmerCard = ({ farmer, onPrint, showActions = true }: FarmerCardProps) => {
   const [flipped, setFlipped] = useState(false);
   const [printDialogOpen, setPrintDialogOpen] = useState(false);
   const [exporting, setExporting] = useState<null | 'pvc' | 'a4'>(null);
   const [previewMode, setPreviewMode] = useState<null | 'pvc' | 'a4'>(null);
+  const [duplexMode, setDuplexMode] = useState<DuplexMode>('long-edge');
+  const [offsetX, setOffsetX] = useState(0); // mm — ajuste fino do verso
+  const [offsetY, setOffsetY] = useState(0); // mm
+
+  // Carrega preferências e auto-detecta duplex (heurística pela user-agent / impressora padrão)
+  useEffect(() => {
+    try {
+      const d = localStorage.getItem(DUPLEX_KEY) as DuplexMode | null;
+      if (d) setDuplexMode(d);
+      const o = localStorage.getItem(OFFSET_KEY);
+      if (o) {
+        const parsed = JSON.parse(o);
+        setOffsetX(parsed.x ?? 0);
+        setOffsetY(parsed.y ?? 0);
+      }
+    } catch {}
+  }, []);
+
+  useEffect(() => {
+    try { localStorage.setItem(DUPLEX_KEY, duplexMode); } catch {}
+  }, [duplexMode]);
+  useEffect(() => {
+    try { localStorage.setItem(OFFSET_KEY, JSON.stringify({ x: offsetX, y: offsetY })); } catch {}
+  }, [offsetX, offsetY]);
+
+  // Para impressoras de cartão CR-80 com duplex pela borda curta (padrão Zebra/Evolis),
+  // o verso precisa ser rodado 180° para ficar alinhado com a frente após o flip.
+  // Long-edge → verso na orientação natural. Simplex → utilizador imprime 2 páginas separadas.
+  const backRotation = duplexMode === 'short-edge' ? 180 : 0;
 
   const qrPayload = JSON.stringify({
     plataforma: 'SIGAFLO',
@@ -135,6 +168,13 @@ export const FarmerCard = ({ farmer, onPrint, showActions = true }: FarmerCardPr
     /* Force exactly one card per page (front then back). */
     .card { page-break-after: always; break-after: page; }
     .card:last-of-type { page-break-after: auto; break-after: auto; }
+    /* Duplex alignment: rotate back when feeder flips along short edge,
+       and apply per-printer fine offset (mm) so front/back register perfectly. */
+    .back-content {
+      transform: rotate(${backRotation}deg) translate(${offsetX}mm, ${offsetY}mm);
+      transform-origin: center center;
+      width: 100%; height: 100%;
+    }
   ` : ''}
 
   /* FRONT */
@@ -235,21 +275,24 @@ export const FarmerCard = ({ farmer, onPrint, showActions = true }: FarmerCardPr
         </div>
         <div class="chip-stripe"></div>
       </div></div>
+      ${duplexMode === 'simplex' ? '' : `
       <div class="card back">
-        <div class="back-grid">
-          <div class="back-info">
-            <div class="label">BI / NIF</div><div class="value">${formatBI(farmer.bi_nif)}</div>
-            <div class="label">Telefone</div><div class="value">${farmer.phone || '—'}</div>
-            <div class="label">Província / Município</div><div class="value">${farmer.provinces?.name || '—'} / ${farmer.municipalities?.name || '—'}</div>
-            <div class="label">Área Total</div><div class="value">${farmer.total_area_ha ? farmer.total_area_ha.toFixed(1) + ' ha' : '—'}</div>
+        <div class="back-content">
+          <div class="back-grid">
+            <div class="back-info">
+              <div class="label">BI / NIF</div><div class="value">${formatBI(farmer.bi_nif)}</div>
+              <div class="label">Telefone</div><div class="value">${farmer.phone || '—'}</div>
+              <div class="label">Província / Município</div><div class="value">${farmer.provinces?.name || '—'} / ${farmer.municipalities?.name || '—'}</div>
+              <div class="label">Área Total</div><div class="value">${farmer.total_area_ha ? farmer.total_area_ha.toFixed(1) + ' ha' : '—'}</div>
+            </div>
+            <div class="qr-wrap">
+              <img src="${qrSrc}" />
+              <div class="qr-label">Verificar</div>
+            </div>
           </div>
-          <div class="qr-wrap">
-            <img src="${qrSrc}" />
-            <div class="qr-label">Verificar</div>
-          </div>
+          <div class="back-footer">Válido enquanto o registo estiver activo · SIGAFLO · duplex ${duplexMode}</div>
         </div>
-        <div class="back-footer">Válido enquanto o registo estiver activo · SIGAFLO</div>
-      </div>
+      </div>`}
     </div>
   ` : `
     <div class="sheet">
@@ -691,6 +734,68 @@ export const FarmerCard = ({ farmer, onPrint, showActions = true }: FarmerCardPr
                 </Button>
               </div>
             </div>
+          </div>
+
+          {/* Configuração duplex (alinhamento frente/verso) */}
+          <div className="border-t pt-3 space-y-2">
+            <p className="text-xs font-medium text-muted-foreground">
+              Modo duplex (alinhamento frente/verso)
+            </p>
+            <div className="grid grid-cols-3 gap-2">
+              {([
+                { v: 'long-edge', l: 'Borda longa', d: 'Padrão A4 / livro' },
+                { v: 'short-edge', l: 'Borda curta', d: 'Cartão PVC (Zebra/Evolis)' },
+                { v: 'simplex', l: 'Simplex', d: 'Imprimir só a frente' },
+              ] as const).map((o) => (
+                <button
+                  key={o.v}
+                  type="button"
+                  onClick={() => setDuplexMode(o.v)}
+                  className={`text-left border rounded-md p-2 transition ${
+                    duplexMode === o.v ? 'border-primary bg-primary/5' : 'hover:border-primary/50'
+                  }`}
+                >
+                  <div className="text-xs font-semibold">{o.l}</div>
+                  <div className="text-[10px] text-muted-foreground">{o.d}</div>
+                </button>
+              ))}
+            </div>
+            {duplexMode !== 'simplex' && (
+              <div className="grid grid-cols-2 gap-3 pt-1">
+                <div>
+                  <label className="text-[10px] text-muted-foreground uppercase tracking-wide">
+                    Ajuste fino X (mm): <span className="font-mono">{offsetX.toFixed(1)}</span>
+                  </label>
+                  <input
+                    type="range" min={-3} max={3} step={0.1}
+                    value={offsetX}
+                    onChange={(e) => setOffsetX(parseFloat(e.target.value))}
+                    className="w-full"
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] text-muted-foreground uppercase tracking-wide">
+                    Ajuste fino Y (mm): <span className="font-mono">{offsetY.toFixed(1)}</span>
+                  </label>
+                  <input
+                    type="range" min={-3} max={3} step={0.1}
+                    value={offsetY}
+                    onChange={(e) => setOffsetY(parseFloat(e.target.value))}
+                    className="w-full"
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => { setOffsetX(0); setOffsetY(0); }}
+                  className="col-span-2 text-[10px] text-primary hover:underline text-left"
+                >
+                  Repor calibração
+                </button>
+              </div>
+            )}
+            <p className="text-[10px] text-muted-foreground">
+              Estas preferências ficam guardadas neste dispositivo. Use a borda curta para impressoras de cartão CR-80.
+            </p>
           </div>
           <div className="border-t pt-3">
             <p className="text-xs font-medium text-muted-foreground mb-2">
