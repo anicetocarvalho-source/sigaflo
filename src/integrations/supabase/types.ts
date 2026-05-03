@@ -657,6 +657,89 @@ export type Database = {
           },
         ]
       }
+      cooperative_details: {
+        Row: {
+          aggregated_area_ha: number | null
+          board_contacts: Json | null
+          created_at: string
+          created_by: string | null
+          degree: string | null
+          dncm_registration_number: string | null
+          farmer_id: string
+          infrastructures: string[] | null
+          legal_constitution_date: string | null
+          license_url: string | null
+          minimum_quota_aoa: number | null
+          nif: string | null
+          notes: string | null
+          president_name: string | null
+          president_phone: string | null
+          secretary_name: string | null
+          share_capital_aoa: number | null
+          statutes_url: string | null
+          total_members: number | null
+          treasurer_name: string | null
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          aggregated_area_ha?: number | null
+          board_contacts?: Json | null
+          created_at?: string
+          created_by?: string | null
+          degree?: string | null
+          dncm_registration_number?: string | null
+          farmer_id: string
+          infrastructures?: string[] | null
+          legal_constitution_date?: string | null
+          license_url?: string | null
+          minimum_quota_aoa?: number | null
+          nif?: string | null
+          notes?: string | null
+          president_name?: string | null
+          president_phone?: string | null
+          secretary_name?: string | null
+          share_capital_aoa?: number | null
+          statutes_url?: string | null
+          total_members?: number | null
+          treasurer_name?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          aggregated_area_ha?: number | null
+          board_contacts?: Json | null
+          created_at?: string
+          created_by?: string | null
+          degree?: string | null
+          dncm_registration_number?: string | null
+          farmer_id?: string
+          infrastructures?: string[] | null
+          legal_constitution_date?: string | null
+          license_url?: string | null
+          minimum_quota_aoa?: number | null
+          nif?: string | null
+          notes?: string | null
+          president_name?: string | null
+          president_phone?: string | null
+          secretary_name?: string | null
+          share_capital_aoa?: number | null
+          statutes_url?: string | null
+          total_members?: number | null
+          treasurer_name?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cooperative_details_farmer_id_fkey"
+            columns: ["farmer_id"]
+            isOneToOne: true
+            referencedRelation: "farmers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       credit_dossiers: {
         Row: {
           attached_documents: Json | null
@@ -2126,6 +2209,105 @@ export type Database = {
             columns: ["technician_id"]
             isOneToOne: false
             referencedRelation: "field_technicians"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      field_school_details: {
+        Row: {
+          avg_age_range: string | null
+          avg_education_level: string | null
+          created_at: string
+          created_by: string | null
+          curriculum_modules: string[] | null
+          demo_crops: string[] | null
+          demo_latitude: number | null
+          demo_longitude: number | null
+          demo_parcel_area_ha: number | null
+          duration_months: number | null
+          facilitator_id: string | null
+          farmer_id: string
+          focus_crop: string | null
+          funding_source: string | null
+          linked_project: string | null
+          notes: string | null
+          participants_count: number | null
+          participants_female: number | null
+          participants_male: number | null
+          promoter_entity: string | null
+          promoter_name: string | null
+          session_schedule: Json | null
+          start_date: string | null
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          avg_age_range?: string | null
+          avg_education_level?: string | null
+          created_at?: string
+          created_by?: string | null
+          curriculum_modules?: string[] | null
+          demo_crops?: string[] | null
+          demo_latitude?: number | null
+          demo_longitude?: number | null
+          demo_parcel_area_ha?: number | null
+          duration_months?: number | null
+          facilitator_id?: string | null
+          farmer_id: string
+          focus_crop?: string | null
+          funding_source?: string | null
+          linked_project?: string | null
+          notes?: string | null
+          participants_count?: number | null
+          participants_female?: number | null
+          participants_male?: number | null
+          promoter_entity?: string | null
+          promoter_name?: string | null
+          session_schedule?: Json | null
+          start_date?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          avg_age_range?: string | null
+          avg_education_level?: string | null
+          created_at?: string
+          created_by?: string | null
+          curriculum_modules?: string[] | null
+          demo_crops?: string[] | null
+          demo_latitude?: number | null
+          demo_longitude?: number | null
+          demo_parcel_area_ha?: number | null
+          duration_months?: number | null
+          facilitator_id?: string | null
+          farmer_id?: string
+          focus_crop?: string | null
+          funding_source?: string | null
+          linked_project?: string | null
+          notes?: string | null
+          participants_count?: number | null
+          participants_female?: number | null
+          participants_male?: number | null
+          promoter_entity?: string | null
+          promoter_name?: string | null
+          session_schedule?: Json | null
+          start_date?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "field_school_details_facilitator_id_fkey"
+            columns: ["facilitator_id"]
+            isOneToOne: false
+            referencedRelation: "field_technicians"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "field_school_details_farmer_id_fkey"
+            columns: ["farmer_id"]
+            isOneToOne: true
+            referencedRelation: "farmers"
             referencedColumns: ["id"]
           },
         ]
