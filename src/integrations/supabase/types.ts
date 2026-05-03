@@ -394,6 +394,63 @@ export type Database = {
         }
         Relationships: []
       }
+      card_export_jobs: {
+        Row: {
+          created_at: string
+          error_message: string | null
+          farmer_ids: string[]
+          file_path: string | null
+          id: string
+          options: Json | null
+          processed: number
+          requested_by: string
+          status: Database["public"]["Enums"]["export_job_status"]
+          total: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          error_message?: string | null
+          farmer_ids?: string[]
+          file_path?: string | null
+          id?: string
+          options?: Json | null
+          processed?: number
+          requested_by: string
+          status?: Database["public"]["Enums"]["export_job_status"]
+          total?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          error_message?: string | null
+          farmer_ids?: string[]
+          file_path?: string | null
+          id?: string
+          options?: Json | null
+          processed?: number
+          requested_by?: string
+          status?: Database["public"]["Enums"]["export_job_status"]
+          total?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "card_export_jobs_requested_by_fkey"
+            columns: ["requested_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "card_export_jobs_requested_by_fkey"
+            columns: ["requested_by"]
+            isOneToOne: false
+            referencedRelation: "profiles_safe"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       climate_occurrences: {
         Row: {
           affected_area_ha: number | null
@@ -1642,6 +1699,182 @@ export type Database = {
             columns: ["parcel_id"]
             isOneToOne: false
             referencedRelation: "farmer_parcels"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      farmer_card_events: {
+        Row: {
+          actor_id: string | null
+          card_id: string
+          created_at: string
+          event_type: Database["public"]["Enums"]["card_event_type"]
+          id: string
+          metadata: Json | null
+        }
+        Insert: {
+          actor_id?: string | null
+          card_id: string
+          created_at?: string
+          event_type: Database["public"]["Enums"]["card_event_type"]
+          id?: string
+          metadata?: Json | null
+        }
+        Update: {
+          actor_id?: string | null
+          card_id?: string
+          created_at?: string
+          event_type?: Database["public"]["Enums"]["card_event_type"]
+          id?: string
+          metadata?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "farmer_card_events_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "farmer_card_events_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_safe"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "farmer_card_events_card_id_fkey"
+            columns: ["card_id"]
+            isOneToOne: false
+            referencedRelation: "farmer_cards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      farmer_cards: {
+        Row: {
+          card_status: Database["public"]["Enums"]["card_status"]
+          created_at: string
+          delivered_at: string | null
+          delivered_by: string | null
+          farmer_id: string
+          id: string
+          issued_at: string
+          issued_by: string | null
+          printed_at: string | null
+          printed_by: string | null
+          qr_token: string
+          revoked_at: string | null
+          revoked_by: string | null
+          revoked_reason: string | null
+          serial: string | null
+          snapshot: Json
+          updated_at: string
+          version: number
+        }
+        Insert: {
+          card_status?: Database["public"]["Enums"]["card_status"]
+          created_at?: string
+          delivered_at?: string | null
+          delivered_by?: string | null
+          farmer_id: string
+          id?: string
+          issued_at?: string
+          issued_by?: string | null
+          printed_at?: string | null
+          printed_by?: string | null
+          qr_token?: string
+          revoked_at?: string | null
+          revoked_by?: string | null
+          revoked_reason?: string | null
+          serial?: string | null
+          snapshot?: Json
+          updated_at?: string
+          version?: number
+        }
+        Update: {
+          card_status?: Database["public"]["Enums"]["card_status"]
+          created_at?: string
+          delivered_at?: string | null
+          delivered_by?: string | null
+          farmer_id?: string
+          id?: string
+          issued_at?: string
+          issued_by?: string | null
+          printed_at?: string | null
+          printed_by?: string | null
+          qr_token?: string
+          revoked_at?: string | null
+          revoked_by?: string | null
+          revoked_reason?: string | null
+          serial?: string | null
+          snapshot?: Json
+          updated_at?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "farmer_cards_delivered_by_fkey"
+            columns: ["delivered_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "farmer_cards_delivered_by_fkey"
+            columns: ["delivered_by"]
+            isOneToOne: false
+            referencedRelation: "profiles_safe"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "farmer_cards_farmer_id_fkey"
+            columns: ["farmer_id"]
+            isOneToOne: false
+            referencedRelation: "farmers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "farmer_cards_issued_by_fkey"
+            columns: ["issued_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "farmer_cards_issued_by_fkey"
+            columns: ["issued_by"]
+            isOneToOne: false
+            referencedRelation: "profiles_safe"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "farmer_cards_printed_by_fkey"
+            columns: ["printed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "farmer_cards_printed_by_fkey"
+            columns: ["printed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles_safe"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "farmer_cards_revoked_by_fkey"
+            columns: ["revoked_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "farmer_cards_revoked_by_fkey"
+            columns: ["revoked_by"]
+            isOneToOne: false
+            referencedRelation: "profiles_safe"
             referencedColumns: ["id"]
           },
         ]
@@ -6660,6 +6893,25 @@ export type Database = {
       }
     }
     Views: {
+      card_verification_view: {
+        Row: {
+          card_status: Database["public"]["Enums"]["card_status"] | null
+          cultivated_area_ha: number | null
+          farmer_name: string | null
+          farmer_type: Database["public"]["Enums"]["farmer_type"] | null
+          is_active: boolean | null
+          issued_at: string | null
+          main_crops: string[] | null
+          municipality_name: string | null
+          photo_url: string | null
+          province_name: string | null
+          qr_token: string | null
+          serial: string | null
+          updated_at: string | null
+          version: number | null
+        }
+        Relationships: []
+      }
       certificate_verification_public: {
         Row: {
           certificate_number: string | null
@@ -7014,6 +7266,15 @@ export type Database = {
       is_admin: { Args: { _user_id: string }; Returns: boolean }
       is_national_level: { Args: { _user_id: string }; Returns: boolean }
       is_technician_or_admin: { Args: { _user_id: string }; Returns: boolean }
+      log_card_scan: {
+        Args: { _meta?: Json; _qr_token: string }
+        Returns: undefined
+      }
+      regenerate_card_qr: { Args: { _card_id: string }; Returns: string }
+      revoke_farmer_card: {
+        Args: { _card_id: string; _reason: string }
+        Returns: undefined
+      }
       set_farmer_wallet_pin: {
         Args: { _pin_hash: string; _wallet_id: string }
         Returns: undefined
@@ -7041,12 +7302,22 @@ export type Database = {
       }
     }
     Enums: {
+      card_event_type:
+        | "generated"
+        | "printed"
+        | "delivered"
+        | "revoked"
+        | "reissued"
+        | "qr_regenerated"
+        | "scanned"
+      card_status: "rascunho" | "gerado" | "impresso" | "entregue" | "revogado"
       certificate_type:
         | "production"
         | "organic"
         | "quality"
         | "origin"
         | "good_practices"
+      export_job_status: "pending" | "processing" | "done" | "error"
       farmer_type:
         | "individual"
         | "family"
@@ -7257,6 +7528,16 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      card_event_type: [
+        "generated",
+        "printed",
+        "delivered",
+        "revoked",
+        "reissued",
+        "qr_regenerated",
+        "scanned",
+      ],
+      card_status: ["rascunho", "gerado", "impresso", "entregue", "revogado"],
       certificate_type: [
         "production",
         "organic",
@@ -7264,6 +7545,7 @@ export const Constants = {
         "origin",
         "good_practices",
       ],
+      export_job_status: ["pending", "processing", "done", "error"],
       farmer_type: [
         "individual",
         "family",
