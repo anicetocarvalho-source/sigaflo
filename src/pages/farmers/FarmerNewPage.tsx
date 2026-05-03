@@ -9,6 +9,10 @@ const FarmerNewPage = () => {
   const [searchParams] = useSearchParams();
   const createFarmer = useCreateFarmer();
 
+  const typeParam = searchParams.get('type');
+  if (typeParam === 'cooperative') return <Navigate to="/agricultores/cooperativas/nova" replace />;
+  if (typeParam === 'field_school') return <Navigate to="/agricultores/escolas/nova" replace />;
+
   // Get cooperative or field school ID from URL params
   const cooperativeId = searchParams.get('cooperative_id');
   const fieldSchoolId = searchParams.get('field_school_id');
