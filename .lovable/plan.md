@@ -1,85 +1,103 @@
-## Objetivo
+# Reorganização dos Perfis de Agricultor, Cooperativa e ECA
 
-Separar os registos de **Cooperativa** e **Escola de Campo (ECA)** do formulário genérico de Agricultor, criando formulários dedicados, esquemas de validação próprios e tabelas 1:1 para guardar atributos específicos de cada entidade.
+## Problema atual
 
-## Arquitetura proposta
+A página `FarmerProfileComplete` usa **17+ abas em scroll horizontal** para todos os tipos de entidade (individual, family, company, cooperative, field_school). Isso causa:
+
+- Sobrecarga cognitiva — muitas abas planas, sem hierarquia
+- Abas irrelevantes para o tipo (ex.: "Agregado" não faz sentido para cooperativa; "Mecanização" não se aplica a ECA)
+- Detalhes específicos de Cooperativa/ECA (`CooperativeDetailsCard`, `FieldSchoolDetailsCard`) ficam diluídos entre abas operacionais
+- Cards de KPI (Quick Stats) idênticos para todos os tipos, sem refletir métricas específicas (ex.: nº de cooperados, participantes da turma)
+
+## Proposta: agrupar abas em 5 grupos lógicos + variantes por tipo
+
+Substituir a fileira plana de abas por **grupos de nível 1** (tabs principais) e dentro de cada grupo **sub-abas** (segmented control). Os grupos e o conteúdo são adaptados ao `farmer_type`.
+
+### Estrutura unificada (5 grupos principais)
 
 ```text
-FarmerForm (individual / family / company)         ← mantém-se
-CooperativeForm (novo)  ──┐
-                          ├──► farmers (linha base com farmer_type)
-FieldSchoolForm (novo) ───┘     + cooperative_details (1:1)
-                                + field_school_details (1:1)
+┌─ Identificação ─┬─ Operação ─┬─ Financeiro ─┬─ Monitoria ─┬─ Governança ─┐
 ```
 
-## 1. Base de Dados (migração)
+**1. Identificação** (sempre visível)
+- Dados gerais (contactos, localização, mapa)
+- Documentos
+- Cartão / QR
+- Biometria *(apenas individual/family)*
+- **Detalhes da Cooperativa** *(apenas cooperative — usa `CooperativeDetailsCard` + `EntityDetailsConsistency`)*
+- **Detalhes da ECA** *(apenas field_school — usa `FieldSchoolDetailsCard` + `EntityDetailsConsistency`)*
 
-**Nova tabela `cooperative_details`** (FK 1:1 → `farmers.id`):
-- Jurídico: `nif`, `legal_constitution_date`, `dncm_registration_number`, `license_url`, `statutes_url`
-- Órgãos sociais: `president_name`, `president_phone`, `secretary_name`, `treasurer_name`, `board_contacts` (jsonb)
-- Estrutura: `degree` (1º/2º grau), `total_members`, `share_capital_aoa`, `minimum_quota_aoa`
-- Atividade agregada: `aggregated_area_ha`, `infrastructures` (text[]: armazém, silo, processamento, etc.)
+**2. Operação**
+- Parcelas (GIS)
+- Campanhas
+- Produção (histórico)
+- Mecanização *(oculto para ECA)*
+- Membros *(apenas cooperative/field_school — lista filtrada de `members`)*
 
-**Nova tabela `field_school_details`** (FK 1:1 → `farmers.id`):
-- Pedagógico: `facilitator_id` (→ `field_technicians`), `start_date`, `duration_months`, `curriculum_modules` (text[]), `focus_crop`
-- Turma: `participants_count`, `participants_male`, `participants_female`, `avg_age_range`, `avg_education_level`
-- Promotor: `promoter_entity` (IDA/ONG/Cooperativa), `promoter_name`, `funding_source`, `linked_project`
-- Parcela demonstrativa: `demo_parcel_area_ha`, `demo_crops` (text[]), `session_schedule` (jsonb), `demo_latitude`, `demo_longitude`
+**3. Financeiro**
+- AgroPay
+- Compras
+- Incentivos
+- Scores (crédito + seguro)
+- Certificados
 
-Ambas com RLS jurisdicional (`is_technician_or_admin` + `can_access_province` via JOIN com `farmers`), trigger `update_updated_at_column`, e campos auditáveis (`created_by`, `updated_by`).
+**4. Monitoria**
+- Ocorrências climáticas
+- NDVI / Alertas
+- Previsão (forecast)
 
-## 2. Frontend — novos formulários
+**5. Governança**
+- Representantes
+- Workflow / Auditoria (mover `WorkflowActions` para dentro deste grupo, em vez de card flutuante no topo)
+- Técnico responsável
 
-### `src/components/farmers/CooperativeForm.tsx`
-Tabs: **Identificação** · **Dados Jurídicos** · **Órgãos Sociais** · **Estrutura Associativa** · **Localização** · **Atividade Agregada** · **Membros**
+### Variantes de KPIs (Quick Stats) por tipo
 
-### `src/components/farmers/FieldSchoolForm.tsx`
-Tabs: **Identificação** · **Promotor & Patrocínio** · **Dados Pedagógicos** · **Composição da Turma** · **Localização** · **Parcela Demonstrativa** · **Participantes**
+Substituir os 4 cards genéricos por um conjunto adaptado:
 
-Cada um com:
-- Schema Zod próprio em `src/lib/validations.ts` (mensagens em PT)
-- Reuso de sub-componentes existentes: `LocationFields`, `MemberSelector`, `DocumentUpload`
-- Verificação onBlur de NIF duplicado (igual ao `FarmerForm`)
-- `WorkflowStatusBadge` e estados padronizados de `src/lib/constants.ts`
+- **Individual / Family**: Área cultivada · Score produtivo · Incentivos · Ocorrências
+- **Company**: Área cultivada · Produção anual · Faturação · Score crédito
+- **Cooperative**: Nº cooperados (declarado vs. computado) · Área agregada · Cultura focal · Ocorrências
+- **Field School (ECA)**: Participantes (M/F) · Cultura focal · Área demonstrativa · Duração restante
 
-## 3. Páginas e rotas
+### Páginas de listagem (Cooperativas / ECA)
 
-- **Nova rota** `/cooperativas/nova` → `CooperativeNewPage` (usa `CooperativeForm`)
-- **Nova rota** `/escolas-campo/nova` → `FieldSchoolNewPage` (usa `FieldSchoolForm`)
-- **Edição**: `/cooperativas/:id/editar` e `/escolas-campo/:id/editar`
-- Atualizar botões "Nova Cooperativa" / "Nova ECA" em `CooperativesPage.tsx` e `FieldSchoolsPage.tsx` para apontar para as novas rotas (em vez de `/agricultores/novo?type=...`)
-- `FarmerForm` deixa de oferecer `cooperative` e `field_school` no seletor de tipo (apenas individual/family/company)
-- `FarmerNewPage` redireciona para a rota dedicada se `?type=cooperative` ou `?type=field_school` for recebido (compatibilidade)
+Manter a estrutura atual mas reordenar os cards de detalhe:
 
-## 4. Hooks de dados
+- **CooperativesPage**: card de filtros colapsável no topo · KPIs gerais · tabela com colunas reorganizadas (Nome → NIF → Presidente → Membros → Área → Status → Ações)
+- **FieldSchoolsPage**: idem com (Nome → Cultura → Participantes → Início → Duração → Status → Ações)
 
-Em `src/hooks/`:
-- `useCooperative.ts`: `useCooperative(id)`, `useCreateCooperative()`, `useUpdateCooperative()` — escreve em `farmers` + `cooperative_details` numa única mutação (RPC ou duas chamadas em transação lógica)
-- `useFieldSchool.ts`: equivalente para ECA
+## Detalhes técnicos
 
-## 5. Detalhes & visualização
+### Componentes a criar
 
-- `FarmerProfileComplete.tsx` (página `/agricultores/:id`): detetar `farmer_type` e renderizar o painel apropriado (`CooperativeDetailsPanel` ou `FieldSchoolDetailsPanel`) carregando da tabela 1:1.
-- Cards de listagem em `CooperativesPage` / `FieldSchoolsPage` enriquecidos com os novos campos (ex.: nº de cooperados real, facilitador da ECA).
+- `src/components/farmers/profile/ProfileTabGroups.tsx` — orquestrador dos 5 grupos com sub-abas
+- `src/components/farmers/profile/QuickStatsByType.tsx` — KPIs adaptados por `farmer_type`
+- `src/components/farmers/profile/IdentificationGroup.tsx` — agrupa dados gerais, docs, cartão, biometria, detalhes coop/ECA
+- `src/components/farmers/profile/OperationGroup.tsx`
+- `src/components/farmers/profile/FinancialGroup.tsx`
+- `src/components/farmers/profile/MonitoringGroup.tsx`
+- `src/components/farmers/profile/GovernanceGroup.tsx`
 
-## 6. Migração de dados existentes
+### Componentes a refatorar
 
-Para cooperativas/ECAs já registadas em `farmers`:
-- Criar linha vazia em `cooperative_details` / `field_school_details` automaticamente quando o utilizador abre a edição (upsert idempotente).
-- Sem perda de dados; campos novos ficam opcionais até completos.
+- `FarmerProfileComplete.tsx` — reduzir para shell (header + KPIs + `<ProfileTabGroups>`); remover a `<TabsList>` plana atual
+- Reaproveitar tudo o que já existe: `FarmerParcels`, `FarmerCampaigns`, `FarmerAgroPay`, `FarmerPurchases`, `FarmerBiometry`, `FarmerCard`, `FarmerForecast`, `FarmerRepresentatives`, `CooperativeDetailsCard`, `FieldSchoolDetailsCard`, `EntityDetailsConsistency`, `WorkflowActions`
 
-## 7. Entrega
+### Sem mudanças de backend
 
-1. Migração SQL (tabelas, RLS, triggers, índices)
-2. Schemas Zod e tipos TS
-3. `CooperativeForm` + `FieldSchoolForm`
-4. Páginas New/Edit + rotas em `App.tsx`
-5. Hooks de leitura/escrita
-6. Atualização das páginas de listagem e do perfil
-7. QA: verificar fluxo Rascunho → Submetido → Validado nas duas novas entidades
+- Apenas reorganização de UI/apresentação
+- Hooks (`useCooperative`, `useFieldSchool`, etc.) e RLS permanecem inalterados
+- Nenhuma migração SQL
 
-## Notas técnicas
+### Acessibilidade e responsivo
 
-- Mantém a coluna `farmer_type` em `farmers` como discriminador (não duplicar registos).
-- Uniqueness de NIF continua na tabela `farmers` (já existe constraint).
-- Auditoria: registar criação/alteração nas duas tabelas via `audit_log` (jsonb old/new) conforme política do projeto.
+- Tabs principais: ícone + label visível em ≥ md, só ícone em mobile com tooltip
+- Sub-abas: `segmented control` (radix tabs com variant pill); em mobile vira `Select` dropdown
+- Preservar deep-link via query param `?tab=identification&sub=card` para abrir aba específica (útil para os botões "ver detalhes" já existentes)
+
+## Fora do âmbito
+
+- Não alterar lógica de negócio, validações Zod, ou políticas RLS
+- Não refatorar formulários de edição (`FarmerForm`, `CooperativeForm`, `FieldSchoolForm`)
+- Não mexer em `ProfilePage` (perfil do utilizador do sistema, não do agricultor)
