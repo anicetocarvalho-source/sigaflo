@@ -146,11 +146,13 @@ export const PrintPreviewDialog = ({
                   >
                     {/* Rendered content via iframe clone (iframe acts as reference; we re-render via srcdoc per page) */}
                     <PagePreview
+                      key={`${mode}-${idx}-${controlsKey ?? ''}`}
                       buildHtml={buildHtml}
                       mode={mode}
                       pageIndex={idx}
                       width={pageW}
                       height={pageH}
+                      reloadKey={controlsKey}
                     />
 
                     {/* Margins overlay */}
