@@ -2,6 +2,26 @@ import jsPDF from 'jspdf';
 import QRCode from 'qrcode';
 import JSZip from 'jszip';
 import type { Farmer } from '@/hooks/useFarmers';
+import insigniaAngolaUrl from '@/assets/insignia-angola.png';
+
+let _insigniaDataUrlCache: string | null = null;
+async function getInsigniaDataUrl(): Promise<string | null> {
+  if (_insigniaDataUrlCache) return _insigniaDataUrlCache;
+  try {
+    const res = await fetch(insigniaAngolaUrl);
+    const blob = await res.blob();
+    const dataUrl = await new Promise<string>((resolve, reject) => {
+      const r = new FileReader();
+      r.onload = () => resolve(r.result as string);
+      r.onerror = reject;
+      r.readAsDataURL(blob);
+    });
+    _insigniaDataUrlCache = dataUrl;
+    return dataUrl;
+  } catch {
+    return null;
+  }
+}
 
 export type BatchFormat = 'a4_grid' | 'cr80_individual';
 export type BatchPackaging = 'single_pdf' | 'zip_per_card' | 'zip_per_province';
@@ -88,12 +108,16 @@ async function drawCardFront(pdf: jsPDF, x: number, y: number, ctx: CardCtx) {
   pdf.rect(x, y, CARD_W, CARD_H, 'F');
 
   // ===== HEADER (branco) =====
-  // Brasão (placeholder círculo verde com escudo simplificado)
-  pdf.setFillColor(255, 255, 255);
-  pdf.setDrawColor(31, 107, 52).setLineWidth(0.2);
-  pdf.circle(x + 4.5, y + 4, 2.6, 'FD');
-  pdf.setFillColor(31, 107, 52);
-  pdf.triangle(x + 3, y + 3, x + 6, y + 3, x + 4.5, y + 6, 'F');
+  // Insígnia oficial da República de Angola (PNG)
+  const insignia = await getInsigniaDataUrl();
+  if (insignia) {
+    try { pdf.addImage(insignia, 'PNG', x + 1.8, y + 1.2, 6, 6, undefined, 'FAST'); } catch { /* ignore */ }
+  } else {
+    // Fallback: círculo verde se a imagem não carregar
+    pdf.setFillColor(255, 255, 255);
+    pdf.setDrawColor(31, 107, 52).setLineWidth(0.2);
+    pdf.circle(x + 4.5, y + 4, 2.6, 'FD');
+  }
 
   pdf.setTextColor(31, 107, 52).setFont('helvetica', 'bold').setFontSize(4.6);
   pdf.text('REPÚBLICA DE ANGOLA', x + 7.6, y + 2.6);

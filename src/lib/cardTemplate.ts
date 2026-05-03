@@ -5,6 +5,9 @@
 // Layout aligns with the official institutional mockup (CR-80 PVC, 85.6 x 53.98 mm).
 
 import type { Farmer } from '@/hooks/useFarmers';
+import insigniaAngolaUrl from '@/assets/insignia-angola.png';
+
+export { insigniaAngolaUrl };
 
 export interface CardTemplateCtx {
   farmer: Farmer;
@@ -49,15 +52,8 @@ const addYears = (iso: string, n: number) => {
 
 // ---------- Inline SVG assets (vector, print-ready) ----------
 
-const brasaoSvg = `
-<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-  <circle cx="30" cy="30" r="28" fill="#fff" stroke="#1f6b34" stroke-width="1.5"/>
-  <path d="M30 10 L42 22 L42 36 L30 50 L18 36 L18 22 Z" fill="#1f6b34"/>
-  <path d="M22 26 L30 18 L38 26 L38 34 L30 42 L22 34 Z" fill="#d4a017"/>
-  <path d="M26 30 h8 M30 26 v8" stroke="#0c3d1a" stroke-width="1.5"/>
-  <path d="M10 32 q20 18 40 0" fill="none" stroke="#1f6b34" stroke-width="1.2"/>
-  <text x="30" y="56" text-anchor="middle" font-family="serif" font-size="4" fill="#0c3d1a" font-weight="700">ANGOLA</text>
-</svg>`.trim();
+// Insígnia oficial da República de Angola (PNG importado como asset Vite).
+// Substitui o brasão SVG estilizado anterior.
 
 const sigafloLogoSvg = `
 <svg viewBox="0 0 200 60" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -118,7 +114,8 @@ export const cardCss = `
     display: flex; align-items: center; gap: 1.2mm;
     width: 30%;
   }
-  .sigaflo-card.front .header .gov .brasao { width: 7mm; height: 7mm; flex: none; }
+  .sigaflo-card.front .header .gov .brasao { width: 7mm; height: 7mm; flex: none; display: flex; align-items: center; justify-content: center; }
+  .sigaflo-card.front .header .gov .brasao img { width: 100%; height: 100%; object-fit: contain; display: block; }
   .sigaflo-card.front .header .gov .gov-text {
     font-size: 4.5pt; line-height: 1.15; color: ${CARD_COLORS.text};
     letter-spacing: 0.3px;
@@ -324,7 +321,7 @@ export function renderCardFrontHtml(ctx: CardTemplateCtx, qrSrc: string): string
   <div class="sigaflo-card front">
     <div class="header">
       <div class="gov">
-        <div class="brasao">${brasaoSvg}</div>
+        <div class="brasao"><img src="${insigniaAngolaUrl}" alt="Brasão da República de Angola" crossorigin="anonymous" /></div>
         <div class="gov-text">
           <b>REPÚBLICA DE ANGOLA</b>
           <span>Ministério da Agricultura</span>
