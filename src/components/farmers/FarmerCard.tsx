@@ -431,14 +431,10 @@ ${isPvc ? `
       <p className="text-xs text-center text-muted-foreground">Clique no cartão para virar</p>
 
       {showActions && (
-        <div className="flex gap-2 justify-center">
-          <Button variant="outline" size="sm" onClick={handlePrint}>
+        <div className="flex justify-center">
+          <Button variant="default" size="sm" onClick={handlePrint}>
             <Printer className="h-4 w-4 mr-2" />
-            Imprimir
-          </Button>
-          <Button variant="default" size="sm" onClick={() => setPrintDialogOpen(true)}>
-            <Download className="h-4 w-4 mr-2" />
-            Download / Imprimir
+            Imprimir / Download
           </Button>
         </div>
       )}
