@@ -80,6 +80,7 @@ const GuillocheBg = () => (
 type DuplexMode = 'long-edge' | 'short-edge' | 'simplex';
 const DUPLEX_KEY = 'sigaflo.card.duplex';
 const OFFSET_KEY = 'sigaflo.card.offset';
+const CUT_KEY = 'sigaflo.card.cutGuides';
 
 export const FarmerCard = ({ farmer, onPrint, showActions = true }: FarmerCardProps) => {
   const [flipped, setFlipped] = useState(false);
@@ -89,8 +90,12 @@ export const FarmerCard = ({ farmer, onPrint, showActions = true }: FarmerCardPr
   const [duplexMode, setDuplexMode] = useState<DuplexMode>('long-edge');
   const [offsetX, setOffsetX] = useState(0); // mm — ajuste fino do verso
   const [offsetY, setOffsetY] = useState(0); // mm
+  // Linhas de corte (sangria) configuráveis por modo
+  const [cutA4Visible, setCutA4Visible] = useState(true);
+  const [cutA4Offset, setCutA4Offset] = useState(1); // mm fora do cartão
+  const [cutPvcVisible, setCutPvcVisible] = useState(false); // PVC normalmente sem guias
+  const [cutPvcOffset, setCutPvcOffset] = useState(0);
 
-  // Carrega preferências e auto-detecta duplex (heurística pela user-agent / impressora padrão)
   useEffect(() => {
     try {
       const d = localStorage.getItem(DUPLEX_KEY) as DuplexMode | null;
@@ -101,6 +106,14 @@ export const FarmerCard = ({ farmer, onPrint, showActions = true }: FarmerCardPr
         setOffsetX(parsed.x ?? 0);
         setOffsetY(parsed.y ?? 0);
       }
+      const c = localStorage.getItem(CUT_KEY);
+      if (c) {
+        const parsed = JSON.parse(c);
+        if (typeof parsed.a4Visible === 'boolean') setCutA4Visible(parsed.a4Visible);
+        if (typeof parsed.a4Offset === 'number') setCutA4Offset(parsed.a4Offset);
+        if (typeof parsed.pvcVisible === 'boolean') setCutPvcVisible(parsed.pvcVisible);
+        if (typeof parsed.pvcOffset === 'number') setCutPvcOffset(parsed.pvcOffset);
+      }
     } catch {}
   }, []);
 
@@ -110,6 +123,14 @@ export const FarmerCard = ({ farmer, onPrint, showActions = true }: FarmerCardPr
   useEffect(() => {
     try { localStorage.setItem(OFFSET_KEY, JSON.stringify({ x: offsetX, y: offsetY })); } catch {}
   }, [offsetX, offsetY]);
+  useEffect(() => {
+    try {
+      localStorage.setItem(CUT_KEY, JSON.stringify({
+        a4Visible: cutA4Visible, a4Offset: cutA4Offset,
+        pvcVisible: cutPvcVisible, pvcOffset: cutPvcOffset,
+      }));
+    } catch {}
+  }, [cutA4Visible, cutA4Offset, cutPvcVisible, cutPvcOffset]);
 
   // Para impressoras de cartão CR-80 com duplex pela borda curta (padrão Zebra/Evolis),
   // o verso precisa ser rodado 180° para ficar alinhado com a frente após o flip.
@@ -161,8 +182,8 @@ export const FarmerCard = ({ farmer, onPrint, showActions = true }: FarmerCardPr
     width: 85.6mm; height: 53.98mm; position: relative; overflow: hidden;
     flex-shrink: 0;
     ${isPvc
-      ? 'display: block;'
-      : 'box-shadow: 0 2px 6px rgba(0,0,0,0.15); border-radius: 3mm; outline: 1px dashed #888; outline-offset: 2mm;'}
+      ? `display: block; ${cutPvcVisible ? `outline: 0.3mm dashed #888; outline-offset: ${cutPvcOffset}mm;` : ''}`
+      : `box-shadow: 0 2px 6px rgba(0,0,0,0.15); border-radius: 3mm; ${cutA4Visible ? `outline: 0.3mm dashed #888; outline-offset: ${cutA4Offset}mm;` : ''}`}
   }
   ${isPvc ? `
     /* Force exactly one card per page (front then back). */
@@ -416,6 +437,13 @@ export const FarmerCard = ({ farmer, onPrint, showActions = true }: FarmerCardPr
           const img = canvas.toDataURL('image/jpeg', 0.95);
           if (i > 0) pdf.addPage([CR80_W, CR80_H], 'landscape');
           pdf.addImage(img, 'JPEG', 0, 0, CR80_W, CR80_H);
+          if (cutPvcVisible) {
+            pdf.setLineDashPattern([1, 1], 0);
+            pdf.setDrawColor(150);
+            const o = cutPvcOffset;
+            pdf.rect(-o, -o, CR80_W + 2 * o, CR80_H + 2 * o);
+            pdf.setLineDashPattern([], 0);
+          }
         }
         pdf.save(`cartao_${farmer.registration_number || farmer.id}_pvc.pdf`);
       } else {
@@ -439,10 +467,12 @@ export const FarmerCard = ({ farmer, onPrint, showActions = true }: FarmerCardPr
           const x = startX + i * (CR80_W + gap);
           pdf.addImage(img, 'JPEG', x, startY, CR80_W, CR80_H);
 
-          // Dashed cut guides
-          pdf.setLineDashPattern([1, 1], 0);
-          pdf.setDrawColor(150);
-          pdf.rect(x - 1, startY - 1, CR80_W + 2, CR80_H + 2);
+          if (cutA4Visible) {
+            pdf.setLineDashPattern([1, 1], 0);
+            pdf.setDrawColor(150);
+            const o = cutA4Offset;
+            pdf.rect(x - o, startY - o, CR80_W + 2 * o, CR80_H + 2 * o);
+          }
         }
         pdf.setLineDashPattern([], 0);
         pdf.setFontSize(8);
@@ -795,6 +825,47 @@ export const FarmerCard = ({ farmer, onPrint, showActions = true }: FarmerCardPr
             )}
             <p className="text-[10px] text-muted-foreground">
               Estas preferências ficam guardadas neste dispositivo. Use a borda curta para impressoras de cartão CR-80.
+            </p>
+          </div>
+
+          {/* Linhas de corte / sangria */}
+          <div className="border-t pt-3 space-y-3">
+            <p className="text-xs font-medium text-muted-foreground">
+              Linhas de corte (sangria)
+            </p>
+            {([
+              { key: 'a4', label: 'A4', visible: cutA4Visible, setVisible: setCutA4Visible, offset: cutA4Offset, setOffset: setCutA4Offset },
+              { key: 'pvc', label: 'CR-80 (PVC)', visible: cutPvcVisible, setVisible: setCutPvcVisible, offset: cutPvcOffset, setOffset: setCutPvcOffset },
+            ] as const).map((cfg) => (
+              <div key={cfg.key}>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={cfg.visible}
+                    onChange={(e) => cfg.setVisible(e.target.checked)}
+                    id={`cut-${cfg.key}`}
+                  />
+                  <label htmlFor={`cut-${cfg.key}`} className="text-xs font-medium cursor-pointer">
+                    Mostrar guias · {cfg.label}
+                  </label>
+                </div>
+                {cfg.visible && (
+                  <div className="mt-1 pl-6">
+                    <label className="text-[10px] text-muted-foreground uppercase tracking-wide">
+                      Offset (mm fora do cartão): <span className="font-mono">{cfg.offset.toFixed(1)}</span>
+                    </label>
+                    <input
+                      type="range" min={0} max={5} step={0.1}
+                      value={cfg.offset}
+                      onChange={(e) => cfg.setOffset(parseFloat(e.target.value))}
+                      className="w-full"
+                    />
+                  </div>
+                )}
+              </div>
+            ))}
+            <p className="text-[10px] text-muted-foreground">
+              Linhas tracejadas a 0,3mm aplicadas em volta de cada cartão na pré-visualização, impressão e PDF.
             </p>
           </div>
           <div className="border-t pt-3">
