@@ -43,11 +43,13 @@ export default function CardVerificationPage() {
   const { data, isLoading, error } = token ? tokenQuery : codeQuery;
 
   const meta: StatusMeta | null = useMemo(() => {
-    if (!tokenIsValid) {
+    if (!inputIsValid) {
       return {
         status: 'invalid_token',
-        label: 'Token inválido',
-        description: 'O link de verificação não tem o formato esperado.',
+        label: 'Código inválido',
+        description: token
+          ? 'O link de verificação não tem o formato esperado (token de 32 caracteres).'
+          : 'O código fornecido não corresponde a um token QR, número de série ou nº de registo válido.',
         icon: ShieldQuestion,
         tone: 'muted',
       };
