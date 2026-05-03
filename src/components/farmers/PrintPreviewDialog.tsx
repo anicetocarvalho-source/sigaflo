@@ -300,7 +300,7 @@ const PagePreview = ({
     doc.open();
     doc.write(html);
     doc.close();
-  }, [buildHtml, mode, pageIndex]);
+  }, [buildHtml, mode, pageIndex, reloadKey]);
 
   // Scale: page is width x height px which equals page.w mm * pxPerMm.
   // The iframe's body content is in mm; we set iframe size in mm and then scale via CSS.
