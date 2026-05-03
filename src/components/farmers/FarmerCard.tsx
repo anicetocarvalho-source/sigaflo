@@ -761,6 +761,27 @@ ${isPvc ? `
           }
         />
       )}
+
+      <DuplexAlignmentWizard
+        open={wizardOpen}
+        onOpenChange={(v) => {
+          setWizardOpen(v);
+          if (!v) setPendingPrintMode(null);
+        }}
+        duplexMode={duplexMode}
+        setDuplexMode={setDuplexMode}
+        offsetX={offsetX}
+        setOffsetX={setOffsetX}
+        offsetY={offsetY}
+        setOffsetY={setOffsetY}
+        onConfirmed={() => {
+          if (pendingPrintMode) {
+            const m = pendingPrintMode;
+            setPendingPrintMode(null);
+            setTimeout(() => openPrintWindow(m), 100);
+          }
+        }}
+      />
     </div>
   );
 };
