@@ -270,12 +270,14 @@ const PagePreview = ({
   pageIndex,
   width,
   height,
+  reloadKey,
 }: {
   buildHtml: (m: 'pvc' | 'a4') => string;
   mode: 'pvc' | 'a4';
   pageIndex: number;
   width: number;
   height: number;
+  reloadKey?: string | number;
 }) => {
   const ref = useRef<HTMLIFrameElement>(null);
 
