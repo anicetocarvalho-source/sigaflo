@@ -9,6 +9,13 @@ export default defineConfig({
     globals: true,
     setupFiles: ["./src/test/setup.ts"],
     include: ["src/**/*.{test,spec}.{ts,tsx}"],
+    reporters: process.env.CI
+      ? ["default", "json", "junit"]
+      : ["default"],
+    outputFile: {
+      json: "test-results/vitest-results.json",
+      junit: "test-results/vitest-junit.xml",
+    },
   },
   resolve: {
     alias: { "@": path.resolve(__dirname, "./src") },
