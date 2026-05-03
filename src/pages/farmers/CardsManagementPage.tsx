@@ -235,6 +235,8 @@ export default function CardsManagementPage() {
         farmers={selectedFarmers}
         cardsMap={cardsMap}
       />
+
+      <CardExportJobsPanel />
     </div>
   );
 }
