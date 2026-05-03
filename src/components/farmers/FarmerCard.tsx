@@ -503,7 +503,7 @@ ${isPvc ? `
                         <Eye className="h-3.5 w-3.5 mr-1" />
                         Pré-visualizar
                       </Button>
-                      <Button size="sm" variant="ghost" onClick={() => openPrintWindow('a4')}>
+                      <Button size="sm" variant="ghost" onClick={() => requestPrint('a4')}>
                         <Printer className="h-3.5 w-3.5 mr-1" />
                         Imprimir
                       </Button>
