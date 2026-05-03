@@ -54,39 +54,44 @@ const farmerTypeLabels: Record<string, string> = {
   company: 'Empresa',
 };
 
-// Guilloché-style SVG pattern (subtle, security-document feel)
-const GuillocheBg = () => (
-  <svg
-    className="absolute inset-0 w-full h-full pointer-events-none"
-    viewBox="0 0 400 252"
-    preserveAspectRatio="none"
+// Subtle SIGAFLO watermark for the redesigned front
+const SigafloWatermark = () => (
+  <div
+    className="absolute inset-0 flex items-center justify-center pointer-events-none select-none"
+    style={{
+      opacity: 0.05,
+      fontSize: '64px',
+      fontWeight: 900,
+      letterSpacing: '8px',
+      color: CARD_COLORS.green,
+      transform: 'rotate(-18deg)',
+    }}
     aria-hidden
   >
-    <defs>
-      <pattern id="grid" width="14" height="14" patternUnits="userSpaceOnUse">
-        <path d="M 14 0 L 0 0 0 14" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="0.5" />
-      </pattern>
-      <radialGradient id="glow" cx="80%" cy="20%" r="60%">
-        <stop offset="0%" stopColor="rgba(255,255,255,0.18)" />
-        <stop offset="100%" stopColor="rgba(255,255,255,0)" />
-      </radialGradient>
-    </defs>
-    <rect width="400" height="252" fill="url(#grid)" />
-    <rect width="400" height="252" fill="url(#glow)" />
-    {/* concentric arcs */}
-    {Array.from({ length: 6 }).map((_, i) => (
-      <circle
-        key={i}
-        cx="-40"
-        cy="280"
-        r={120 + i * 24}
-        fill="none"
-        stroke="rgba(255,255,255,0.08)"
-        strokeWidth="0.6"
-      />
-    ))}
-  </svg>
+    SIGAFLO
+  </div>
 );
+
+// Tiny SVG barcode renderer (Code128 via jsbarcode → string)
+const buildBarcodeSvgString = (value: string): string => {
+  if (typeof window === 'undefined') return '';
+  try {
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    JsBarcode(svg, value || 'SIGAFLO', {
+      format: 'CODE128',
+      displayValue: false,
+      margin: 0,
+      height: 60,
+      width: 1.4,
+      lineColor: CARD_COLORS.greenDark,
+      background: 'transparent',
+    });
+    svg.setAttribute('preserveAspectRatio', 'none');
+    return new XMLSerializer().serializeToString(svg);
+  } catch {
+    return '';
+  }
+};
 
 type DuplexMode = 'long-edge' | 'short-edge' | 'simplex';
 const DUPLEX_KEY = 'sigaflo.card.duplex';
