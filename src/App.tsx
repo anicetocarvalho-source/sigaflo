@@ -28,6 +28,8 @@ import FarmerEditPage from "./pages/farmers/FarmerEditPage";
 import AddMembersPage from "./pages/farmers/AddMembersPage";
 import FieldSchoolsPage from "./pages/farmers/FieldSchoolsPage";
 import CooperativesPage from "./pages/farmers/CooperativesPage";
+import CooperativeFormPage from "./pages/farmers/CooperativeFormPage";
+import FieldSchoolFormPage from "./pages/farmers/FieldSchoolFormPage";
 import FieldRegistrationPage from "./pages/farmers/FieldRegistrationPage";
 import ExternalAccessPage from "./pages/farmers/ExternalAccessPage";
 import ParcelsListPage from "./pages/farmers/ParcelsListPage";
