@@ -52,7 +52,10 @@ import {
   UserCog,
 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
-import { useFarmer, useFarmers } from '@/hooks/useFarmers';
+import { useFarmer, useFarmers, useUpdateFarmer } from '@/hooks/useFarmers';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { PhotoUpload } from './PhotoUpload';
+import { Camera } from 'lucide-react';
 import { useProductionHistory, useCertificates } from '@/hooks/useCertificates';
 import { useFinancialProfile, useCreditSimulations, useProductionCertificates, useCreditDossiers, useInsuranceRiskScores } from '@/hooks/useCreditInsurance';
 import { useAllocations } from '@/hooks/useIncentives';
