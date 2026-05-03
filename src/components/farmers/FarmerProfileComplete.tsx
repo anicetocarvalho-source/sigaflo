@@ -71,6 +71,8 @@ import { FarmerPurchases } from './FarmerPurchases';
 import { FarmerBiometry } from './FarmerBiometry';
 import { FarmerCard } from './FarmerCard';
 import { FarmerForecast } from './FarmerForecast';
+import { CooperativeDetailsCard } from './CooperativeDetailsCard';
+import { FieldSchoolDetailsCard } from './FieldSchoolDetailsCard';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 import mapboxgl from 'mapbox-gl';
