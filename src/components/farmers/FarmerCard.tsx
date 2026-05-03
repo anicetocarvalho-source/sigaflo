@@ -10,14 +10,23 @@ import {
   DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { Download, Printer, Fingerprint, Phone, MapPin, CreditCard, FileDown, Loader2, Eye } from 'lucide-react';
+import { Download, Printer, CreditCard, FileDown, Loader2, Eye } from 'lucide-react';
 import { toast } from 'sonner';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
+import JsBarcode from 'jsbarcode';
 import type { Farmer } from '@/hooks/useFarmers';
 import { PrintPreviewDialog } from './PrintPreviewDialog';
 import { useActiveFarmerCard } from '@/hooks/useFarmerCards';
 import { CardStatusBar } from './CardStatusBar';
+import {
+  cardCss,
+  renderCardFrontHtml,
+  renderCardBackHtml,
+  qrServiceUrl,
+  CARD_COLORS,
+  type CardTemplateCtx,
+} from '@/lib/cardTemplate';
 
 interface FarmerCardProps {
   farmer: Farmer;
