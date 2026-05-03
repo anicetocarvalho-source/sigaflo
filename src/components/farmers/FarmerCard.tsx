@@ -437,6 +437,13 @@ export const FarmerCard = ({ farmer, onPrint, showActions = true }: FarmerCardPr
           const img = canvas.toDataURL('image/jpeg', 0.95);
           if (i > 0) pdf.addPage([CR80_W, CR80_H], 'landscape');
           pdf.addImage(img, 'JPEG', 0, 0, CR80_W, CR80_H);
+          if (cutPvcVisible) {
+            pdf.setLineDashPattern([1, 1], 0);
+            pdf.setDrawColor(150);
+            const o = cutPvcOffset;
+            pdf.rect(-o, -o, CR80_W + 2 * o, CR80_H + 2 * o);
+            pdf.setLineDashPattern([], 0);
+          }
         }
         pdf.save(`cartao_${farmer.registration_number || farmer.id}_pvc.pdf`);
       } else {
