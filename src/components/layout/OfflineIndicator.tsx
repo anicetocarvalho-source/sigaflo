@@ -107,6 +107,62 @@ export function OfflineIndicator() {
             </div>
           )}
         </div>
+        {(conflicts?.length ?? 0) > 0 && (
+          <div className="border-t bg-warning/5">
+            <div className="p-3 flex items-center gap-2 border-b">
+              <AlertTriangle className="h-4 w-4 text-warning" />
+              <p className="text-sm font-semibold">
+                {conflicts!.length} {conflicts!.length === 1 ? 'conflito' : 'conflitos'} para revisão
+              </p>
+            </div>
+            <div className="max-h-48 overflow-y-auto divide-y">
+              {conflicts!.map((c) => (
+                <div key={c.id} className="p-3 text-xs space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline" className="text-[10px] py-0">{c.module}</Badge>
+                    <span className="text-muted-foreground truncate">
+                      {c.conflictingFields.join(', ')}
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 text-[11px]">
+                    <div className="rounded border p-2">
+                      <p className="font-medium text-muted-foreground mb-1">Local (offline)</p>
+                      {c.conflictingFields.map((f) => (
+                        <p key={f} className="truncate"><span className="text-muted-foreground">{f}:</span> {String(c.localPayload[f])}</p>
+                      ))}
+                    </div>
+                    <div className="rounded border p-2">
+                      <p className="font-medium text-muted-foreground mb-1">Servidor</p>
+                      {c.conflictingFields.map((f) => (
+                        <p key={f} className="truncate"><span className="text-muted-foreground">{f}:</span> {String(c.serverRow[f])}</p>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="flex gap-1">
+                    <Button
+                      size="sm" variant="outline" className="h-6 text-[11px] flex-1"
+                      onClick={async () => {
+                        try { await resolveParkedConflict(c.id!, 'keep-local'); toast.success('Versão local aplicada'); }
+                        catch (e: any) { toast.error(e?.message || 'Falhou'); }
+                      }}
+                    >
+                      Manter local
+                    </Button>
+                    <Button
+                      size="sm" variant="outline" className="h-6 text-[11px] flex-1"
+                      onClick={async () => {
+                        await resolveParkedConflict(c.id!, 'keep-server');
+                        toast.success('Versão do servidor mantida');
+                      }}
+                    >
+                      Manter servidor
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </PopoverContent>
     </Popover>
   );
