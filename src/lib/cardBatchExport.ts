@@ -436,6 +436,8 @@ export async function exportCardBatch(
   onProgress?: (p: BatchProgress) => void,
 ): Promise<{ filename: string; size: number }> {
   const verificationOrigin = window.location.origin;
+  // Carrega a insígnia uma única vez antes de iniciar a geração para evitar fetches repetidos por cartão.
+  await preloadInsignia();
   const ctxs: CardCtx[] = farmers.map((f) => ({ farmer: f, card: cardsMap[f.id], verificationOrigin }));
   const batch = safeName(opts.batchName);
 
