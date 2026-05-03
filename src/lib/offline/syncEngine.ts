@@ -85,7 +85,7 @@ async function executeMutation(m: QueuedMutation): Promise<ExecOutcome> {
     }
 
     const strategy = m.conflictStrategy ?? 'merge';
-    const resolution = resolveConflict(strategy, m.payload, m.baseRow, serverRow, analysis);
+    const resolution = resolveConflict(strategy, m.payload, m.baseRow, serverRow, analysis, m.createdAt);
 
     if (resolution.requiresManualReview) {
       await offlineDB.conflicts.add(
