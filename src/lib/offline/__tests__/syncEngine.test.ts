@@ -180,9 +180,8 @@ describe("Sincronização offline → online", () => {
     const r = await syncNow(true);
     expect(r.ok).toBe(1);
     expect(r.conflicts).toBe(0);
-    const sent = updateMock.mock.calls[0][0];
-    expect(sent.phone).toBe("999");
-    expect(sent.name).toBe("João Silva"); // preserva mudança do servidor
+    // payload enviado contém só o campo local (servidor preserva 'name' naturalmente)
+    expect(updateMock).toHaveBeenCalledWith({ phone: "999" });
     expect(await offlineDB.conflicts.count()).toBe(0);
   });
 
