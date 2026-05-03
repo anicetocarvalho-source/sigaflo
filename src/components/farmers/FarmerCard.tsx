@@ -79,6 +79,7 @@ const GuillocheBg = () => (
 export const FarmerCard = ({ farmer, onPrint, showActions = true }: FarmerCardProps) => {
   const [flipped, setFlipped] = useState(false);
   const [printDialogOpen, setPrintDialogOpen] = useState(false);
+  const [exporting, setExporting] = useState<null | 'pvc' | 'a4'>(null);
 
   const qrPayload = JSON.stringify({
     plataforma: 'SIGAFLO',
