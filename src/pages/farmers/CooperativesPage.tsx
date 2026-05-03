@@ -257,10 +257,11 @@ const CooperativesPage = () => {
                     <TableRow>
                       <TableHead>Nº Registo</TableHead>
                       <TableHead>Nome / Razão Social</TableHead>
+                      <TableHead>NIF</TableHead>
+                      <TableHead>Presidente</TableHead>
                       <TableHead>Localização</TableHead>
-                      <TableHead>Culturas</TableHead>
                       <TableHead>Membros</TableHead>
-                      <TableHead>Área (ha)</TableHead>
+                      <TableHead>Área Agreg. (ha)</TableHead>
                       <TableHead>Estado</TableHead>
                       <TableHead className="text-right">Acções</TableHead>
                     </TableRow>
