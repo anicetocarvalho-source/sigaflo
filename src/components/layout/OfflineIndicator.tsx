@@ -1,20 +1,19 @@
 import { useEffect, useState } from 'react';
-import { Wifi, WifiOff, RefreshCw, Trash2, CloudUpload } from 'lucide-react';
+import { Wifi, WifiOff, RefreshCw, Trash2, CloudUpload, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { offlineDB, type QueuedMutation } from '@/lib/offline/db';
-import { syncNow, subscribeSync, isSyncing } from '@/lib/offline/syncEngine';
+import { offlineDB, type QueuedMutation, type PendingConflict } from '@/lib/offline/db';
+import { syncNow, subscribeSync, isSyncing, resolveParkedConflict } from '@/lib/offline/syncEngine';
 import { useLiveQuery } from 'dexie-react-hooks';
+import { toast } from 'sonner';
 
 export function OfflineIndicator() {
   const [online, setOnline] = useState(navigator.onLine);
   const [, force] = useState(0);
 
-  const pending = useLiveQuery(
-    () => offlineDB.mutationQueue.toArray(),
-    []
-  ) as QueuedMutation[] | undefined;
+  const pending = useLiveQuery(() => offlineDB.mutationQueue.toArray(), []) as QueuedMutation[] | undefined;
+  const conflicts = useLiveQuery(() => offlineDB.conflicts.toArray(), []) as PendingConflict[] | undefined;
 
   useEffect(() => {
     const on = () => setOnline(true);
