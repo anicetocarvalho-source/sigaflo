@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { ReactNode, useEffect, useRef, useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
@@ -14,6 +14,13 @@ interface PrintPreviewDialogProps {
   onPrint: (mode: 'pvc' | 'a4') => void;
   onExportPdf: (mode: 'pvc' | 'a4') => Promise<void> | void;
   exporting?: boolean;
+  /** Controles ao vivo (calibração / guias de corte) renderizados ao lado da pré-visualização */
+  liveControls?: ReactNode;
+  /**
+   * Chave que muda sempre que os parâmetros de calibração/guias mudam,
+   * para forçar re-render do iframe de pré-visualização.
+   */
+  controlsKey?: string | number;
 }
 
 // Page sizes in mm
@@ -35,6 +42,8 @@ export const PrintPreviewDialog = ({
   onPrint,
   onExportPdf,
   exporting,
+  liveControls,
+  controlsKey,
 }: PrintPreviewDialogProps) => {
   const [zoom, setZoom] = useState(mode === 'pvc' ? 2.5 : 1);
   const [showMargins, setShowMargins] = useState(true);
@@ -62,15 +71,15 @@ export const PrintPreviewDialog = ({
     doc.open();
     doc.write(html);
     doc.close();
-  }, [open, mode, buildHtml]);
+  }, [open, mode, buildHtml, controlsKey]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-5xl">
+      <DialogContent className={liveControls ? 'max-w-6xl' : 'max-w-5xl'}>
         <DialogHeader>
           <DialogTitle>Pré-visualização da impressão</DialogTitle>
           <DialogDescription>
-            {page.label} · margens {page.margin}mm · use o zoom e as guias para validar antes de exportar.
+            {page.label} · margens {page.margin}mm · ajustes aplicam-se em tempo real à pré-visualização e ao PDF.
           </DialogDescription>
         </DialogHeader>
 
@@ -114,6 +123,7 @@ export const PrintPreviewDialog = ({
           aria-hidden
         />
 
+        <div className={liveControls ? 'grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-3' : ''}>
         {/* Preview canvas */}
         <div
           className="relative overflow-auto bg-[hsl(var(--muted))] rounded-md border"
@@ -136,11 +146,13 @@ export const PrintPreviewDialog = ({
                   >
                     {/* Rendered content via iframe clone (iframe acts as reference; we re-render via srcdoc per page) */}
                     <PagePreview
+                      key={`${mode}-${idx}-${controlsKey ?? ''}`}
                       buildHtml={buildHtml}
                       mode={mode}
                       pageIndex={idx}
                       width={pageW}
                       height={pageH}
+                      reloadKey={controlsKey}
                     />
 
                     {/* Margins overlay */}
@@ -219,6 +231,19 @@ export const PrintPreviewDialog = ({
           </div>
         </div>
 
+        {liveControls && (
+          <aside className="border rounded-md p-3 bg-card overflow-y-auto" style={{ maxHeight: '60vh' }}>
+            <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
+              Calibração e guias
+            </div>
+            {liveControls}
+            <p className="mt-3 text-[10px] text-muted-foreground">
+              Os ajustes refletem-se imediatamente na pré-visualização e no PDF exportado.
+            </p>
+          </aside>
+        )}
+        </div>
+
         <DialogFooter className="flex-wrap gap-2">
           <Button variant="ghost" onClick={() => onOpenChange(false)} disabled={exporting}>
             Cancelar
@@ -245,12 +270,14 @@ const PagePreview = ({
   pageIndex,
   width,
   height,
+  reloadKey,
 }: {
   buildHtml: (m: 'pvc' | 'a4') => string;
   mode: 'pvc' | 'a4';
   pageIndex: number;
   width: number;
   height: number;
+  reloadKey?: string | number;
 }) => {
   const ref = useRef<HTMLIFrameElement>(null);
 
@@ -273,7 +300,7 @@ const PagePreview = ({
     doc.open();
     doc.write(html);
     doc.close();
-  }, [buildHtml, mode, pageIndex]);
+  }, [buildHtml, mode, pageIndex, reloadKey]);
 
   // Scale: page is width x height px which equals page.w mm * pxPerMm.
   // The iframe's body content is in mm; we set iframe size in mm and then scale via CSS.
