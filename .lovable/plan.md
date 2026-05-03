@@ -1,100 +1,58 @@
-## Redesign do Cartão SIGAFLO — alinhamento com mockup oficial
+## Problema
 
-Reescrever o template do cartão (`src/lib/cardTemplate.ts`), o preview 3D (`FarmerCard.tsx`) e o renderizador em lote (`cardBatchExport.ts`) para reproduzir fielmente o mockup fornecido, omitindo as áreas marcadas a vermelho.
+O diálogo aberto a partir do botão **Imprimir / Download** (`src/components/farmers/FarmerCard.tsx`, linhas 442–632) acumula 5 secções verticais (Formatos PVC/A4, Duplex + ajuste fino X/Y, Guias de corte A4 e PVC, Export PDF, Footer) dentro de um `DialogContent` com largura por defeito (`max-w-lg`, ~512 px) e sem scroll. Resultado: textos saem fora dos cards e o conteúdo transborda na viewport.
 
-### Áreas a REMOVER (marcadas a vermelho no mockup)
-- Texto "MINAGRIF" sob o brasão (manter apenas "República de Angola / Ministério da Agricultura e Florestas").
-- Bloco lateral "Cultura Principal / Área Produtiva" na frente.
-- Os dois selos institucionais em baixo no verso ("Sistema Integrado de Gestão Agro Florestal" e "Governo Digital / Inovação e Serviço ao Cidadão").
+Existe também um warning no console (`DialogFooter` recebe ref sem `forwardRef`) que aparece sempre que o diálogo monta.
 
-### FRENTE — novo layout
+## Solução proposta
 
-```text
-┌───────────────────────────────────────────────────────────────┐
-│ [brasão] REPÚBLICA DE ANGOLA   [logo SIGAFLO grande]   ┌────┐ │
-│          Ministério da Agric.   SISTEMA INTEGRADO DE    │mapa│ │
-│          e Florestas            GESTÃO AGRO FLORESTAL   │ AO │ │
-│                                                          └────┘ │
-│            ┌───── faixa verde ─────┐         GOVERNO DE       │
-│            │ CARTÃO DE IDENTIFICAÇÃO DO AGRICULTOR │ ANGOLA   │
-│            └───────────────────────┘                          │
-│ ┌──────┐  NOME COMPLETO          📍 PROVÍNCIA                 │
-│ │      │  JOÃO MANUEL KALUNGA       BENGUELA                  │
-│ │ FOTO │                                                       │
-│ │      │  ID SIGAFLO             🏛 MUNICÍPIO                  │
-│ │      │  AO-SIGAF-00012345         BAÍA FUNDA                │
-│ └──────┘                                                       │
-│           TIPO DE PRODUTOR       👥 COMUNA      ▣ QR          │
-│           PEQUENO PRODUTOR          CAIMBAMBO   VERIFIQUE A    │
-│                                                  AUTENTICIDADE │
-│ ═══════════════════ paisagem rural verde ════════════════════ │
-│  ⊙ PRODUZIR  🌳 PRESERVAR  📈 DESENVOLVER  👥 INCLUIR         │
-└───────────────────────────────────────────────────────────────┘
-```
+Reorganizar o diálogo em **abas** (Tabs do shadcn) para reduzir altura, alargar para `max-w-2xl` e adicionar scroll interno como salvaguarda. Sem mudar comportamento de impressão/exportação.
 
-Detalhes:
-- **Header branco** com brasão de Angola (asset existente ou placeholder), logo SIGAFLO em verde + tagline "SISTEMA INTEGRADO DE GESTÃO AGRO FLORESTAL", mapa de Angola à direita com tag "GOVERNO DE ANGOLA" sobre faixa verde-escuro recortada.
-- **Faixa verde central** com texto "CARTÃO DE IDENTIFICAÇÃO DO AGRICULTOR".
-- **Corpo em 3 colunas**:
-  - Coluna 1 (foto + paisagem rural ao fundo).
-  - Coluna 2 (Nome, ID SIGAFLO, Tipo de produtor) com labels uppercase pequenas em cinza e valores em peso forte.
-  - Coluna 3 (Província / Município / Comuna) com pequenos ícones a verde.
-- **QR code** integrado à direita (≥ 20 mm) com texto vertical "VERIFIQUE A AUTENTICIDADE DESTE CARTÃO".
-- **Rodapé verde** com paisagem rural ilustrada + 4 pilares: Produzir · Preservar · Desenvolver · Incluir (com mini-ícones).
-- Remover elementos do design anterior: chip PVC simulado, marca-d'água "SIGAFLO" diagonal, badge biometria.
-
-### VERSO — novo layout
+### Layout novo
 
 ```text
-┌──────────────────┬──────────────────────────────────┐
-│  📅 DATA EMISSÃO │   CÓDIGO DE BARRAS               │
-│  20/05/2025      │   ▮▮▮▮▮▮ Code128 ▮▮▮▮▮▮          │
-│                  │   AO-SIGAF-00012345              │
-│  📅 VALIDADE     │                                  │
-│  20/05/2030      │   📡 NFC                         │
-│                  │   Aproxime para verificar        │
-│  ✓ ESTADO        │                                  │
-│  ATIVO           │   ┌────────────────────────────┐ │
-│                  │   │ 🎧 LINHA DE APOIO SIGAFLO  │ │
-│  ─signature─     │   │ 923 123 456 │ apoio@...    │ │
-│  MINAGRIF        │   │ www.sigaflo.gov.ao         │ │
-│  AUT. EMISSORA   │   └────────────────────────────┘ │
-└──────────────────┴──────────────────────────────────┘
+┌─ Imprimir cartão ────────────────────────────┐
+│  [ Formato ] [ Calibração ] [ Guias de corte ] │
+│ ────────────────────────────────────────────── │
+│  (conteúdo da aba activa, scrollável)         │
+│                                                │
+│  ── Exportar para PDF ──                       │
+│  [ PDF PVC ]  [ PDF A4 ]                       │
+│                                                │
+│                          [ Cancelar ]          │
+└────────────────────────────────────────────────┘
 ```
 
-- **Painel esquerdo verde-escuro** (~38% largura) com Data Emissão, Validade, Estado do Registo, "assinatura" + "AUTORIDADE EMISSORA" (texto institucional, sem logos).
-- **Painel direito branco** com:
-  - Código de barras Code128 (jsbarcode existente) + ID legível.
-  - Bloco NFC com ícone (texto "Aproxime para verificar").
-  - Caixa "Linha de apoio SIGAFLO" com telefone/email/site.
-  - Pequena nota legal: "Este cartão é pessoal e intransmissível. O uso indevido implica sanções nos termos da lei."
-- **Remover** os dois selos (zonas marcadas a vermelho).
-- Folhagem decorativa muito subtil (≤ 5% opacidade) no fundo verde.
+- **Aba "Formato"** — os 2 cards PVC e A4 (pré-visualizar / imprimir), em grid 2 colunas estável.
+- **Aba "Calibração"** — modo duplex + sliders X/Y + repor (só visível se duplex ≠ simplex).
+- **Aba "Guias de corte"** — checkboxes e sliders para A4 e PVC.
+- **Rodapé fixo** — bloco "Exportar para PDF" + botão Cancelar (sempre visíveis, não dentro das abas).
 
-### Tokens / paleta
-Manter os tokens `--card-sigaflo-*` já existentes; ajustar:
-- Verde escuro do painel verso: `#0c3d1a`.
-- Verde médio header/badges: `#1f6b34`.
-- Verde claro de fundo das caixas (linha apoio, nota legal): `#f0f7f1`.
-- Texto principal: `#1a2030`. Labels: `#6b7280`.
+### Alterações de CSS / estrutura
 
-### Assets necessários
-- `src/assets/brasao-angola.png` — brasão da República (gerado/placeholder SVG com escudo simplificado).
-- `src/assets/sigaflo-logo.svg` — logo SIGAFLO (composição de árvore/folhas em verde com tagline).
-- `src/assets/mapa-angola.svg` — silhueta do mapa para o badge "Governo de Angola".
-- `src/assets/paisagem-rural.svg` — ilustração leve da paisagem para rodapé da frente.
+- `DialogContent` → adicionar `className="max-w-2xl max-h-[90vh] overflow-hidden flex flex-col"`.
+- Wrapper das abas → `flex-1 overflow-y-auto pr-1`.
+- Garantir gaps consistentes (`space-y-3`) e remover `border-t pt-3` redundantes (já separados pelas tabs).
+- Manter todos os labels, sliders e estado/`localStorage` exactamente como hoje — apenas reagrupar.
 
-Estes assets serão gerados via `imagegen` (transparent PNG) com prompts específicos, ou desenhados directamente em SVG inline para manter print-ready / vetorial. Decisão: **inline SVG** (vetorial, sem dependências externas, escalável a 300 DPI sem perda).
+### Correção do warning React
 
-### Ficheiros a actualizar
+Em `src/components/ui/dialog.tsx`, `DialogFooter` é um function component normal mas o Radix injecta refs em alguns contextos. Envolver com `React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>` para silenciar o warning sem mudar API.
 
-- `src/lib/cardTemplate.ts` — reescrever `renderCardFrontHtml` e `renderCardBackHtml` com a nova estrutura HTML/CSS e SVGs inline.
-- `src/components/farmers/FarmerCard.tsx` — sem mudanças estruturais, apenas usa o novo template (preview 3D já consome o template).
-- `src/lib/cardBatchExport.ts` — reescrever `drawCardFront` e `drawCardBack` em jsPDF (vector primitives) para reproduzir o mesmo layout, garantindo que a exportação em lote permanece print-ready.
+## Ficheiros afectados
 
-### Validação final
-- QR ≥ 20 mm e código de barras legíveis após render @300 DPI.
-- Nada das 3 zonas marcadas a vermelho aparece.
-- Preview 3D digital idêntico ao PDF gerado (single + batch).
-- Margem de segurança de 3 mm respeitada em ambos os lados.
-- Contraste WCAG AA em todos os textos.
+- `src/components/farmers/FarmerCard.tsx` — apenas o JSX do `<Dialog open={printDialogOpen}>` (linhas 442–632). Lógica (`buildPrintHtml`, `openPrintWindow`, `exportPdf`, estado) intocada.
+- `src/components/ui/dialog.tsx` — converter `DialogFooter` (e por consistência `DialogHeader`) em `forwardRef`.
+
+## Fora do âmbito
+
+- Não mexe em `cardTemplate.ts`, `cardBatchExport.ts`, nem na pré-visualização 3D.
+- Não altera o fluxo de impressão, duplex, calibração ou geração de PDF.
+- Não altera a página `/dev/print-test` nem o `PrintPreviewDialog`.
+
+## Verificação
+
+1. Navegar a `/agricultores/:id?tab=card`, clicar **Imprimir / Download** → diálogo abre sem overflow em viewport 1394×830 e em 768 px.
+2. Trocar entre as 3 abas — cada secção mantém os controlos com estado preservado.
+3. Imprimir/Exportar PDF nos modos PVC e A4 — comportamento idêntico ao actual.
+4. Console — sem warning de `forwardRef` ao abrir/fechar o diálogo.
