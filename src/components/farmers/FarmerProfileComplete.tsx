@@ -309,12 +309,27 @@ export const FarmerProfileComplete = () => {
               <ArrowLeft className="h-4 w-4" />
             </Button>
           </Link>
-          <Avatar className="h-12 w-12 border-2 border-primary/20">
-            <AvatarImage src={farmer.photo_url || undefined} alt={farmer.name} />
-            <AvatarFallback className={getFarmerTypeColor(farmer.farmer_type)}>
-              {farmer.name.split(' ').filter(Boolean).slice(0, 2).map(n => n[0]).join('').toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
+          <button
+            type="button"
+            onClick={() => setPhotoDialogOpen(true)}
+            className="relative group rounded-full focus:outline-none focus:ring-2 focus:ring-primary"
+            title={farmer.photo_url ? 'Alterar fotografia' : 'Adicionar fotografia'}
+          >
+            <Avatar className="h-12 w-12 border-2 border-primary/20">
+              <AvatarImage src={farmer.photo_url || undefined} alt={farmer.name} />
+              <AvatarFallback className={getFarmerTypeColor(farmer.farmer_type)}>
+                {farmer.name.split(' ').filter(Boolean).slice(0, 2).map(n => n[0]).join('').toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+            <span className="absolute inset-0 rounded-full bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+              <Camera className="h-5 w-5 text-white" />
+            </span>
+            {!farmer.photo_url && (
+              <span className="absolute -bottom-1 -right-1 bg-primary text-primary-foreground rounded-full p-1 shadow">
+                <Camera className="h-3 w-3" />
+              </span>
+            )}
+          </button>
           <div>
             <div className="flex items-center gap-3">
               <h1 className="text-2xl font-bold">{farmer.name}</h1>
