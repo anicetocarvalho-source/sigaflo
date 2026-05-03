@@ -227,6 +227,13 @@ export default function CardsManagementPage() {
           )}
         </CardContent>
       </Card>
+
+      <CardBatchExportDialog
+        open={exportDialogOpen}
+        onOpenChange={setExportDialogOpen}
+        farmers={selectedFarmers}
+        cardsMap={cardsMap}
+      />
     </div>
   );
 }
