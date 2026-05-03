@@ -504,6 +504,16 @@ ${isPvc ? `
               </TabsContent>
 
               <TabsContent value="calibracao" className="mt-0 space-y-3">
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setWizardOpen(true)}
+                  className="w-full"
+                >
+                  <Wand2 className="h-4 w-4 mr-2" />
+                  Assistente de alinhamento duplex
+                </Button>
                 <p className="text-xs font-medium text-muted-foreground">
                   Modo duplex (alinhamento frente/verso)
                 </p>
