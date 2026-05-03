@@ -365,6 +365,8 @@ export const FarmerProfileComplete = () => {
         members={members}
         coopDetails={coopDetails}
         ecaDetails={ecaDetails}
+        loadingCoopDetails={loadingCoopDetails}
+        loadingEcaDetails={loadingEcaDetails}
         creditScore={creditScore}
         getScoreColor={getScoreColor}
         getScoreIcon={getScoreIcon}
