@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { ReactNode, useEffect, useRef, useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
@@ -14,6 +14,13 @@ interface PrintPreviewDialogProps {
   onPrint: (mode: 'pvc' | 'a4') => void;
   onExportPdf: (mode: 'pvc' | 'a4') => Promise<void> | void;
   exporting?: boolean;
+  /** Controles ao vivo (calibração / guias de corte) renderizados ao lado da pré-visualização */
+  liveControls?: ReactNode;
+  /**
+   * Chave que muda sempre que os parâmetros de calibração/guias mudam,
+   * para forçar re-render do iframe de pré-visualização.
+   */
+  controlsKey?: string | number;
 }
 
 // Page sizes in mm
