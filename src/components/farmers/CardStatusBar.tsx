@@ -16,6 +16,7 @@ import {
 } from '@/hooks/useFarmerCards';
 import type { Farmer } from '@/hooks/useFarmers';
 import { format } from 'date-fns';
+import { CardEligibilityPanel } from './CardEligibilityPanel';
 
 const STATUS_LABELS: Record<CardStatus, string> = {
   rascunho: 'Rascunho', gerado: 'Gerado', impresso: 'Impresso', entregue: 'Entregue', revogado: 'Revogado',
@@ -117,6 +118,10 @@ export const CardStatusBar = ({ farmer }: Props) => {
               <History className="h-4 w-4" /> Histórico
             </Button>
           </div>
+        </div>
+
+        <div className="mt-4">
+          <CardEligibilityPanel farmer={farmer} card={card} compact />
         </div>
       </CardContent>
 
