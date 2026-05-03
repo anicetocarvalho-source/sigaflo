@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { Link, useParams, useNavigate } from 'react-router-dom';
+import { Link, useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -116,13 +116,46 @@ const getRiskLabel = (risk: string) => {
   }
 };
 
+const STORAGE_KEY = 'sigaflo:farmerProfile:lastTab';
+
 export const FarmerProfileComplete = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const [mapboxToken, setMapboxToken] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<string>('identification');
+
+  const initialTab = (() => {
+    const fromUrl = searchParams.get('tab');
+    if (fromUrl && ALL_TAB_VALUES.includes(fromUrl as any)) return fromUrl;
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (stored && ALL_TAB_VALUES.includes(stored as any)) return stored;
+    }
+    return 'identification';
+  })();
+  const [activeTab, setActiveTab] = useState<string>(initialTab);
+
+  // Sync URL + localStorage on tab changes
+  useEffect(() => {
+    const current = searchParams.get('tab');
+    if (current !== activeTab) {
+      const next = new URLSearchParams(searchParams);
+      next.set('tab', activeTab);
+      setSearchParams(next, { replace: true });
+    }
+    try { localStorage.setItem(STORAGE_KEY, activeTab); } catch {}
+  }, [activeTab]);
+
+  // React to back/forward URL changes
+  useEffect(() => {
+    const fromUrl = searchParams.get('tab');
+    if (fromUrl && fromUrl !== activeTab && ALL_TAB_VALUES.includes(fromUrl as any)) {
+      setActiveTab(fromUrl);
+    }
+  }, [searchParams]);
+
   
   const { data: farmer, isLoading } = useFarmer(id!);
   const { data: productionHistory } = useProductionHistory(id);
