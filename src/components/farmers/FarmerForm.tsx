@@ -90,8 +90,6 @@ interface FarmerFormProps {
 const farmerTypeOptions: { value: FarmerType; label: string }[] = [
   { value: 'individual', label: 'Pequeno Agricultor' },
   { value: 'family', label: 'Agricultura Familiar' },
-  { value: 'cooperative', label: 'Cooperativa' },
-  { value: 'field_school', label: 'Escola de Campo' },
   { value: 'company', label: 'Empresa/Grande Produtor' },
 ];
 
