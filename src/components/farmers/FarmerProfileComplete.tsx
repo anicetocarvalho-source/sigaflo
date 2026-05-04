@@ -168,6 +168,8 @@ export const FarmerProfileComplete = () => {
   useEffect(() => {
     const type = farmer?.farmer_type as ProfileFarmerType | undefined;
     if (!type) return;
+    // Permitir deep-link de tabs ocultas que renderizam empty state explicativo
+    if (isTabDeepLinkableForType(activeTab as any, type)) return;
     const currentGroupKey = findGroupForTab(activeTab);
     const currentGroup = PROFILE_GROUPS.find((g) => g.key === currentGroupKey)!;
     const visibleInCurrent = getVisibleTabs(currentGroup, type);
