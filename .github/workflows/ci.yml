@@ -70,3 +70,39 @@ jobs:
             test-results/**
           retention-days: 14
           if-no-files-found: warn
+
+  coverage:
+    name: Workflow coverage gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      CI: "true"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Run tests with coverage (enforces thresholds)
+        # Os limiares estão definidos em vitest.config.ts:
+        #   - WorkflowActions.tsx: 95% lines/statements, 70% functions, 80% branches
+        #   - workflowLabels.ts:   100% em todas as métricas
+        # Se a cobertura cair abaixo, o vitest sai com código != 0 e o job falha.
+        run: bunx vitest run --coverage
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            coverage/**
+          retention-days: 14
+          if-no-files-found: warn
