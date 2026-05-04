@@ -103,9 +103,19 @@ interface WorkflowActionsProps {
   farmerId: string;
   currentStatus: WorkflowStatus | string;
   farmerName: string;
+  /** Tipo de entidade — usado para ajustar a etiqueta da última transição. */
+  farmerType?: string;
 }
 
-export const WorkflowActions = ({ farmerId, currentStatus, farmerName }: WorkflowActionsProps) => {
+/** Tipos elegíveis para emissão do cartão SIGAFLO. Demais tipos apenas activam o registo. */
+const CARD_ELIGIBLE_TYPES = new Set(['individual', 'family', 'company']);
+
+export const WorkflowActions = ({ farmerId, currentStatus, farmerName, farmerType }: WorkflowActionsProps) => {
+  const isCardEligible = !farmerType || CARD_ELIGIBLE_TYPES.has(farmerType);
+  const finalLabel = isCardEligible ? 'Emitir Cartão' : 'Activar Registo';
+  const finalDescription = isCardEligible
+    ? 'Emitir o cartão do agricultor (nível nacional)'
+    : 'Activar o registo aprovado (nível nacional). Esta entidade não emite cartão SIGAFLO.';
   const { user, roles, hasAnyRole } = useAuth();
   const updateFarmer = useUpdateFarmer();
   const [dialogOpen, setDialogOpen] = useState(false);
