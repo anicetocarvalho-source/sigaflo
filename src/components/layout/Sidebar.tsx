@@ -34,6 +34,7 @@ import {
   Tractor,
   Activity,
   Satellite,
+  ShieldAlert,
 } from 'lucide-react';
 
 type UserRole = 'admin_national' | 'admin_provincial' | 'admin_municipal' | 'technician_national' | 'technician_provincial' | 'technician_municipal' | 'private_entity' | 'viewer';
@@ -229,6 +230,13 @@ const navigation: NavItem[] = [
     label: 'Gestão de Utilizadores',
     href: '/utilizadores',
     icon: UserCog,
+    allowedRoles: ADMIN_ONLY,
+    adminOnly: true,
+  },
+  {
+    label: 'Alertas de Elegibilidade',
+    href: '/admin/alertas-elegibilidade',
+    icon: ShieldAlert,
     allowedRoles: ADMIN_ONLY,
     adminOnly: true,
   },

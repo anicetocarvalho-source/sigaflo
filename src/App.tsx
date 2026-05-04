@@ -81,6 +81,7 @@ import CreditInsurancePage from "./pages/credit-insurance/CreditInsurancePage";
 import AuthPage from "./pages/auth/AuthPage";
 import NoPermissionPage from "./pages/auth/NoPermissionPage";
 import UsersPage from "./pages/admin/UsersPage";
+import EligibilityAlertsPage from "./pages/admin/EligibilityAlertsPage";
 import ProfilePage from "./pages/profile/ProfilePage";
 
 // Infrastructure
@@ -235,6 +236,7 @@ const App = () => {
             
             {/* Admin Routes */}
             <Route path="/utilizadores" element={<ProtectedRoute requiredRoles={ADMIN_ROLES}><UsersPage /></ProtectedRoute>} />
+            <Route path="/admin/alertas-elegibilidade" element={<ProtectedRoute requiredRoles={ADMIN_ROLES}><EligibilityAlertsPage /></ProtectedRoute>} />
             
             {/* Profile */}
             <Route path="/perfil" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
