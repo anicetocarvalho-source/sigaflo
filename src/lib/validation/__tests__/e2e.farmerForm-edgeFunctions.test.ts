@@ -44,9 +44,16 @@ function buildFormPayload(overrides: Record<string, unknown> = {}) {
   };
 }
 
-// Polyfill mínimo para Web Crypto em ambiente JSDOM, se necessário.
+// Polyfill mínimo para Web Crypto/File em ambiente JSDOM, se necessário.
 function mockFile(content: string, name = 'doc.pdf', mime = 'application/pdf'): File {
-  return new File([content], name, { type: mime });
+  const f = new File([content], name, { type: mime });
+  if (typeof (f as any).arrayBuffer !== 'function') {
+    (f as any).arrayBuffer = async () => {
+      const enc = new TextEncoder();
+      return enc.encode(content).buffer;
+    };
+  }
+  return f;
 }
 
 // -----------------------------------------------------------------------------
