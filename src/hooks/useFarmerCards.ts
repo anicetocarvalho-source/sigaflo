@@ -83,10 +83,18 @@ export const useFarmerCardHistory = (farmerId?: string) => {
   });
 };
 
+/** Tipos de entidade elegíveis para cartão SIGAFLO. */
+export const CARD_ELIGIBLE_TYPES = ['individual', 'family', 'company'] as const;
+export const isCardEligibleType = (t?: string) =>
+  !!t && (CARD_ELIGIBLE_TYPES as readonly string[]).includes(t);
+
 export const useGenerateCard = () => {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (farmer: Farmer) => {
+      if (!isCardEligibleType(farmer.farmer_type)) {
+        throw new Error('Cooperativas e Escolas de Campo não são elegíveis para cartão SIGAFLO');
+      }
       const { data: userData } = await supabase.auth.getUser();
       const { data, error } = await supabase
         .from('farmer_cards' as any)
