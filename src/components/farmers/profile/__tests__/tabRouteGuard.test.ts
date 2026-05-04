@@ -54,10 +54,10 @@ describe('Guarda de rota para tabs proibidos por tipo de entidade', () => {
   });
 
   describe('Escola de Campo (ECA)', () => {
-    it('redireciona tab=card para tab permitido', () => {
-      const resolved = resolveTabForType('card', 'field_school');
-      expect(resolved).not.toBe('card');
-      expect(isTabAllowedForType(resolved, 'field_school')).toBe(true);
+    it('preserva tab=card (deep-linkable, renderiza empty state)', () => {
+      expect(resolveTabForType('card', 'field_school')).toBe('card');
+      expect(isTabDeepLinkableForType('card', 'field_school')).toBe(true);
+      expect(isTabAllowedForType('card', 'field_school')).toBe(false);
     });
 
     it('redireciona tab=mechanization (não pedagógico) para tab permitido', () => {
