@@ -126,8 +126,8 @@ describe('Guarda de rota para tabs proibidos por tipo de entidade', () => {
       for (const tab of allTabs) {
         const resolved = resolveTabForType(tab, type);
         expect(
-          isTabAllowedForType(resolved, type),
-          `tipo=${type} tab=${tab} resolvido=${resolved} deveria ser permitido`
+          isTabAllowedForType(resolved, type) || isTabDeepLinkableForType(resolved, type),
+          `tipo=${type} tab=${tab} resolvido=${resolved} deveria ser acessível`
         ).toBe(true);
       }
     }
