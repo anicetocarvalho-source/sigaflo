@@ -19,7 +19,13 @@ export interface TabDef {
   value: TabValue;
   label: string;
   icon: React.ComponentType<{ className?: string }>;
+  /** Tipos para os quais a tab aparece no menu de navegação. */
   visibleFor?: FarmerType[];
+  /**
+   * Tipos para os quais a tab é acessível via URL/deep-link mesmo quando
+   * está oculta no menu. O conteúdo deve renderizar um empty state explicativo.
+   */
+  deepLinkableFor?: FarmerType[];
 }
 
 export interface GroupDef {
@@ -40,7 +46,7 @@ export const PROFILE_GROUPS: GroupDef[] = [
       { value: 'entity-details', label: 'Detalhes da Cooperativa', icon: Building2, visibleFor: ['cooperative'] },
       { value: 'entity-details', label: 'Detalhes da ECA', icon: GraduationCap, visibleFor: ['field_school'] },
       { value: 'documents', label: 'Documentos', icon: FileText },
-      { value: 'card', label: 'Cartão / Certificado', icon: CreditCard, visibleFor: ['individual', 'family', 'company'] },
+      { value: 'card', label: 'Cartão / Certificado', icon: CreditCard, visibleFor: ['individual', 'family', 'company'], deepLinkableFor: ['cooperative', 'field_school'] },
       { value: 'biometry', label: 'Biometria', icon: Fingerprint, visibleFor: ['individual', 'family'] },
     ],
   },
@@ -109,6 +115,22 @@ export function isTabAllowedForType(tab: TabValue, type: FarmerType): boolean {
     const def = g.tabs.find((t) => t.value === tab);
     if (def) {
       return !def.visibleFor || def.visibleFor.includes(type);
+    }
+  }
+  return false;
+}
+
+/**
+ * Indica se a tab pode ser renderizada via deep link mesmo quando não está
+ * visível na navegação. Usado para mostrar empty states explicativos em vez
+ * de redirecionar silenciosamente.
+ */
+export function isTabDeepLinkableForType(tab: TabValue, type: FarmerType): boolean {
+  for (const g of PROFILE_GROUPS) {
+    const def = g.tabs.find((t) => t.value === tab);
+    if (def) {
+      if (!def.visibleFor || def.visibleFor.includes(type)) return true;
+      return !!def.deepLinkableFor?.includes(type);
     }
   }
   return false;
