@@ -117,9 +117,9 @@ export type ValidationResult<T> =
 /** Wrapper safe — devolve `{ ok, value | error }` em vez de lançar. */
 export function validate<T>(schema: z.ZodType<T>, raw: unknown): ValidationResult<T> {
   const parsed = schema.safeParse(raw);
-  if (parsed.success) return { ok: true, value: parsed.data };
+  if (parsed.success) return { ok: true, value: parsed.data } as ValidationResult<T>;
   const first = parsed.error.issues[0]?.message ?? 'Valor inválido.';
-  return { ok: false, error: first };
+  return { ok: false, error: first } as ValidationResult<T>;
 }
 
 /**
