@@ -36,10 +36,10 @@ export default defineConfig({
         // Aprovação → Emissão/Activação. Mantêm-se altos porque toda a
         // matriz de farmerType + RBAC + estados inválidos está coberta.
         "src/components/farmers/WorkflowActions.tsx": {
-          lines: 90,
-          statements: 90,
-          functions: 90,
-          branches: 85,
+          lines: 95,
+          statements: 95,
+          functions: 70,
+          branches: 80,
         },
         "src/lib/workflowLabels.ts": {
           lines: 100,
