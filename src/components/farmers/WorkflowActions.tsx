@@ -233,7 +233,11 @@ export const WorkflowActions = ({ farmerId, currentStatus, farmerName, farmerTyp
                     {isComplete ? '✓' : idx + 1}
                   </div>
                   <span className={`text-[10px] mt-1 text-center ${isCurrent ? 'font-semibold text-foreground' : 'text-muted-foreground'}`}>
-                    {isRejected && isCurrent ? 'Rejeitado' : step.label}
+                    {isRejected && isCurrent
+                      ? 'Rejeitado'
+                      : step.status === 'issued' && !isCardEligible
+                        ? 'Activo'
+                        : step.label}
                   </span>
                 </div>
                 {idx < STATUS_STEPS.length - 1 && (
