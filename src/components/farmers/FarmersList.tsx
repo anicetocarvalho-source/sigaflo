@@ -25,6 +25,8 @@ import { FarmerTypeIcon, getFarmerTypeLabel, getFarmerTypeColor } from './Farmer
 import { WorkflowStatusBadge } from './WorkflowStatusBadge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { QueryError } from '@/components/ui/query-state';
+import { collapseSpaces } from '@/lib/validation/primitives';
+import { SEARCH_MAX_LEN } from '@/lib/validation/search';
 
 const farmerTypes: { value: FarmerType | 'all'; label: string }[] = [
   { value: 'all', label: 'Todos os Tipos' },
