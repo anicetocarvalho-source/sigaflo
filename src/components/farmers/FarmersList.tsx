@@ -25,6 +25,8 @@ import { FarmerTypeIcon, getFarmerTypeLabel, getFarmerTypeColor } from './Farmer
 import { WorkflowStatusBadge } from './WorkflowStatusBadge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { QueryError } from '@/components/ui/query-state';
+import { collapseSpaces } from '@/lib/validation/primitives';
+import { SEARCH_MAX_LEN } from '@/lib/validation/search';
 
 const farmerTypes: { value: FarmerType | 'all'; label: string }[] = [
   { value: 'all', label: 'Todos os Tipos' },
@@ -46,10 +48,12 @@ export const FarmersList = () => {
     province_id: provinceFilter === 'all' ? undefined : provinceFilter,
   });
 
+  const normalizedSearch = collapseSpaces(searchTerm).toLowerCase();
   const filteredFarmers = farmers?.filter((farmer) =>
-    farmer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    farmer.registration_number?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    farmer.bi_nif?.toLowerCase().includes(searchTerm.toLowerCase())
+    !normalizedSearch ||
+    farmer.name.toLowerCase().includes(normalizedSearch) ||
+    farmer.registration_number?.toLowerCase().includes(normalizedSearch) ||
+    farmer.bi_nif?.toLowerCase().includes(normalizedSearch),
   );
 
   return (
@@ -61,7 +65,8 @@ export const FarmersList = () => {
             <Input
               placeholder="Pesquisar por nome, registo ou BI..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={(e) => setSearchTerm(e.target.value.slice(0, SEARCH_MAX_LEN))}
+              maxLength={SEARCH_MAX_LEN}
               className="pl-10"
             />
           </div>
