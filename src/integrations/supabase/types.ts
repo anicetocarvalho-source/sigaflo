@@ -1656,6 +1656,63 @@ export type Database = {
           },
         ]
       }
+      eligibility_alert_thresholds: {
+        Row: {
+          baseline_days: number
+          baseline_multiplier: number
+          created_at: string
+          created_by: string | null
+          farmer_type: string
+          id: string
+          is_active: boolean
+          min_absolute_count: number
+          notes: string | null
+          priority: number
+          reason_pattern: string
+          severity: string
+          target_table: string
+          updated_at: string
+          updated_by: string | null
+          window_minutes: number
+        }
+        Insert: {
+          baseline_days?: number
+          baseline_multiplier?: number
+          created_at?: string
+          created_by?: string | null
+          farmer_type: string
+          id?: string
+          is_active?: boolean
+          min_absolute_count?: number
+          notes?: string | null
+          priority?: number
+          reason_pattern?: string
+          severity?: string
+          target_table: string
+          updated_at?: string
+          updated_by?: string | null
+          window_minutes?: number
+        }
+        Update: {
+          baseline_days?: number
+          baseline_multiplier?: number
+          created_at?: string
+          created_by?: string | null
+          farmer_type?: string
+          id?: string
+          is_active?: boolean
+          min_absolute_count?: number
+          notes?: string | null
+          priority?: number
+          reason_pattern?: string
+          severity?: string
+          target_table?: string
+          updated_at?: string
+          updated_by?: string | null
+          window_minutes?: number
+        }
+        Relationships: []
+      }
       eligibility_block_log: {
         Row: {
           attempted_by: string | null
@@ -7378,6 +7435,7 @@ export type Database = {
         Returns: Record<string, unknown>[]
       }
       dblink_is_busy: { Args: { "": string }; Returns: number }
+      detect_eligibility_block_anomalies: { Args: never; Returns: number }
       get_user_municipality: { Args: { _user_id: string }; Returns: string }
       get_user_province: { Args: { _user_id: string }; Returns: string }
       has_role: {
