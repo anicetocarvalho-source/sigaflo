@@ -119,3 +119,19 @@ export function isTabAllowedForType(tab: TabValue, type: FarmerType): boolean {
   }
   return false;
 }
+
+/**
+ * Indica se a tab pode ser renderizada via deep link mesmo quando não está
+ * visível na navegação. Usado para mostrar empty states explicativos em vez
+ * de redirecionar silenciosamente.
+ */
+export function isTabDeepLinkableForType(tab: TabValue, type: FarmerType): boolean {
+  for (const g of PROFILE_GROUPS) {
+    const def = g.tabs.find((t) => t.value === tab);
+    if (def) {
+      if (!def.visibleFor || def.visibleFor.includes(type)) return true;
+      return !!def.deepLinkableFor?.includes(type);
+    }
+  }
+  return false;
+}
