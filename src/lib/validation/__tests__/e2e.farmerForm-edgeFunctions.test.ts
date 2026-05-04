@@ -185,7 +185,7 @@ describe('E2E uploads: file_integrity', () => {
 
   it('mime ausente cai para application/octet-stream (defesa em profundidade)', async () => {
     ensureSubtle();
-    const file = new File(['x'], 'noext');
+    const file = mockFile('x', 'noext', '');
     const meta = await computeFileIntegrity(file);
     expect(['application/octet-stream', '']).toContain(meta.mime === '' ? '' : meta.mime);
     // Pelo menos garante que o valor é string e o hash é válido
