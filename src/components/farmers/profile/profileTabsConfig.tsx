@@ -19,7 +19,13 @@ export interface TabDef {
   value: TabValue;
   label: string;
   icon: React.ComponentType<{ className?: string }>;
+  /** Tipos para os quais a tab aparece no menu de navegação. */
   visibleFor?: FarmerType[];
+  /**
+   * Tipos para os quais a tab é acessível via URL/deep-link mesmo quando
+   * está oculta no menu. O conteúdo deve renderizar um empty state explicativo.
+   */
+  deepLinkableFor?: FarmerType[];
 }
 
 export interface GroupDef {
