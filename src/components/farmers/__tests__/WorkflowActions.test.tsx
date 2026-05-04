@@ -133,7 +133,7 @@ describe('WorkflowActions — E2E DOM: transição approved → issued/active', 
       const dialog = screen.getByRole('dialog');
       expect(within(dialog).getByText(/Vai ser emitido o Cartão SIGAFLO/i)).toBeInTheDocument();
       expect(within(dialog).getByText(/cartão físico \(CR-80\)/i)).toBeInTheDocument();
-      expect(within(dialog).getByText(/Maria/)).toBeInTheDocument();
+      expect(within(dialog).getAllByText(/Maria/).length).toBeGreaterThan(0);
       expect(within(dialog).queryByText(/Vai ser activado o Registo/i)).not.toBeInTheDocument();
     });
 
