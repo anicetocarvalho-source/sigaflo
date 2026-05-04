@@ -168,18 +168,47 @@ export const WorkflowActions = ({ farmerId, currentStatus, farmerName, farmerTyp
         status: newStatus as any,
       });
 
-      // Log audit trail
+      // Log audit trail — enriquecido para o passo final (approved → issued/active)
+      const isFinalStep = !isRejection && selectedTransition?.to === 'issued';
+      const finalizationKind: 'card_issued' | 'registration_activated' | null = isFinalStep
+        ? (isCardEligible ? 'card_issued' : 'registration_activated')
+        : null;
+      const action = isRejection
+        ? 'workflow_reject'
+        : finalizationKind === 'card_issued'
+          ? 'workflow_card_issued'
+          : finalizationKind === 'registration_activated'
+            ? 'workflow_registration_activated'
+            : `workflow_${newStatus}`;
+
       await supabase.from('audit_log').insert({
         user_id: user?.id,
-        action: isRejection ? 'workflow_reject' : `workflow_${newStatus}`,
+        action,
         entity_type: 'farmer',
         entity_id: farmerId,
         old_values: { status: currentStatus },
-        new_values: { 
-          status: newStatus, 
-          observations: observations.trim() || null 
+        new_values: {
+          status: newStatus,
+          observations: observations.trim() || null,
+          // Detalhe da finalização (apenas no passo final)
+          ...(finalizationKind && {
+            finalization: {
+              kind: finalizationKind,
+              farmer_type: farmerType ?? null,
+              card_eligible: isCardEligible,
+              type_reason: isCardEligible
+                ? `Tipo "${farmerType ?? 'desconhecido'}" elegível para cartão SIGAFLO — emissão executada.`
+                : `Tipo "${farmerType ?? 'desconhecido'}" não elegível para cartão SIGAFLO (cooperativa/escola de campo) — apenas activação de registo.`,
+              issued_label: isCardEligible ? 'Emitir Cartão' : 'Activar Registo',
+              actor_id: user?.id ?? null,
+              actor_roles: roles ?? [],
+              farmer_name: farmerName,
+              executed_at: new Date().toISOString(),
+            },
+          }),
         },
       });
+
 
       const targetLabel =
         newStatus === 'issued' && !isCardEligible
