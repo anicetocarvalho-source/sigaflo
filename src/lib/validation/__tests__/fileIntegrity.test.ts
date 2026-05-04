@@ -1,16 +1,16 @@
 import { describe, it, expect } from 'vitest';
 import { computeFileIntegrity, sha256OfFile } from '../fileIntegrity';
 
-if (!(File.prototype as any).arrayBuffer) {
-  (File.prototype as any).arrayBuffer = function () {
-    return new Response(this).arrayBuffer();
-  };
+function blobToBuffer(blob: Blob): Promise<ArrayBuffer> {
+  return new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve(r.result as ArrayBuffer);
+    r.onerror = () => reject(r.error);
+    r.readAsArrayBuffer(blob);
+  });
 }
-if (!(Blob.prototype as any).arrayBuffer) {
-  (Blob.prototype as any).arrayBuffer = function () {
-    return new Response(this).arrayBuffer();
-  };
-}
+(File.prototype as any).arrayBuffer = function () { return blobToBuffer(this); };
+(Blob.prototype as any).arrayBuffer = function () { return blobToBuffer(this); };
 
 function fakeDigest(_algo: string, buf: ArrayBuffer): Promise<ArrayBuffer> {
   const bytes = new Uint8Array(buf);
