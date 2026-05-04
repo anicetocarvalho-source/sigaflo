@@ -30,14 +30,17 @@ import { PhotoUpload } from './PhotoUpload';
 import { DocumentUpload } from './DocumentUpload';
 import { FingerprintCapture } from './FingerprintCapture';
 import { toast } from 'sonner';
+import { optionalEmailSchema, optionalPhoneAOSchema, optionalBiSchema } from '@/lib/validation';
+import { PhoneInputAO } from '@/components/ui/phone-input-ao';
+import { EmailInput } from '@/components/ui/email-input';
 
 const farmerSchema = z.object({
   farmer_type: z.enum(['individual', 'family', 'cooperative', 'field_school', 'company']),
-  name: z.string().min(3, 'Nome deve ter pelo menos 3 caracteres').max(100, 'Máximo de 100 caracteres'),
+  name: z.string().trim().min(3, 'Nome deve ter pelo menos 3 caracteres').max(100, 'Máximo de 100 caracteres'),
   trade_name: z.string().max(100, 'Máximo de 100 caracteres').optional().nullable(),
-  bi_nif: z.string().max(20, 'Máximo de 20 caracteres').optional().nullable(),
-  phone: z.string().max(20, 'Máximo de 20 caracteres').optional().nullable(),
-  email: z.string().email('Email inválido').max(100, 'Máximo de 100 caracteres').optional().nullable().or(z.literal('')),
+  bi_nif: optionalBiSchema,
+  phone: optionalPhoneAOSchema,
+  email: optionalEmailSchema,
   province_id: z.string().uuid().optional().nullable(),
   municipality_id: z.string().uuid().optional().nullable(),
   commune_id: z.string().uuid().optional().nullable(),
@@ -355,11 +358,16 @@ export const FarmerForm = ({ farmer, onSubmit, isLoading, defaultCooperativeId, 
                   <FormField
                     control={form.control}
                     name="phone"
-                    render={({ field }) => (
+                    render={({ field, fieldState }) => (
                       <FormItem>
-                        <FormLabel>Telefone</FormLabel>
+                        <FormLabel>Telefone móvel</FormLabel>
                         <FormControl>
-                          <Input {...field} value={field.value || ''} placeholder="+244 9XX XXX XXX" />
+                          <PhoneInputAO
+                            value={field.value ?? ''}
+                            onChange={field.onChange}
+                            onBlur={field.onBlur}
+                            invalid={!!fieldState.error}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -369,11 +377,17 @@ export const FarmerForm = ({ farmer, onSubmit, isLoading, defaultCooperativeId, 
                   <FormField
                     control={form.control}
                     name="email"
-                    render={({ field }) => (
+                    render={({ field, fieldState }) => (
                       <FormItem>
                         <FormLabel>Email</FormLabel>
                         <FormControl>
-                          <Input {...field} value={field.value || ''} type="email" placeholder="email@exemplo.com" />
+                          <EmailInput
+                            value={field.value ?? ''}
+                            onChange={field.onChange}
+                            onBlur={field.onBlur}
+                            placeholder="nome@exemplo.com"
+                            invalid={!!fieldState.error}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
