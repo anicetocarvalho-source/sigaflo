@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { validateUserPayload } from "../_shared/validation.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -70,20 +71,20 @@ serve(async (req) => {
       );
     }
 
-    const body: CreateUserRequest = await req.json();
-
-    // Validate required fields
-    if (!body.email || !body.password || !body.full_name) {
+    const rawBody = await req.json();
+    const validated = validateUserPayload(rawBody, { requirePassword: true });
+    if (!validated.ok) {
       return new Response(
-        JSON.stringify({ error: 'Email, password and full_name are required' }),
+        JSON.stringify({ error: 'Dados inválidos.', fieldErrors: validated.fieldErrors }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
+    const body = validated.data;
 
     // Create the user
     const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
       email: body.email,
-      password: body.password,
+      password: body.password!,
       email_confirm: true,
       user_metadata: {
         full_name: body.full_name,
