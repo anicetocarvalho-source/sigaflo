@@ -1,10 +1,19 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { computeFileIntegrity, sha256OfFile } from '../fileIntegrity';
 
-// Polyfill crypto.subtle.digest com hash determinística simples (FNV-1a hex 64 chars).
+if (!(File.prototype as any).arrayBuffer) {
+  (File.prototype as any).arrayBuffer = function () {
+    return new Response(this).arrayBuffer();
+  };
+}
+if (!(Blob.prototype as any).arrayBuffer) {
+  (Blob.prototype as any).arrayBuffer = function () {
+    return new Response(this).arrayBuffer();
+  };
+}
+
 function fakeDigest(_algo: string, buf: ArrayBuffer): Promise<ArrayBuffer> {
   const bytes = new Uint8Array(buf);
-  // gera 32 bytes determinísticos a partir do conteúdo
   const out = new Uint8Array(32);
   let h = 2166136261;
   for (let i = 0; i < bytes.length; i++) {
@@ -17,13 +26,9 @@ function fakeDigest(_algo: string, buf: ArrayBuffer): Promise<ArrayBuffer> {
   }
   return Promise.resolve(out.buffer);
 }
-
-if (!('crypto' in globalThis) || !globalThis.crypto?.subtle) {
+if (!globalThis.crypto?.subtle?.digest) {
   // @ts-expect-error test polyfill
-  globalThis.crypto = { subtle: { digest: fakeDigest } };
-} else if (!globalThis.crypto.subtle?.digest) {
-  // @ts-expect-error test polyfill
-  globalThis.crypto.subtle = { digest: fakeDigest };
+  globalThis.crypto = { ...(globalThis.crypto ?? {}), subtle: { digest: fakeDigest } };
 }
 
 describe('fileIntegrity', () => {
