@@ -16,6 +16,39 @@ export default defineConfig({
       json: "test-results/vitest-results.json",
       junit: "test-results/vitest-junit.xml",
     },
+    coverage: {
+      provider: "v8",
+      reporter: ["text", "text-summary", "html", "json-summary", "lcov"],
+      reportsDirectory: "./coverage",
+      include: [
+        "src/components/farmers/WorkflowActions.tsx",
+        "src/lib/workflowLabels.ts",
+      ],
+      // Limiar global baixo (cobre apenas os ficheiros incluídos acima).
+      // Se algum dos ficheiros críticos do workflow descer abaixo destes
+      // valores, a tarefa de CI falha.
+      thresholds: {
+        lines: 85,
+        statements: 85,
+        functions: 80,
+        branches: 80,
+        // Limiares mais exigentes para os ficheiros críticos do workflow
+        // Aprovação → Emissão/Activação. Mantêm-se altos porque toda a
+        // matriz de farmerType + RBAC + estados inválidos está coberta.
+        "src/components/farmers/WorkflowActions.tsx": {
+          lines: 90,
+          statements: 90,
+          functions: 90,
+          branches: 85,
+        },
+        "src/lib/workflowLabels.ts": {
+          lines: 100,
+          statements: 100,
+          functions: 100,
+          branches: 100,
+        },
+      },
+    },
   },
   resolve: {
     alias: { "@": path.resolve(__dirname, "./src") },
