@@ -23,12 +23,12 @@ export function FarmerSearch({ onSelect }: FarmerSearchProps) {
   const [repRelationship, setRepRelationship] = useState('');
 
   const search = async () => {
-    const parsed = validate(searchTermSchema, query);
-    if (!parsed.ok) {
-      toast.error(parsed.error);
+    const parsed = searchTermSchema.safeParse(query);
+    if (!parsed.success) {
+      toast.error(parsed.error.issues[0]?.message ?? 'Termo inválido');
       return;
     }
-    const safe = prepareSearchTerm(parsed.value);
+    const safe = prepareSearchTerm(parsed.data);
     if (!safe) {
       toast.error('Termo de pesquisa inválido');
       return;
