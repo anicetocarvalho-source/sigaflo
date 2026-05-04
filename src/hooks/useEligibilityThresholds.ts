@@ -111,7 +111,7 @@ export function useRunAnomalyDetection() {
       );
     },
     onError: (error) => {
-      toast.error(getCrudErrorMessage('read', 'anomalias', error));
+      toast.error(getCrudErrorMessage('fetch', 'anomalias', error));
     },
   });
 }
