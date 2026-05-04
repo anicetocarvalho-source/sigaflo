@@ -23,13 +23,22 @@ export function FarmerSearch({ onSelect }: FarmerSearchProps) {
   const [repRelationship, setRepRelationship] = useState('');
 
   const search = async () => {
-    if (!query.trim()) return;
+    const parsed = validate(searchTermSchema, query);
+    if (!parsed.ok) {
+      toast.error(parsed.error);
+      return;
+    }
+    const safe = prepareSearchTerm(parsed.value);
+    if (!safe) {
+      toast.error('Termo de pesquisa inválido');
+      return;
+    }
     setLoading(true);
     try {
       const { data, error } = await supabase
         .from('farmers')
         .select('id, name, registration_number, bi_number, phone, status, province_id, provinces(name)')
-        .or(`name.ilike.%${query}%,bi_number.ilike.%${query}%,registration_number.ilike.%${query}%`)
+        .or(`name.ilike.%${safe}%,bi_number.ilike.%${safe}%,registration_number.ilike.%${safe}%`)
         .limit(10);
       if (error) throw error;
       setResults(data || []);
