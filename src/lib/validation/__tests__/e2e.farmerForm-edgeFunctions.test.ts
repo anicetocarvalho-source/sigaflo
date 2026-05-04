@@ -22,7 +22,7 @@ import {
   optionalBiSchema,
 } from '@/lib/validation/schemas';
 import { computeFileIntegrity, sha256OfFile } from '@/lib/validation/fileIntegrity';
-import { validateUserPayload } from '../../../supabase/functions/_shared/validation';
+import { validateUserPayload } from '../../../../supabase/functions/_shared/validation.ts';
 
 // -----------------------------------------------------------------------------
 // Helpers
