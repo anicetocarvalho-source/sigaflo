@@ -304,7 +304,11 @@ export const WorkflowActions = ({ farmerId, currentStatus, farmerName, farmerTyp
               </Badge>
               <ArrowRight className="h-4 w-4 text-muted-foreground" />
               <Badge className={isRejection ? 'bg-destructive text-destructive-foreground' : ''}>
-                {isRejection ? 'Rejeitado' : STATUS_STEPS.find(s => s.status === selectedTransition?.to)?.label}
+                {isRejection
+                  ? 'Rejeitado'
+                  : selectedTransition?.to === 'issued' && !isCardEligible
+                    ? 'Activo'
+                    : STATUS_STEPS.find(s => s.status === selectedTransition?.to)?.label}
               </Badge>
             </div>
 
