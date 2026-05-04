@@ -138,7 +138,7 @@ describe('E2E paridade FarmerForm ⇄ update-user (password opcional)', () => {
     const { password, ...noPwd } = buildFormPayload({ email: 'x' });
     const r = validateUserPayload(noPwd);
     expect(r.ok).toBe(false);
-    if (!r.ok) expect(r.fieldErrors.email).toBeDefined();
+    if (!r.ok) expect((r as any).fieldErrors.email).toBeDefined();
   });
 });
 
@@ -147,13 +147,11 @@ describe('E2E paridade FarmerForm ⇄ update-user (password opcional)', () => {
 // -----------------------------------------------------------------------------
 
 describe('E2E uploads: file_integrity', () => {
-  // Stub crypto.subtle.digest com SHA-256 determinístico via @noble (já no bundle)
-  // — em JSDOM, crypto.subtle existe; caso não, mockamos.
+  // Em JSDOM crypto.subtle existe; caso não, injectamos webcrypto do Node.
   const ensureSubtle = () => {
     if (typeof crypto === 'undefined' || !crypto.subtle) {
       const mod = require('node:crypto');
-      // @ts-expect-error injectar
-      globalThis.crypto = mod.webcrypto;
+      (globalThis as any).crypto = mod.webcrypto;
     }
   };
 
