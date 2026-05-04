@@ -177,10 +177,14 @@ export const WorkflowActions = ({ farmerId, currentStatus, farmerName, farmerTyp
         },
       });
 
+      const targetLabel =
+        newStatus === 'issued' && !isCardEligible
+          ? 'Activo'
+          : STATUS_STEPS.find(s => s.status === newStatus)?.label || newStatus;
       toast.success(
         isRejection
           ? `Registo de "${farmerName}" foi rejeitado`
-          : `Registo de "${farmerName}" transitou para ${STATUS_STEPS.find(s => s.status === newStatus)?.label || newStatus}`
+          : `Registo de "${farmerName}" transitou para ${targetLabel}`
       );
       setDialogOpen(false);
     } catch (error) {
