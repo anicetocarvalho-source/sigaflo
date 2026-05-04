@@ -18,10 +18,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
 import { Camera, Save, Loader2, User, Mail, Phone, Briefcase, Building2, MapPin, Shield } from 'lucide-react';
+import { optionalPhoneAOSchema } from '@/lib/validation';
+import { PhoneInputAO } from '@/components/ui/phone-input-ao';
 
 const profileSchema = z.object({
-  full_name: z.string().min(2, 'Nome completo é obrigatório').max(100),
-  phone: z.string().max(20).optional().nullable(),
+  full_name: z.string().trim().min(2, 'Nome completo é obrigatório').max(100),
+  phone: optionalPhoneAOSchema,
   position: z.string().max(100).optional().nullable(),
   department: z.string().max(100).optional().nullable(),
   province_id: z.string().optional().nullable(),
@@ -260,14 +262,15 @@ const ProfilePage = () => {
                 <FormField
                   control={form.control}
                   name="phone"
-                  render={({ field }) => (
+                  render={({ field, fieldState }) => (
                     <FormItem>
-                      <FormLabel>Telefone</FormLabel>
+                      <FormLabel>Telefone móvel</FormLabel>
                       <FormControl>
-                        <Input 
-                          placeholder="+244 923 456 789" 
-                          {...field} 
-                          value={field.value || ''} 
+                        <PhoneInputAO
+                          value={field.value ?? ''}
+                          onChange={field.onChange}
+                          onBlur={field.onBlur}
+                          invalid={!!fieldState.error}
                         />
                       </FormControl>
                       <FormMessage />

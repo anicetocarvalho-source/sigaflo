@@ -13,6 +13,9 @@ import {
 } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { optionalEmailSchema, optionalPhoneAOSchema } from '@/lib/validation';
+import { PhoneInputAO } from '@/components/ui/phone-input-ao';
+import { EmailInput } from '@/components/ui/email-input';
 import { Building2, FileText, Users, MapPin, Leaf, Briefcase } from 'lucide-react';
 import { useProvinces, useMunicipalities, useCommunes } from '@/hooks/useFarmers';
 import { supabase } from '@/integrations/supabase/client';
@@ -27,8 +30,8 @@ const schema = z.object({
   name: z.string().min(3, 'Razão social obrigatória').max(150),
   trade_name: z.string().max(100).optional().nullable(),
   bi_nif: z.string().max(20).optional().nullable(),
-  phone: z.string().max(20).optional().nullable(),
-  email: z.string().email('Email inválido').max(100).optional().nullable().or(z.literal('')),
+  phone: optionalPhoneAOSchema,
+  email: optionalEmailSchema,
   province_id: z.string().uuid().optional().nullable(),
   municipality_id: z.string().uuid().optional().nullable(),
   commune_id: z.string().uuid().optional().nullable(),
@@ -45,7 +48,7 @@ const schema = z.object({
   license_url: z.string().optional().nullable(),
   statutes_url: z.string().optional().nullable(),
   president_name: z.string().max(100).optional().nullable(),
-  president_phone: z.string().max(20).optional().nullable(),
+  president_phone: optionalPhoneAOSchema,
   secretary_name: z.string().max(100).optional().nullable(),
   treasurer_name: z.string().max(100).optional().nullable(),
   degree: z.enum(['first_degree', 'second_degree']).optional().nullable(),
@@ -172,11 +175,15 @@ export const CooperativeForm = ({ farmer, details, onSubmit, isLoading }: Props)
                 )} />
               </div>
               <div className="grid gap-4 md:grid-cols-3">
-                <FormField control={form.control} name="phone" render={({ field }) => (
-                  <FormItem><FormLabel>Telefone</FormLabel><FormControl><Input {...field} value={field.value || ''} placeholder="+244 9XX XXX XXX" /></FormControl><FormMessage /></FormItem>
+                <FormField control={form.control} name="phone" render={({ field, fieldState }) => (
+                  <FormItem><FormLabel>Telefone móvel</FormLabel><FormControl>
+                    <PhoneInputAO value={field.value ?? ''} onChange={field.onChange} onBlur={field.onBlur} invalid={!!fieldState.error} />
+                  </FormControl><FormMessage /></FormItem>
                 )} />
-                <FormField control={form.control} name="email" render={({ field }) => (
-                  <FormItem><FormLabel>Email</FormLabel><FormControl><Input type="email" {...field} value={field.value || ''} /></FormControl><FormMessage /></FormItem>
+                <FormField control={form.control} name="email" render={({ field, fieldState }) => (
+                  <FormItem><FormLabel>Email</FormLabel><FormControl>
+                    <EmailInput value={field.value ?? ''} onChange={field.onChange} onBlur={field.onBlur} placeholder="nome@exemplo.com" invalid={!!fieldState.error} />
+                  </FormControl><FormMessage /></FormItem>
                 )} />
                 <FormField control={form.control} name="bi_nif" render={({ field }) => (
                   <FormItem><FormLabel>BI/NIF (contacto)</FormLabel><FormControl><Input {...field} value={field.value || ''} /></FormControl><FormMessage /></FormItem>
@@ -219,8 +226,10 @@ export const CooperativeForm = ({ farmer, details, onSubmit, isLoading }: Props)
                 <FormField control={form.control} name="president_name" render={({ field }) => (
                   <FormItem><FormLabel>Presidente</FormLabel><FormControl><Input {...field} value={field.value || ''} /></FormControl><FormMessage /></FormItem>
                 )} />
-                <FormField control={form.control} name="president_phone" render={({ field }) => (
-                  <FormItem><FormLabel>Telefone do Presidente</FormLabel><FormControl><Input {...field} value={field.value || ''} /></FormControl><FormMessage /></FormItem>
+                <FormField control={form.control} name="president_phone" render={({ field, fieldState }) => (
+                  <FormItem><FormLabel>Telefone do Presidente</FormLabel><FormControl>
+                    <PhoneInputAO value={field.value ?? ''} onChange={field.onChange} onBlur={field.onBlur} invalid={!!fieldState.error} />
+                  </FormControl><FormMessage /></FormItem>
                 )} />
                 <FormField control={form.control} name="secretary_name" render={({ field }) => (
                   <FormItem><FormLabel>Secretário</FormLabel><FormControl><Input {...field} value={field.value || ''} /></FormControl><FormMessage /></FormItem>

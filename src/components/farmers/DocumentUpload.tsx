@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Upload, X, FileText, Eye } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { computeFileIntegrity } from '@/lib/validation';
 
 const ALLOWED_TYPES = [
   'image/jpeg', 'image/png', 'image/webp', 'image/gif',
@@ -46,6 +47,9 @@ export const DocumentUpload = ({
   const uploadFile = async (file: File) => {
     setIsUploading(true);
     try {
+      // 1) Hash de integridade ANTES do upload (ALCOA+ / ISO 27001)
+      const integrity = await computeFileIntegrity(file);
+
       const fileExt = file.name.split('.').pop();
       const fileName = `${crypto.randomUUID()}.${fileExt}`;
       const filePath = `documents/${fileName}`;
@@ -59,6 +63,19 @@ export const DocumentUpload = ({
       const { data } = supabase.storage
         .from('farmer-documents')
         .getPublicUrl(filePath);
+
+      // 2) Regista metadados de integridade (best-effort)
+      const { data: userData } = await supabase.auth.getUser();
+      if (userData?.user?.id) {
+        await supabase.from('file_integrity').insert({
+          bucket: 'farmer-documents',
+          path: filePath,
+          sha256: integrity.sha256,
+          mime: integrity.mime,
+          size_bytes: integrity.size_bytes,
+          uploaded_by: userData.user.id,
+        });
+      }
 
       onChange(data.publicUrl);
       toast.success('Documento carregado com sucesso');

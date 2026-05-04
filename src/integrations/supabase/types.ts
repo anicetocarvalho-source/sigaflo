@@ -2761,6 +2761,45 @@ export type Database = {
           },
         ]
       }
+      file_integrity: {
+        Row: {
+          bucket: string
+          entity_id: string | null
+          entity_type: string | null
+          id: string
+          mime: string
+          path: string
+          sha256: string
+          size_bytes: number
+          uploaded_at: string
+          uploaded_by: string | null
+        }
+        Insert: {
+          bucket: string
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          mime: string
+          path: string
+          sha256: string
+          size_bytes: number
+          uploaded_at?: string
+          uploaded_by?: string | null
+        }
+        Update: {
+          bucket?: string
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          mime?: string
+          path?: string
+          sha256?: string
+          size_bytes?: number
+          uploaded_at?: string
+          uploaded_by?: string | null
+        }
+        Relationships: []
+      }
       forest_checkpoint_logs: {
         Row: {
           arrival_at: string

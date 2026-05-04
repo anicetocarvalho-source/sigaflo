@@ -13,6 +13,9 @@ import {
 } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { optionalEmailSchema, optionalPhoneAOSchema } from '@/lib/validation';
+import { PhoneInputAO } from '@/components/ui/phone-input-ao';
+import { EmailInput } from '@/components/ui/email-input';
 import { GraduationCap, Users, Briefcase, MapPin, Sprout, BookOpen } from 'lucide-react';
 import { useProvinces, useMunicipalities, useCommunes } from '@/hooks/useFarmers';
 import { MemberSelector } from './MemberSelector';
@@ -22,8 +25,8 @@ import type { FieldSchoolDetails } from '@/hooks/useFieldSchool';
 const schema = z.object({
   name: z.string().min(3, 'Nome obrigatório').max(150),
   trade_name: z.string().max(100).optional().nullable(),
-  phone: z.string().max(20).optional().nullable(),
-  email: z.string().email('Email inválido').max(100).optional().nullable().or(z.literal('')),
+  phone: optionalPhoneAOSchema,
+  email: optionalEmailSchema,
   province_id: z.string().uuid().optional().nullable(),
   municipality_id: z.string().uuid().optional().nullable(),
   commune_id: z.string().uuid().optional().nullable(),
@@ -155,11 +158,15 @@ export const FieldSchoolForm = ({ farmer, details, onSubmit, isLoading }: Props)
                 )} />
               </div>
               <div className="grid gap-4 md:grid-cols-3">
-                <FormField control={form.control} name="phone" render={({ field }) => (
-                  <FormItem><FormLabel>Contacto</FormLabel><FormControl><Input {...field} value={field.value || ''} /></FormControl><FormMessage /></FormItem>
+                <FormField control={form.control} name="phone" render={({ field, fieldState }) => (
+                  <FormItem><FormLabel>Telefone móvel</FormLabel><FormControl>
+                    <PhoneInputAO value={field.value ?? ''} onChange={field.onChange} onBlur={field.onBlur} invalid={!!fieldState.error} />
+                  </FormControl><FormMessage /></FormItem>
                 )} />
-                <FormField control={form.control} name="email" render={({ field }) => (
-                  <FormItem><FormLabel>Email</FormLabel><FormControl><Input type="email" {...field} value={field.value || ''} /></FormControl><FormMessage /></FormItem>
+                <FormField control={form.control} name="email" render={({ field, fieldState }) => (
+                  <FormItem><FormLabel>Email</FormLabel><FormControl>
+                    <EmailInput value={field.value ?? ''} onChange={field.onChange} onBlur={field.onBlur} placeholder="nome@exemplo.com" invalid={!!fieldState.error} />
+                  </FormControl><FormMessage /></FormItem>
                 )} />
                 <FormField control={form.control} name="focus_crop" render={({ field }) => (
                   <FormItem><FormLabel>Cultura Focal</FormLabel><FormControl><Input {...field} value={field.value || ''} placeholder="Ex.: Milho" /></FormControl><FormMessage /></FormItem>
