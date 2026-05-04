@@ -25,6 +25,12 @@ import { useAuth, type UserRole } from '@/contexts/AuthContext';
 import { useUpdateFarmer, type WorkflowStatus } from '@/hooks/useFarmers';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import {
+  CARD_ELIGIBLE_TYPES,
+  getFinalTransitionLabel,
+  getFinalTransitionDescription,
+  getIssuedStateLabel,
+} from '@/lib/workflowLabels';
 
 interface WorkflowTransition {
   from: WorkflowStatus;
