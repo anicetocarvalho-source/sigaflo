@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Search, Users, UserPlus } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { prepareSearchTerm, validate, searchTermSchema } from '@/lib/validation/search';
+import { prepareSearchTerm, searchTermSchema } from '@/lib/validation/search';
 
 interface FarmerSearchProps {
   onSelect: (farmer: any, representative?: { name: string; bi: string; relationship: string }) => void;
