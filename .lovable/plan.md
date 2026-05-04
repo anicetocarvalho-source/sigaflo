@@ -1,48 +1,96 @@
 ## Objetivo
 
-Substituir o brasão SVG inline (atualmente desenhado em `src/lib/cardTemplate.ts` como `brasaoSvg`) pela insígnia oficial da República de Angola fornecida (`user-uploads://insignia.png`), no canto superior esquerdo do Cartão do Agricultor (frente).
+Cooperativas e Escolas de Campo (ECA) estão a herdar funcionalidades pensadas para o agricultor individual (cartão, IPN, AgroPay, POS, certificados de produção, representantes legais). Vamos definir explicitamente o conjunto de tabs por tipo de entidade e bloquear no backend o que não faz sentido.
 
-## Passos
+---
 
-1. **Copiar o asset para o projeto**
-   - `code--copy user-uploads://insignia.png` → `src/assets/insignia-angola.png`
-   - Mantém o ficheiro versionado e otimizável pelo bundler.
+## 1. Reorganizar `profileTabsConfig.tsx` por tipo
 
-2. **Disponibilizar a insígnia para os 3 renderizadores do cartão**
-   O cartão é renderizado em três sítios e todos têm de ficar visualmente idênticos:
-   - `src/lib/cardTemplate.ts` — template HTML usado na impressão/PDF de cartão único.
-   - `src/components/farmers/FarmerCard.tsx` — pré-visualização React no perfil do agricultor (separador "Cartão").
-   - `src/lib/cardBatchExport.ts` — geração em lote via jsPDF.
+Criar mapeamento explícito `tabsByType` em vez de usar `visibleFor` campo a campo. Resultado:
 
-3. **Alterações em `src/lib/cardTemplate.ts`**
-   - Remover a constante `brasaoSvg` (SVG estilizado atual).
-   - Substituir, em `renderCardFrontHtml`, o `<div class="brasao">${brasaoSvg}</div>` por `<div class="brasao"><img src="${insigniaUrl}" alt="Brasão da República de Angola" /></div>`.
-   - Aceitar `insigniaUrl` via parâmetro do contexto (`CardTemplateCtx`) ou import direto do asset (preferencial: import ESM para o Vite resolver o hash do ficheiro).
-   - Ajustar CSS `.sigaflo-card.front .header .gov .brasao img { width:100%; height:100%; object-fit:contain; }` para a imagem ocupar bem o quadrado de 7×7 mm sem distorção.
+**Agricultor individual / família / empresa** (mantém actual):
+Identificação, Agregado (só individual), Documentos, Cartão, Biometria (indiv/família), Parcelas, Campanhas, Produção, Mecanização, AgroPay, Compras, Incentivos, Scores, Certificados, Ocorrências, NDVI, Previsão, Representantes.
 
-4. **Alterações em `src/components/farmers/FarmerCard.tsx`**
-   - Importar `insignia` de `@/assets/insignia-angola.png`.
-   - Trocar o SVG inline do brasão (no header da face frontal) por `<img src={insignia} alt="Brasão de Angola" className="w-full h-full object-contain" />`.
+**Cooperativa** (novo conjunto):
+- Identificação · Detalhes da Cooperativa · Documentos · Membros
+- Parcelas (comunitárias) · Campanhas (agregadas) · Produção (agregada) · Mecanização
+- Incentivos · Ocorrências · NDVI/Alertas
 
-5. **Alterações em `src/lib/cardBatchExport.ts`**
-   - Carregar a insígnia como dataURL (via `fetch(insigniaUrl).then(r => r.blob())` ou import + `new Image()`), e desenhá-la com `pdf.addImage(...)` no canto superior esquerdo (mesma posição/tamanho que o SVG anterior).
-   - Garantir que a imagem é pré-carregada antes do `addImage` para não falhar em batch.
+Removidos: Cartão, Biometria, Agregado, AgroPay, Compras POS, Scores IPN, Certificados de produção, Representantes legais, Previsão individual.
 
-6. **QA visual obrigatório**
-   - Abrir o perfil do agricultor → separador "Cartão" e confirmar a nova insígnia na frente.
-   - Abrir "Pré-visualizar para impressão" e validar que a frente mostra a insígnia (sem distorção, dentro do safe area).
-   - Gerar 1 PDF único e 1 PDF em lote (2 cartões) e inspecionar a primeira página de cada via screenshot.
-   - Verificar verso intacto (não deve mudar).
+**Escola de Campo (ECA)** — apenas pedagógico:
+- Identificação · Detalhes da ECA · Documentos · Membros (alunos) · Ocorrências
 
-## Fora de âmbito
+Removidos: tudo relacionado a financeiro, produção, parcelas, cartão, biometria.
 
-- Layout do resto do header (logo SIGAFLO ao centro, mapa+tag à direita) permanece igual.
-- Verso do cartão não muda.
-- Sem alterações de schema, hooks ou fluxos de dados.
+## 2. Limpar `FarmerProfileComplete.tsx`
 
-## Ficheiros previstos
+- Esconder o bloco "Workflow Actions" e botões "Gerar Certificado" / "Gerar Dossiê Financeiro" quando tipo for ECA.
+- Não chamar hooks de IPN/CreditInsurance/AgroPay quando o tipo não os usa (passar `enabled` correctamente para evitar queries desnecessárias).
+- Ajustar `QuickStats` para não mostrar credit score / incentivos em ECA.
 
-- **new** `src/assets/insignia-angola.png` (cópia do upload)
-- **edit** `src/lib/cardTemplate.ts` (remover SVG inline, usar `<img>`, ajustar CSS)
-- **edit** `src/components/farmers/FarmerCard.tsx` (substituir SVG pela `<img>`)
-- **edit** `src/lib/cardBatchExport.ts` (desenhar PNG no jsPDF)
+## 3. Bloquear emissão de cartão e wallet na UI
+
+- `FarmerCard.tsx` / `CardEligibilityPanel`: se `farmer_type IN ('cooperative','field_school')` mostrar estado vazio com explicação ("Cartão SIGAFLO destina-se a produtores individuais e famílias").
+- `useGenerateCard` / `useActiveFarmerCard`: rejeitar antes da chamada se tipo inválido.
+- `CardsManagementPage` já filtra coop/ECA — adicionar mesma exclusão em `useCardStats`.
+- `AgroPay`/Wallet: idem, ocultar criação para ECA. Coop fica fora desta fase (sem AgroPay próprio).
+
+## 4. Bloqueio no backend (migração SQL)
+
+Adicionar triggers `BEFORE INSERT` que rejeitam:
+
+- `farmer_cards` quando o `farmer_id` referenciar tipo `cooperative` ou `field_school`.
+- `farmer_wallets` (idem) — ECA bloqueada; coop opcionalmente bloqueada nesta fase.
+
+Função de validação reutilizável `public.assert_farmer_eligible_for_card(_farmer_id uuid)` com `SET search_path = public`. Mensagem em português via `RAISE EXCEPTION`.
+
+Não apagar registos existentes; apenas impedir novos. Marcar cartões existentes de coop/ECA como `revogado` com motivo "tipo de entidade não elegível" via script de dados separado (a confirmar antes de correr).
+
+## 5. Membros: rota e secção
+
+A aba "Membros" em coop/ECA já existe (`members`). Garantir que:
+- Em coop: lista cooperados + total/área agregada e link para adicionar.
+- Em ECA: lista alunos/produtores em formação, sem botões financeiros.
+
+## 6. Testes
+
+- Snapshot/render test em `FarmerProfileComplete` para cada um dos 5 tipos confirmando o conjunto de tabs visível.
+- Teste de migração: insert em `farmer_cards` com farmer cooperativo deve falhar.
+
+## 7. Memória do projeto
+
+Atualizar `mem://features/farmer-id-card-module` e adicionar nova memória `mem://logic/entity-type-feature-matrix` com a matriz de funcionalidades por tipo, para evitar regressões.
+
+---
+
+## Detalhes técnicos
+
+**Migração SQL (resumo):**
+```sql
+create or replace function public.assert_farmer_eligible_for_card(_farmer_id uuid)
+returns void language plpgsql security definer set search_path = public as $$
+declare v_type farmer_type;
+begin
+  select farmer_type into v_type from public.farmers where id = _farmer_id;
+  if v_type in ('cooperative','field_school') then
+    raise exception 'Cooperativas e Escolas de Campo não são elegíveis para cartão SIGAFLO';
+  end if;
+end$$;
+
+create trigger trg_card_eligibility before insert on public.farmer_cards
+for each row execute function public.tg_assert_card_eligibility();
+```
+
+**Ficheiros a tocar:**
+- `src/components/farmers/profile/profileTabsConfig.tsx` (reescrever)
+- `src/components/farmers/FarmerProfileComplete.tsx` (gating + hooks condicionais)
+- `src/components/farmers/profile/QuickStats.tsx`
+- `src/components/farmers/FarmerCard.tsx`, `CardEligibilityPanel.tsx`, `CardActionsMenu.tsx`
+- `src/hooks/useFarmerCards.ts` (guardas client-side)
+- nova migração Supabase
+- testes em `src/components/farmers/__tests__/`
+
+## Fora do âmbito
+- Redesenho visual dos cards de coop/ECA.
+- Migração de dados históricos (cartões já emitidos a coop/ECA) — proposto em script separado para aprovação.
