@@ -19,7 +19,10 @@ import {
   FileCheck2,
   Loader2,
   ArrowRight,
-  Clock
+  Clock,
+  CreditCard,
+  PowerCircle,
+  Info,
 } from 'lucide-react';
 import { useAuth, type UserRole } from '@/contexts/AuthContext';
 import { useUpdateFarmer, type WorkflowStatus } from '@/hooks/useFarmers';
