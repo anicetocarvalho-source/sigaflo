@@ -172,8 +172,8 @@ describe('WorkflowActions — RBAC frontend', () => {
     );
   });
 
-  describe('Papéis não-administrativos', () => {
-    it.each(['farmer', 'supplier', 'me_analyst'] as UserRole[])(
+  describe('Papéis sem permissão de workflow', () => {
+    it.each(['private_entity', 'viewer'] as UserRole[])(
       '%s: nunca vê acções de workflow em qualquer estado',
       (role) => {
         currentRoles = [role];
