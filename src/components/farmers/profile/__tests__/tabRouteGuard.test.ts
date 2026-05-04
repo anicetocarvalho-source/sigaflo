@@ -4,18 +4,14 @@ import {
   getVisibleTabs,
   findGroupForTab,
   isTabAllowedForType,
+  isTabDeepLinkableForType,
   type FarmerType,
   type TabValue,
 } from '../profileTabsConfig';
 
-/**
- * Reproduz a lógica de auto-ajuste em FarmerProfileComplete (useEffect que reage
- * a farmer_type / URL ?tab=...). Quando o tab pedido via URL não é permitido para
- * o tipo de entidade, o utilizador é redirecionado para o primeiro tab visível do
- * mesmo grupo, ou para o primeiro tab do primeiro grupo, ou para 'identification'.
- */
 function resolveTabForType(requestedTab: TabValue, type: FarmerType): TabValue {
-  if (isTabAllowedForType(requestedTab, type)) return requestedTab;
+  // Tabs deep-linkable (ex.: 'card' para coop/ECA com empty state) são preservadas.
+  if (isTabDeepLinkableForType(requestedTab, type)) return requestedTab;
   const groupKey = findGroupForTab(requestedTab);
   const group = PROFILE_GROUPS.find((g) => g.key === groupKey)!;
   const visibleInGroup = getVisibleTabs(group, type);
@@ -28,10 +24,10 @@ function resolveTabForType(requestedTab: TabValue, type: FarmerType): TabValue {
 
 describe('Guarda de rota para tabs proibidos por tipo de entidade', () => {
   describe('Cooperativa', () => {
-    it('redireciona /perfil?tab=card para um tab permitido (não card/biometria)', () => {
-      const resolved = resolveTabForType('card', 'cooperative');
-      expect(resolved).not.toBe('card');
-      expect(isTabAllowedForType(resolved, 'cooperative')).toBe(true);
+    it('preserva /perfil?tab=card (deep-linkable, renderiza empty state)', () => {
+      expect(resolveTabForType('card', 'cooperative')).toBe('card');
+      expect(isTabDeepLinkableForType('card', 'cooperative')).toBe(true);
+      expect(isTabAllowedForType('card', 'cooperative')).toBe(false);
     });
 
     it('redireciona tab=biometry para tab permitido', () => {
