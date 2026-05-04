@@ -124,10 +124,17 @@ export const WorkflowActions = ({ farmerId, currentStatus, farmerName, farmerTyp
   const [observations, setObservations] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
 
-  // Find available forward transition
-  const availableTransition = WORKFLOW_TRANSITIONS.find(
-    t => t.from === currentStatus && hasAnyRole(t.requiredRoles)
-  );
+  // Find available forward transition (clonada para ajustar label/description ao tipo)
+  const availableTransition = (() => {
+    const base = WORKFLOW_TRANSITIONS.find(
+      t => t.from === currentStatus && hasAnyRole(t.requiredRoles)
+    );
+    if (!base) return undefined;
+    if (base.from === 'approved' && base.to === 'issued') {
+      return { ...base, label: finalLabel, description: finalDescription };
+    }
+    return base;
+  })();
 
   // Check if rejection is available
   const canReject = REJECTION_TRANSITIONS.some(
