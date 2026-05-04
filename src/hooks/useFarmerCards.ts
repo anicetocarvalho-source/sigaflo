@@ -183,7 +183,7 @@ export const useCardStats = () => {
       const { data, error } = await supabase
         .from('farmer_cards' as any)
         .select('card_status, farmer_id, farmers!inner(farmer_type, province_id, provinces(name))')
-        .in('farmers.farmer_type', CARD_ELIGIBLE_TYPES as unknown as string[]);
+        .in('farmers.farmer_type', [...CARD_ELIGIBLE_TYPES] as any);
       if (error) throw error;
       const rows = (data ?? []) as any[];
       const stats = {
