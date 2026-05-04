@@ -88,7 +88,7 @@ describe('E2E paridade FarmerForm ⇄ create-user', () => {
     const result = validateUserPayload(raw, { requirePassword: true });
     expect(result.ok).toBe(false);
     if (result.ok) return;
-    expect(Object.keys(result.fieldErrors)).toContain(expectedField);
+    expect(Object.keys((result as any).fieldErrors)).toContain(expectedField);
 
     // Frontend deve concordar (lança no schema correspondente)
     if (expectedField === 'email') {
