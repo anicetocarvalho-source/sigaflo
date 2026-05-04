@@ -1656,6 +1656,39 @@ export type Database = {
           },
         ]
       }
+      eligibility_block_log: {
+        Row: {
+          attempted_by: string | null
+          attempted_payload: Json | null
+          created_at: string
+          farmer_id: string | null
+          farmer_type: Database["public"]["Enums"]["farmer_type"] | null
+          id: string
+          reason: string
+          target_table: string
+        }
+        Insert: {
+          attempted_by?: string | null
+          attempted_payload?: Json | null
+          created_at?: string
+          farmer_id?: string | null
+          farmer_type?: Database["public"]["Enums"]["farmer_type"] | null
+          id?: string
+          reason: string
+          target_table: string
+        }
+        Update: {
+          attempted_by?: string | null
+          attempted_payload?: Json | null
+          created_at?: string
+          farmer_id?: string | null
+          farmer_type?: Database["public"]["Enums"]["farmer_type"] | null
+          id?: string
+          reason?: string
+          target_table?: string
+        }
+        Relationships: []
+      }
       eligibility_rules: {
         Row: {
           created_at: string
@@ -7311,6 +7344,40 @@ export type Database = {
         }
         Returns: boolean
       }
+      dblink: { Args: { "": string }; Returns: Record<string, unknown>[] }
+      dblink_cancel_query: { Args: { "": string }; Returns: string }
+      dblink_close: { Args: { "": string }; Returns: string }
+      dblink_connect: { Args: { "": string }; Returns: string }
+      dblink_connect_u: { Args: { "": string }; Returns: string }
+      dblink_current_query: { Args: never; Returns: string }
+      dblink_disconnect:
+        | { Args: never; Returns: string }
+        | { Args: { "": string }; Returns: string }
+      dblink_error_message: { Args: { "": string }; Returns: string }
+      dblink_exec: { Args: { "": string }; Returns: string }
+      dblink_fdw_validator: {
+        Args: { catalog: unknown; options: string[] }
+        Returns: undefined
+      }
+      dblink_get_connections: { Args: never; Returns: string[] }
+      dblink_get_notify:
+        | { Args: { conname: string }; Returns: Record<string, unknown>[] }
+        | { Args: never; Returns: Record<string, unknown>[] }
+      dblink_get_pkey: {
+        Args: { "": string }
+        Returns: Database["public"]["CompositeTypes"]["dblink_pkey_results"][]
+        SetofOptions: {
+          from: "*"
+          to: "dblink_pkey_results"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      dblink_get_result: {
+        Args: { "": string }
+        Returns: Record<string, unknown>[]
+      }
+      dblink_is_busy: { Args: { "": string }; Returns: number }
       get_user_municipality: { Args: { _user_id: string }; Returns: string }
       get_user_province: { Args: { _user_id: string }; Returns: string }
       has_role: {
@@ -7325,6 +7392,17 @@ export type Database = {
       is_technician_or_admin: { Args: { _user_id: string }; Returns: boolean }
       log_card_scan: {
         Args: { _meta?: Json; _qr_token: string }
+        Returns: undefined
+      }
+      log_eligibility_block: {
+        Args: {
+          _attempted_by: string
+          _farmer_id: string
+          _farmer_type: Database["public"]["Enums"]["farmer_type"]
+          _payload: Json
+          _reason: string
+          _target_table: string
+        }
         Returns: undefined
       }
       regenerate_card_qr: { Args: { _card_id: string }; Returns: string }
@@ -7481,7 +7559,10 @@ export type Database = {
         | "expired"
     }
     CompositeTypes: {
-      [_ in never]: never
+      dblink_pkey_results: {
+        position: number | null
+        colname: string | null
+      }
     }
   }
 }
