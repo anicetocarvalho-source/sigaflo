@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { normalizeEmail, normalizePhoneAO } from "../_shared/validation.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -79,17 +80,39 @@ serve(async (req) => {
       );
     }
 
-    console.log('Updating user profile:', body.user_id, body);
+    console.log('Updating user profile:', body.user_id);
 
-    // Build update object with only provided fields
+    const fieldErrors: Record<string, string> = {};
+
+    // Build update object with only provided fields (validate when present)
     const updateData: Record<string, any> = {};
-    if (body.full_name !== undefined) updateData.full_name = body.full_name;
-    if (body.phone !== undefined) updateData.phone = body.phone;
+    if (body.full_name !== undefined) {
+      const n = String(body.full_name).trim();
+      if (n.length < 2) fieldErrors.full_name = 'Nome demasiado curto.';
+      else if (/\d/.test(n)) fieldErrors.full_name = 'O nome não deve conter dígitos.';
+      else updateData.full_name = n;
+    }
+    if (body.phone !== undefined) {
+      if (body.phone === null || String(body.phone).trim() === '') {
+        updateData.phone = null;
+      } else {
+        const norm = normalizePhoneAO(String(body.phone));
+        if (!norm) fieldErrors.phone = 'Insira um número móvel angolano válido com 9 dígitos.';
+        else updateData.phone = norm;
+      }
+    }
     if (body.position !== undefined) updateData.position = body.position;
     if (body.department !== undefined) updateData.department = body.department;
     if (body.province_id !== undefined) updateData.province_id = body.province_id || null;
     if (body.municipality_id !== undefined) updateData.municipality_id = body.municipality_id || null;
     if (body.is_active !== undefined) updateData.is_active = body.is_active;
+
+    if (Object.keys(fieldErrors).length > 0) {
+      return new Response(
+        JSON.stringify({ error: 'Dados inválidos.', fieldErrors }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
     // Update the profile
     const { data: updatedProfile, error: updateError } = await supabaseAdmin
