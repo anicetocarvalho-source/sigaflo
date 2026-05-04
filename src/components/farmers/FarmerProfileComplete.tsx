@@ -378,6 +378,7 @@ export const FarmerProfileComplete = () => {
             farmerId={farmer.id}
             currentStatus={farmer.status}
             farmerName={farmer.name}
+            farmerType={farmer.farmer_type}
           />
         </CardContent>
       </Card>

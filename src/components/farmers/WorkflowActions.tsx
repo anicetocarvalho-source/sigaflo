@@ -103,9 +103,19 @@ interface WorkflowActionsProps {
   farmerId: string;
   currentStatus: WorkflowStatus | string;
   farmerName: string;
+  /** Tipo de entidade — usado para ajustar a etiqueta da última transição. */
+  farmerType?: string;
 }
 
-export const WorkflowActions = ({ farmerId, currentStatus, farmerName }: WorkflowActionsProps) => {
+/** Tipos elegíveis para emissão do cartão SIGAFLO. Demais tipos apenas activam o registo. */
+const CARD_ELIGIBLE_TYPES = new Set(['individual', 'family', 'company']);
+
+export const WorkflowActions = ({ farmerId, currentStatus, farmerName, farmerType }: WorkflowActionsProps) => {
+  const isCardEligible = !farmerType || CARD_ELIGIBLE_TYPES.has(farmerType);
+  const finalLabel = isCardEligible ? 'Emitir Cartão' : 'Activar Registo';
+  const finalDescription = isCardEligible
+    ? 'Emitir o cartão do agricultor (nível nacional)'
+    : 'Activar o registo aprovado (nível nacional). Esta entidade não emite cartão SIGAFLO.';
   const { user, roles, hasAnyRole } = useAuth();
   const updateFarmer = useUpdateFarmer();
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -114,10 +124,17 @@ export const WorkflowActions = ({ farmerId, currentStatus, farmerName }: Workflo
   const [observations, setObservations] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
 
-  // Find available forward transition
-  const availableTransition = WORKFLOW_TRANSITIONS.find(
-    t => t.from === currentStatus && hasAnyRole(t.requiredRoles)
-  );
+  // Find available forward transition (clonada para ajustar label/description ao tipo)
+  const availableTransition = (() => {
+    const base = WORKFLOW_TRANSITIONS.find(
+      t => t.from === currentStatus && hasAnyRole(t.requiredRoles)
+    );
+    if (!base) return undefined;
+    if (base.from === 'approved' && base.to === 'issued') {
+      return { ...base, label: finalLabel, description: finalDescription };
+    }
+    return base;
+  })();
 
   // Check if rejection is available
   const canReject = REJECTION_TRANSITIONS.some(
@@ -160,10 +177,14 @@ export const WorkflowActions = ({ farmerId, currentStatus, farmerName }: Workflo
         },
       });
 
+      const targetLabel =
+        newStatus === 'issued' && !isCardEligible
+          ? 'Activo'
+          : STATUS_STEPS.find(s => s.status === newStatus)?.label || newStatus;
       toast.success(
         isRejection
           ? `Registo de "${farmerName}" foi rejeitado`
-          : `Registo de "${farmerName}" transitou para ${STATUS_STEPS.find(s => s.status === newStatus)?.label || newStatus}`
+          : `Registo de "${farmerName}" transitou para ${targetLabel}`
       );
       setDialogOpen(false);
     } catch (error) {
@@ -216,7 +237,11 @@ export const WorkflowActions = ({ farmerId, currentStatus, farmerName }: Workflo
                     {isComplete ? '✓' : idx + 1}
                   </div>
                   <span className={`text-[10px] mt-1 text-center ${isCurrent ? 'font-semibold text-foreground' : 'text-muted-foreground'}`}>
-                    {isRejected && isCurrent ? 'Rejeitado' : step.label}
+                    {isRejected && isCurrent
+                      ? 'Rejeitado'
+                      : step.status === 'issued' && !isCardEligible
+                        ? 'Activo'
+                        : step.label}
                   </span>
                 </div>
                 {idx < STATUS_STEPS.length - 1 && (
@@ -283,7 +308,11 @@ export const WorkflowActions = ({ farmerId, currentStatus, farmerName }: Workflo
               </Badge>
               <ArrowRight className="h-4 w-4 text-muted-foreground" />
               <Badge className={isRejection ? 'bg-destructive text-destructive-foreground' : ''}>
-                {isRejection ? 'Rejeitado' : STATUS_STEPS.find(s => s.status === selectedTransition?.to)?.label}
+                {isRejection
+                  ? 'Rejeitado'
+                  : selectedTransition?.to === 'issued' && !isCardEligible
+                    ? 'Activo'
+                    : STATUS_STEPS.find(s => s.status === selectedTransition?.to)?.label}
               </Badge>
             </div>
 
