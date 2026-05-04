@@ -320,6 +320,52 @@ export const WorkflowActions = ({ farmerId, currentStatus, farmerName, farmerTyp
               </Badge>
             </div>
 
+            {/* Bloco explicativo do passo final: Emitir Cartão vs Activar Registo */}
+            {!isRejection && selectedTransition?.to === 'issued' && (
+              isCardEligible ? (
+                <div className="rounded-lg border border-blue-200 bg-blue-50 dark:border-blue-900/60 dark:bg-blue-950/30 p-4">
+                  <div className="flex items-start gap-3">
+                    <CreditCard className="h-5 w-5 text-blue-600 dark:text-blue-400 mt-0.5 shrink-0" />
+                    <div className="space-y-1.5 text-sm">
+                      <p className="font-semibold text-blue-900 dark:text-blue-100">
+                        Vai ser emitido o Cartão SIGAFLO
+                      </p>
+                      <p className="text-blue-800/90 dark:text-blue-200/90 leading-relaxed">
+                        Esta acção gera um cartão físico (CR-80) com QR de verificação para
+                        <strong className="font-medium"> {farmerName}</strong> e desbloqueia
+                        crédito agrícola, incentivos, seguro paramétrico, pacotes subsidiados
+                        no POS e mecanização.
+                      </p>
+                      <p className="text-xs text-blue-700/80 dark:text-blue-300/80">
+                        O número de série e QR são gerados automaticamente e ficam auditados.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="rounded-lg border border-amber-200 bg-amber-50 dark:border-amber-900/60 dark:bg-amber-950/30 p-4">
+                  <div className="flex items-start gap-3">
+                    <PowerCircle className="h-5 w-5 text-amber-600 dark:text-amber-400 mt-0.5 shrink-0" />
+                    <div className="space-y-1.5 text-sm">
+                      <p className="font-semibold text-amber-900 dark:text-amber-100">
+                        Vai ser activado o Registo (sem emissão de cartão)
+                      </p>
+                      <p className="text-amber-800/90 dark:text-amber-200/90 leading-relaxed">
+                        Cooperativas e Escolas de Campo <strong className="font-medium">não são elegíveis</strong> para
+                        o cartão SIGAFLO nem para AgroPay. Esta acção apenas marca o registo de
+                        <strong className="font-medium"> {farmerName}</strong> como activo, permitindo
+                        gestão de membros, parcelas colectivas e relatórios.
+                      </p>
+                      <div className="flex items-start gap-1.5 text-xs text-amber-700/90 dark:text-amber-300/90">
+                        <Info className="h-3.5 w-3.5 mt-0.5 shrink-0" />
+                        <span>Nenhum cartão físico, carteira AgroPay ou certificado individual será gerado.</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )
+            )}
+
             <div className="space-y-2">
               <Label htmlFor="observations">
                 Observações {isRejection && <span className="text-destructive">*</span>}
