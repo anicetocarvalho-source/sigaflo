@@ -65,7 +65,8 @@ export const FarmersList = () => {
             <Input
               placeholder="Pesquisar por nome, registo ou BI..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={(e) => setSearchTerm(e.target.value.slice(0, SEARCH_MAX_LEN))}
+              maxLength={SEARCH_MAX_LEN}
               className="pl-10"
             />
           </div>
