@@ -40,7 +40,7 @@ export const PROFILE_GROUPS: GroupDef[] = [
       { value: 'entity-details', label: 'Detalhes da Cooperativa', icon: Building2, visibleFor: ['cooperative'] },
       { value: 'entity-details', label: 'Detalhes da ECA', icon: GraduationCap, visibleFor: ['field_school'] },
       { value: 'documents', label: 'Documentos', icon: FileText },
-      { value: 'card', label: 'Cartão / Certificado', icon: CreditCard },
+      { value: 'card', label: 'Cartão / Certificado', icon: CreditCard, visibleFor: ['individual', 'family', 'company'] },
       { value: 'biometry', label: 'Biometria', icon: Fingerprint, visibleFor: ['individual', 'family'] },
     ],
   },
@@ -49,9 +49,9 @@ export const PROFILE_GROUPS: GroupDef[] = [
     label: 'Operação',
     icon: LandPlot,
     tabs: [
-      { value: 'parcels', label: 'Parcelas', icon: LandPlot },
-      { value: 'campaigns', label: 'Campanhas', icon: Calendar },
-      { value: 'production', label: 'Produção', icon: Calendar },
+      { value: 'parcels', label: 'Parcelas', icon: LandPlot, visibleFor: ['individual', 'family', 'company', 'cooperative'] },
+      { value: 'campaigns', label: 'Campanhas', icon: Calendar, visibleFor: ['individual', 'family', 'company', 'cooperative'] },
+      { value: 'production', label: 'Produção', icon: Calendar, visibleFor: ['individual', 'family', 'company', 'cooperative'] },
       { value: 'mechanization', label: 'Mecanização', icon: Tractor, visibleFor: ['individual', 'family', 'company', 'cooperative'] },
       { value: 'members', label: 'Membros', icon: Users, visibleFor: ['cooperative', 'field_school'] },
     ],
@@ -61,11 +61,11 @@ export const PROFILE_GROUPS: GroupDef[] = [
     label: 'Financeiro',
     icon: Wallet,
     tabs: [
-      { value: 'agropay', label: 'AgroPay', icon: Wallet },
-      { value: 'purchases', label: 'Compras', icon: ShoppingCart },
-      { value: 'incentives', label: 'Incentivos', icon: Wallet },
-      { value: 'scores', label: 'Scores', icon: BarChart3 },
-      { value: 'certificates', label: 'Certificados', icon: Award },
+      { value: 'agropay', label: 'AgroPay', icon: Wallet, visibleFor: ['individual', 'family', 'company'] },
+      { value: 'purchases', label: 'Compras', icon: ShoppingCart, visibleFor: ['individual', 'family', 'company'] },
+      { value: 'incentives', label: 'Incentivos', icon: Wallet, visibleFor: ['individual', 'family', 'company', 'cooperative'] },
+      { value: 'scores', label: 'Scores', icon: BarChart3, visibleFor: ['individual', 'family', 'company'] },
+      { value: 'certificates', label: 'Certificados', icon: Award, visibleFor: ['individual', 'family', 'company'] },
     ],
   },
   {
@@ -74,8 +74,8 @@ export const PROFILE_GROUPS: GroupDef[] = [
     icon: Activity,
     tabs: [
       { value: 'occurrences', label: 'Ocorrências', icon: CloudRain },
-      { value: 'monitoring', label: 'NDVI / Alertas', icon: Activity },
-      { value: 'forecast', label: 'Previsão', icon: Eye },
+      { value: 'monitoring', label: 'NDVI / Alertas', icon: Activity, visibleFor: ['individual', 'family', 'company', 'cooperative'] },
+      { value: 'forecast', label: 'Previsão', icon: Eye, visibleFor: ['individual', 'family', 'company'] },
     ],
   },
   {
@@ -83,7 +83,7 @@ export const PROFILE_GROUPS: GroupDef[] = [
     label: 'Governança',
     icon: Users,
     tabs: [
-      { value: 'representatives', label: 'Representantes', icon: Users },
+      { value: 'representatives', label: 'Representantes', icon: Users, visibleFor: ['individual', 'family', 'company'] },
     ],
   },
 ];
@@ -101,4 +101,15 @@ export function findGroupForTab(tab: string): GroupKey {
     if (g.tabs.some((t) => t.value === tab)) return g.key;
   }
   return 'identification';
+}
+
+/** Conjunto canónico de tabs disponíveis por tipo de entidade (para gating em código). */
+export function isTabAllowedForType(tab: TabValue, type: FarmerType): boolean {
+  for (const g of PROFILE_GROUPS) {
+    const def = g.tabs.find((t) => t.value === tab);
+    if (def) {
+      return !def.visibleFor || def.visibleFor.includes(type);
+    }
+  }
+  return false;
 }
