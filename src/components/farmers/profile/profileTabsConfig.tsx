@@ -46,7 +46,7 @@ export const PROFILE_GROUPS: GroupDef[] = [
       { value: 'entity-details', label: 'Detalhes da Cooperativa', icon: Building2, visibleFor: ['cooperative'] },
       { value: 'entity-details', label: 'Detalhes da ECA', icon: GraduationCap, visibleFor: ['field_school'] },
       { value: 'documents', label: 'Documentos', icon: FileText },
-      { value: 'card', label: 'Cartão / Certificado', icon: CreditCard, visibleFor: ['individual', 'family', 'company'] },
+      { value: 'card', label: 'Cartão / Certificado', icon: CreditCard, visibleFor: ['individual', 'family', 'company'], deepLinkableFor: ['cooperative', 'field_school'] },
       { value: 'biometry', label: 'Biometria', icon: Fingerprint, visibleFor: ['individual', 'family'] },
     ],
   },
