@@ -48,10 +48,12 @@ export const FarmersList = () => {
     province_id: provinceFilter === 'all' ? undefined : provinceFilter,
   });
 
+  const normalizedSearch = collapseSpaces(searchTerm).toLowerCase();
   const filteredFarmers = farmers?.filter((farmer) =>
-    farmer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    farmer.registration_number?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    farmer.bi_nif?.toLowerCase().includes(searchTerm.toLowerCase())
+    !normalizedSearch ||
+    farmer.name.toLowerCase().includes(normalizedSearch) ||
+    farmer.registration_number?.toLowerCase().includes(normalizedSearch) ||
+    farmer.bi_nif?.toLowerCase().includes(normalizedSearch),
   );
 
   return (
