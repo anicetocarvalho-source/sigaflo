@@ -97,9 +97,24 @@ export const PhotoUpload = ({ value, onChange, disabled, aspect = 3 / 4 }: Photo
   };
 
   const startCamera = async () => {
-    // Fallback para captura nativa (iOS Safari, Android sem permissões getUserMedia)
-    const useNativeCapture = () => cameraInputRef.current?.click();
+    // 1) Plataforma nativa (Android/iOS via Capacitor) → pede permissão e usa câmara nativa
+    if (isNativePlatform()) {
+      const perm = await ensureCameraPermissions();
+      if (!perm.granted) {
+        toast.error(perm.reason || 'Permissão de câmara não concedida.');
+        return;
+      }
+      try {
+        const dataUrl = await takeNativePhoto({ source: 'camera', quality: 90 });
+        if (dataUrl) setCropSrc(dataUrl);
+      } catch (e: any) {
+        toast.error('Erro ao acessar câmara: ' + (e?.message || 'desconhecido'));
+      }
+      return;
+    }
 
+    // 2) Web — tenta getUserMedia, fallback para input nativo (iOS Safari, etc.)
+    const useNativeCapture = () => cameraInputRef.current?.click();
     if (!navigator.mediaDevices?.getUserMedia) {
       useNativeCapture();
       return;
@@ -114,7 +129,6 @@ export const PhotoUpload = ({ value, onChange, disabled, aspect = 3 / 4 }: Photo
       }
       setShowCamera(true);
     } catch (error) {
-      // Permissão negada ou indisponível → usa captura nativa do dispositivo
       useNativeCapture();
     }
   };
