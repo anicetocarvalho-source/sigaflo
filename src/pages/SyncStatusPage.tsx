@@ -364,7 +364,7 @@ export default function SyncStatusPage() {
                               size="sm"
                               variant="outline"
                               onClick={async () => {
-                                await resolveParkedConflict(c.id!, 'local-wins');
+                                await resolveParkedConflict(c.id!, 'keep-local');
                                 toast.success('Versão local aplicada.');
                               }}
                             >
@@ -374,21 +374,11 @@ export default function SyncStatusPage() {
                               size="sm"
                               variant="outline"
                               onClick={async () => {
-                                await resolveParkedConflict(c.id!, 'server-wins');
+                                await resolveParkedConflict(c.id!, 'keep-server');
                                 toast.success('Versão do servidor mantida.');
                               }}
                             >
                               Manter servidor
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={async () => {
-                                await resolveParkedConflict(c.id!, 'merge');
-                                toast.success('Alterações combinadas.');
-                              }}
-                            >
-                              Combinar
                             </Button>
                           </div>
                         </TableCell>
