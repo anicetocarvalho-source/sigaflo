@@ -201,6 +201,14 @@ export const PhotoUpload = ({ value, onChange, disabled, aspect = 3 / 4 }: Photo
               onChange={handleFileChange}
               className="hidden"
             />
+            <input
+              ref={cameraInputRef}
+              type="file"
+              accept="image/*"
+              capture="user"
+              onChange={handleFileChange}
+              className="hidden"
+            />
           </div>
         )}
       </div>
