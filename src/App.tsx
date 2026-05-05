@@ -13,6 +13,7 @@ import { ScrollToTop } from "@/components/layout/ScrollToTop";
 import { initSyncEngine } from "@/lib/offline/syncEngine";
 import { PWAInstallPrompt } from "@/components/layout/PWAInstallPrompt";
 import InstallPage from "./pages/InstallPage";
+import SyncStatusPage from "./pages/SyncStatusPage";
 
 const CooperativeAliasRedirect = () => {
   const { id } = useParams();
@@ -195,6 +196,7 @@ const App = () => {
             <Route path="/auth" element={<AuthPage />} />
             <Route path="/sem-permissao" element={<NoPermissionPage />} />
             <Route path="/instalar" element={<InstallPage />} />
+            <Route path="/sincronizacao" element={<ProtectedRoute><SyncStatusPage /></ProtectedRoute>} />
 
             {/* Protected Routes */}
             <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
