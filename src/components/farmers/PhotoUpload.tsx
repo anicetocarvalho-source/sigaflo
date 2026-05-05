@@ -92,6 +92,13 @@ export const PhotoUpload = ({ value, onChange, disabled, aspect = 3 / 4 }: Photo
   };
 
   const startCamera = async () => {
+    // Fallback para captura nativa (iOS Safari, Android sem permissões getUserMedia)
+    const useNativeCapture = () => cameraInputRef.current?.click();
+
+    if (!navigator.mediaDevices?.getUserMedia) {
+      useNativeCapture();
+      return;
+    }
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: 'user', width: 640, height: 480 },
@@ -102,7 +109,8 @@ export const PhotoUpload = ({ value, onChange, disabled, aspect = 3 / 4 }: Photo
       }
       setShowCamera(true);
     } catch (error) {
-      toast.error('Não foi possível aceder à câmara');
+      // Permissão negada ou indisponível → usa captura nativa do dispositivo
+      useNativeCapture();
     }
   };
 
