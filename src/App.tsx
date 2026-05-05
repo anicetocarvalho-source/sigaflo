@@ -11,6 +11,8 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { ScrollToTop } from "@/components/layout/ScrollToTop";
 import { initSyncEngine } from "@/lib/offline/syncEngine";
+import { PWAInstallPrompt } from "@/components/layout/PWAInstallPrompt";
+import InstallPage from "./pages/InstallPage";
 
 const CooperativeAliasRedirect = () => {
   const { id } = useParams();
