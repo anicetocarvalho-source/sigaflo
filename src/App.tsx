@@ -200,6 +200,7 @@ const App = () => {
             <Route path="/sem-permissao" element={<NoPermissionPage />} />
             <Route path="/instalar" element={<InstallPage />} />
             <Route path="/offline" element={<OfflinePage />} />
+            <Route path="/diagnostico" element={<DiagnosticPage />} />
             <Route path="/sincronizacao" element={<ProtectedRoute><SyncStatusPage /></ProtectedRoute>} />
 
             {/* Protected Routes */}
