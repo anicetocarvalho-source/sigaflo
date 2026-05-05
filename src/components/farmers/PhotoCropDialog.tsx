@@ -101,11 +101,33 @@ export const PhotoCropDialog = ({
   const [zoom, setZoom] = useState(1);
   const [rotation, setRotation] = useState(0);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
-  const onCropComplete = useCallback((_: Area, areaPixels: Area) => {
-    setCroppedAreaPixels(areaPixels);
-  }, []);
+  const onCropComplete = useCallback(
+    async (_: Area, areaPixels: Area) => {
+      setCroppedAreaPixels(areaPixels);
+      if (!imageSrc) return;
+      try {
+        const blob = await getCroppedBlob(imageSrc, areaPixels, rotation, aspect, 320);
+        setPreviewUrl((prev) => {
+          if (prev) URL.revokeObjectURL(prev);
+          return URL.createObjectURL(blob);
+        });
+      } catch {
+        // ignora erro de prévia
+      }
+    },
+    [imageSrc, rotation, aspect],
+  );
+
+  const resetState = () => {
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    setPreviewUrl(null);
+    setCrop({ x: 0, y: 0 });
+    setZoom(1);
+    setRotation(0);
+  };
 
   const handleConfirm = async () => {
     if (!imageSrc || !croppedAreaPixels) return;
@@ -115,48 +137,71 @@ export const PhotoCropDialog = ({
       await onConfirm(blob);
     } finally {
       setSaving(false);
-      // reset for next session
-      setCrop({ x: 0, y: 0 });
-      setZoom(1);
-      setRotation(0);
+      resetState();
     }
   };
 
   const handleCancel = () => {
     if (saving) return;
-    setCrop({ x: 0, y: 0 });
-    setZoom(1);
-    setRotation(0);
+    resetState();
     onCancel();
   };
 
+  const previewW = aspect >= 1 ? 140 : Math.round(140 * aspect);
+  const previewH = aspect >= 1 ? Math.round(140 / aspect) : 140;
+
   return (
     <Dialog open={open} onOpenChange={(o) => !o && handleCancel()}>
-      <DialogContent className="max-w-lg">
+      <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>Ajustar fotografia</DialogTitle>
           <DialogDescription>
-            Arraste, amplie ou rode para enquadrar o rosto. O recorte é optimizado para o cartão PVC (formato retrato 3:4).
+            Arraste, amplie ou rode para enquadrar o rosto. A prévia à direita mostra exactamente como ficará no cartão PVC.
           </DialogDescription>
         </DialogHeader>
 
-        <div className="relative w-full h-[320px] bg-muted rounded-md overflow-hidden">
-          {imageSrc && (
-            <Cropper
-              image={imageSrc}
-              crop={crop}
-              zoom={zoom}
-              rotation={rotation}
-              aspect={aspect}
-              cropShape="rect"
-              showGrid
-              objectFit="contain"
-              onCropChange={setCrop}
-              onZoomChange={setZoom}
-              onRotationChange={setRotation}
-              onCropComplete={onCropComplete}
-            />
-          )}
+        <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-4">
+          <div className="relative w-full h-[320px] bg-muted rounded-md overflow-hidden">
+            {imageSrc && (
+              <Cropper
+                image={imageSrc}
+                crop={crop}
+                zoom={zoom}
+                rotation={rotation}
+                aspect={aspect}
+                cropShape="rect"
+                showGrid
+                objectFit="contain"
+                onCropChange={setCrop}
+                onZoomChange={setZoom}
+                onRotationChange={setRotation}
+                onCropComplete={onCropComplete}
+              />
+            )}
+          </div>
+
+          <div className="flex flex-col items-center gap-2">
+            <Label className="text-xs text-muted-foreground">Pré-visualização</Label>
+            <div
+              className="rounded-md border-2 border-primary/40 bg-muted overflow-hidden shadow-sm"
+              style={{ width: previewW, height: previewH }}
+            >
+              {previewUrl ? (
+                <img
+                  src={previewUrl}
+                  alt="Pré-visualização do recorte"
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-[10px] text-muted-foreground px-2 text-center">
+                  A gerar...
+                </div>
+              )}
+            </div>
+            <p className="text-[10px] text-muted-foreground text-center max-w-[140px]">
+              Formato cartão {aspect === 3 / 4 ? '(3:4)' : ''}
+            </p>
+          </div>
         </div>
 
         <div className="space-y-3 pt-2">
