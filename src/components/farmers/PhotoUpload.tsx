@@ -22,6 +22,7 @@ export const PhotoUpload = ({ value, onChange, disabled, aspect = 3 / 4 }: Photo
   const [showCamera, setShowCamera] = useState(false);
   const [cropSrc, setCropSrc] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -91,6 +92,13 @@ export const PhotoUpload = ({ value, onChange, disabled, aspect = 3 / 4 }: Photo
   };
 
   const startCamera = async () => {
+    // Fallback para captura nativa (iOS Safari, Android sem permissões getUserMedia)
+    const useNativeCapture = () => cameraInputRef.current?.click();
+
+    if (!navigator.mediaDevices?.getUserMedia) {
+      useNativeCapture();
+      return;
+    }
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: 'user', width: 640, height: 480 },
@@ -101,7 +109,8 @@ export const PhotoUpload = ({ value, onChange, disabled, aspect = 3 / 4 }: Photo
       }
       setShowCamera(true);
     } catch (error) {
-      toast.error('Não foi possível aceder à câmara');
+      // Permissão negada ou indisponível → usa captura nativa do dispositivo
+      useNativeCapture();
     }
   };
 
@@ -189,6 +198,14 @@ export const PhotoUpload = ({ value, onChange, disabled, aspect = 3 / 4 }: Photo
               ref={fileInputRef}
               type="file"
               accept="image/*"
+              onChange={handleFileChange}
+              className="hidden"
+            />
+            <input
+              ref={cameraInputRef}
+              type="file"
+              accept="image/*"
+              capture="user"
               onChange={handleFileChange}
               className="hidden"
             />
