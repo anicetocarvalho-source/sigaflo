@@ -12,8 +12,10 @@ import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { ScrollToTop } from "@/components/layout/ScrollToTop";
 import { initSyncEngine } from "@/lib/offline/syncEngine";
 import { PWAInstallPrompt } from "@/components/layout/PWAInstallPrompt";
+import { OfflineBanner } from "@/components/layout/OfflineBanner";
 import InstallPage from "./pages/InstallPage";
 import SyncStatusPage from "./pages/SyncStatusPage";
+import OfflinePage from "./pages/OfflinePage";
 
 const CooperativeAliasRedirect = () => {
   const { id } = useParams();
@@ -196,6 +198,7 @@ const App = () => {
             <Route path="/auth" element={<AuthPage />} />
             <Route path="/sem-permissao" element={<NoPermissionPage />} />
             <Route path="/instalar" element={<InstallPage />} />
+            <Route path="/offline" element={<OfflinePage />} />
             <Route path="/sincronizacao" element={<ProtectedRoute><SyncStatusPage /></ProtectedRoute>} />
 
             {/* Protected Routes */}
@@ -372,6 +375,7 @@ const App = () => {
             <Route path="*" element={<NotFound />} />
           </Routes>
           <PWAInstallPrompt />
+          <OfflineBanner />
         </BrowserRouter>
       </TooltipProvider>
     </AuthProvider>
