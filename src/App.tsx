@@ -16,6 +16,7 @@ import { OfflineBanner } from "@/components/layout/OfflineBanner";
 import InstallPage from "./pages/InstallPage";
 import SyncStatusPage from "./pages/SyncStatusPage";
 import OfflinePage from "./pages/OfflinePage";
+import DiagnosticPage from "./pages/DiagnosticPage";
 
 const CooperativeAliasRedirect = () => {
   const { id } = useParams();
