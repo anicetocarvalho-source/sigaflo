@@ -198,6 +198,7 @@ const App = () => {
             <Route path="/auth" element={<AuthPage />} />
             <Route path="/sem-permissao" element={<NoPermissionPage />} />
             <Route path="/instalar" element={<InstallPage />} />
+            <Route path="/offline" element={<OfflinePage />} />
             <Route path="/sincronizacao" element={<ProtectedRoute><SyncStatusPage /></ProtectedRoute>} />
 
             {/* Protected Routes */}
