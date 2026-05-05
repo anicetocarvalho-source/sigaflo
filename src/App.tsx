@@ -194,6 +194,7 @@ const App = () => {
             {/* Auth Routes */}
             <Route path="/auth" element={<AuthPage />} />
             <Route path="/sem-permissao" element={<NoPermissionPage />} />
+            <Route path="/instalar" element={<InstallPage />} />
 
             {/* Protected Routes */}
             <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
