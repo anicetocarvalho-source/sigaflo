@@ -22,6 +22,7 @@ export const PhotoUpload = ({ value, onChange, disabled, aspect = 3 / 4 }: Photo
   const [showCamera, setShowCamera] = useState(false);
   const [cropSrc, setCropSrc] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
