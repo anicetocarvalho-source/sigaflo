@@ -16,6 +16,7 @@ import { OfflineBanner } from "@/components/layout/OfflineBanner";
 import InstallPage from "./pages/InstallPage";
 import SyncStatusPage from "./pages/SyncStatusPage";
 import OfflinePage from "./pages/OfflinePage";
+import DiagnosticPage from "./pages/DiagnosticPage";
 
 const CooperativeAliasRedirect = () => {
   const { id } = useParams();
@@ -199,6 +200,7 @@ const App = () => {
             <Route path="/sem-permissao" element={<NoPermissionPage />} />
             <Route path="/instalar" element={<InstallPage />} />
             <Route path="/offline" element={<OfflinePage />} />
+            <Route path="/diagnostico" element={<DiagnosticPage />} />
             <Route path="/sincronizacao" element={<ProtectedRoute><SyncStatusPage /></ProtectedRoute>} />
 
             {/* Protected Routes */}
