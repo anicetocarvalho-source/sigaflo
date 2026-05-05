@@ -11,6 +11,8 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { ScrollToTop } from "@/components/layout/ScrollToTop";
 import { initSyncEngine } from "@/lib/offline/syncEngine";
+import { PWAInstallPrompt } from "@/components/layout/PWAInstallPrompt";
+import InstallPage from "./pages/InstallPage";
 
 const CooperativeAliasRedirect = () => {
   const { id } = useParams();
@@ -192,6 +194,7 @@ const App = () => {
             {/* Auth Routes */}
             <Route path="/auth" element={<AuthPage />} />
             <Route path="/sem-permissao" element={<NoPermissionPage />} />
+            <Route path="/instalar" element={<InstallPage />} />
 
             {/* Protected Routes */}
             <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
@@ -366,6 +369,7 @@ const App = () => {
             {/* Catch-all */}
             <Route path="*" element={<NotFound />} />
           </Routes>
+          <PWAInstallPrompt />
         </BrowserRouter>
       </TooltipProvider>
     </AuthProvider>
