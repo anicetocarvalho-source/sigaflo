@@ -12,8 +12,10 @@ import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { ScrollToTop } from "@/components/layout/ScrollToTop";
 import { initSyncEngine } from "@/lib/offline/syncEngine";
 import { PWAInstallPrompt } from "@/components/layout/PWAInstallPrompt";
+import { OfflineBanner } from "@/components/layout/OfflineBanner";
 import InstallPage from "./pages/InstallPage";
 import SyncStatusPage from "./pages/SyncStatusPage";
+import OfflinePage from "./pages/OfflinePage";
 
 const CooperativeAliasRedirect = () => {
   const { id } = useParams();
