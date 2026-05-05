@@ -4,6 +4,11 @@ import { Camera, Upload, X, User } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { PhotoCropDialog } from './PhotoCropDialog';
+import {
+  ensureCameraPermissions,
+  isNativePlatform,
+  takeNativePhoto,
+} from '@/lib/native/camera';
 
 const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
 const ALLOWED_IMAGE_EXTENSIONS = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
