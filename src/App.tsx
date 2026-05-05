@@ -369,6 +369,7 @@ const App = () => {
             {/* Catch-all */}
             <Route path="*" element={<NotFound />} />
           </Routes>
+          <PWAInstallPrompt />
         </BrowserRouter>
       </TooltipProvider>
     </AuthProvider>
