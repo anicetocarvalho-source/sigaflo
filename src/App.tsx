@@ -375,6 +375,7 @@ const App = () => {
             <Route path="*" element={<NotFound />} />
           </Routes>
           <PWAInstallPrompt />
+          <OfflineBanner />
         </BrowserRouter>
       </TooltipProvider>
     </AuthProvider>
