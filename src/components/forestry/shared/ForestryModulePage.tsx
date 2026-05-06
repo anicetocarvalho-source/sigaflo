@@ -1,6 +1,6 @@
 import { ReactNode } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
-import { QueryState } from '@/components/ui/query-state';
+import { QueryError, QueryEmpty, QueryTableSkeleton } from '@/components/ui/query-state';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface ForestryModulePageProps {
@@ -22,27 +22,27 @@ export function ForestryModulePage({
   isError,
   error,
   isEmpty,
-  emptyMessage = 'Sem registos.',
+  emptyMessage = 'Sem registos para mostrar.',
   actions,
   children,
 }: ForestryModulePageProps) {
   return (
     <MainLayout title={title} subtitle={subtitle}>
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
+        <CardHeader className="flex flex-row items-center justify-between gap-4">
           <CardTitle className="text-base">{title}</CardTitle>
           {actions}
         </CardHeader>
         <CardContent>
-          <QueryState
-            isLoading={!!isLoading}
-            isError={!!isError}
-            error={error as Error | null}
-            isEmpty={!!isEmpty}
-            emptyMessage={emptyMessage}
-          >
-            {children}
-          </QueryState>
+          {isLoading ? (
+            <QueryTableSkeleton rows={6} cols={5} />
+          ) : isError ? (
+            <QueryError error={error as Error} />
+          ) : isEmpty ? (
+            <QueryEmpty title="Sem dados" description={emptyMessage} />
+          ) : (
+            children
+          )}
         </CardContent>
       </Card>
     </MainLayout>
