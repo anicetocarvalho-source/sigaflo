@@ -771,6 +771,56 @@ export type Database = {
           },
         ]
       }
+      companion_devices: {
+        Row: {
+          api_key_hash: string
+          assigned_to: string | null
+          capabilities: string[] | null
+          created_at: string
+          device_name: string
+          device_serial: string | null
+          id: string
+          last_seen_at: string | null
+          province_id: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          api_key_hash: string
+          assigned_to?: string | null
+          capabilities?: string[] | null
+          created_at?: string
+          device_name: string
+          device_serial?: string | null
+          id?: string
+          last_seen_at?: string | null
+          province_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          api_key_hash?: string
+          assigned_to?: string | null
+          capabilities?: string[] | null
+          created_at?: string
+          device_name?: string
+          device_serial?: string | null
+          id?: string
+          last_seen_at?: string | null
+          province_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "companion_devices_province_id_fkey"
+            columns: ["province_id"]
+            isOneToOne: false
+            referencedRelation: "provinces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cooperative_details: {
         Row: {
           aggregated_area_ha: number | null
@@ -2593,6 +2643,60 @@ export type Database = {
           },
         ]
       }
+      field_captures: {
+        Row: {
+          capture_type: string
+          captured_at: string
+          created_at: string
+          device_id: string | null
+          id: string
+          latitude: number | null
+          longitude: number | null
+          match_score: number | null
+          operator_id: string | null
+          raw_payload: Json | null
+        }
+        Insert: {
+          capture_type: string
+          captured_at?: string
+          created_at?: string
+          device_id?: string | null
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          match_score?: number | null
+          operator_id?: string | null
+          raw_payload?: Json | null
+        }
+        Update: {
+          capture_type?: string
+          captured_at?: string
+          created_at?: string
+          device_id?: string | null
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          match_score?: number | null
+          operator_id?: string | null
+          raw_payload?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "field_captures_device_id_fkey"
+            columns: ["device_id"]
+            isOneToOne: false
+            referencedRelation: "companion_devices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "field_captures_operator_id_fkey"
+            columns: ["operator_id"]
+            isOneToOne: false
+            referencedRelation: "forest_operators"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       field_school_details: {
         Row: {
           avg_age_range: string | null
@@ -2799,6 +2903,85 @@ export type Database = {
           uploaded_by?: string | null
         }
         Relationships: []
+      }
+      forest_certificates: {
+        Row: {
+          certificate_number: string | null
+          classification: string
+          created_at: string
+          created_by: string | null
+          criteria: Json | null
+          id: string
+          issue_date: string
+          license_id: string | null
+          notes: string | null
+          operator_id: string | null
+          province_id: string | null
+          qr_token: string | null
+          score: number | null
+          status: string
+          updated_at: string
+          valid_until: string | null
+        }
+        Insert: {
+          certificate_number?: string | null
+          classification?: string
+          created_at?: string
+          created_by?: string | null
+          criteria?: Json | null
+          id?: string
+          issue_date?: string
+          license_id?: string | null
+          notes?: string | null
+          operator_id?: string | null
+          province_id?: string | null
+          qr_token?: string | null
+          score?: number | null
+          status?: string
+          updated_at?: string
+          valid_until?: string | null
+        }
+        Update: {
+          certificate_number?: string | null
+          classification?: string
+          created_at?: string
+          created_by?: string | null
+          criteria?: Json | null
+          id?: string
+          issue_date?: string
+          license_id?: string | null
+          notes?: string | null
+          operator_id?: string | null
+          province_id?: string | null
+          qr_token?: string | null
+          score?: number | null
+          status?: string
+          updated_at?: string
+          valid_until?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "forest_certificates_license_id_fkey"
+            columns: ["license_id"]
+            isOneToOne: false
+            referencedRelation: "forest_licenses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "forest_certificates_operator_id_fkey"
+            columns: ["operator_id"]
+            isOneToOne: false
+            referencedRelation: "forest_operators"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "forest_certificates_province_id_fkey"
+            columns: ["province_id"]
+            isOneToOne: false
+            referencedRelation: "provinces"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       forest_checkpoint_logs: {
         Row: {
@@ -3615,6 +3798,119 @@ export type Database = {
           },
         ]
       }
+      forest_management_plans: {
+        Row: {
+          annual_allowable_cut_m3: number | null
+          approved_at: string | null
+          approved_by: string | null
+          attachments: Json | null
+          created_at: string
+          created_by: string | null
+          cutting_cycle_years: number | null
+          end_date: string | null
+          eudr_compliant: boolean | null
+          eudr_evidence: Json | null
+          geometry: Json | null
+          id: string
+          license_id: string | null
+          municipality_id: string | null
+          notes: string | null
+          operator_id: string | null
+          plan_number: string | null
+          productive_area_ha: number | null
+          province_id: string | null
+          species: Json | null
+          start_date: string | null
+          status: string
+          title: string
+          total_area_ha: number
+          updated_at: string
+        }
+        Insert: {
+          annual_allowable_cut_m3?: number | null
+          approved_at?: string | null
+          approved_by?: string | null
+          attachments?: Json | null
+          created_at?: string
+          created_by?: string | null
+          cutting_cycle_years?: number | null
+          end_date?: string | null
+          eudr_compliant?: boolean | null
+          eudr_evidence?: Json | null
+          geometry?: Json | null
+          id?: string
+          license_id?: string | null
+          municipality_id?: string | null
+          notes?: string | null
+          operator_id?: string | null
+          plan_number?: string | null
+          productive_area_ha?: number | null
+          province_id?: string | null
+          species?: Json | null
+          start_date?: string | null
+          status?: string
+          title: string
+          total_area_ha?: number
+          updated_at?: string
+        }
+        Update: {
+          annual_allowable_cut_m3?: number | null
+          approved_at?: string | null
+          approved_by?: string | null
+          attachments?: Json | null
+          created_at?: string
+          created_by?: string | null
+          cutting_cycle_years?: number | null
+          end_date?: string | null
+          eudr_compliant?: boolean | null
+          eudr_evidence?: Json | null
+          geometry?: Json | null
+          id?: string
+          license_id?: string | null
+          municipality_id?: string | null
+          notes?: string | null
+          operator_id?: string | null
+          plan_number?: string | null
+          productive_area_ha?: number | null
+          province_id?: string | null
+          species?: Json | null
+          start_date?: string | null
+          status?: string
+          title?: string
+          total_area_ha?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "forest_management_plans_license_id_fkey"
+            columns: ["license_id"]
+            isOneToOne: false
+            referencedRelation: "forest_licenses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "forest_management_plans_municipality_id_fkey"
+            columns: ["municipality_id"]
+            isOneToOne: false
+            referencedRelation: "municipalities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "forest_management_plans_operator_id_fkey"
+            columns: ["operator_id"]
+            isOneToOne: false
+            referencedRelation: "forest_operators"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "forest_management_plans_province_id_fkey"
+            columns: ["province_id"]
+            isOneToOne: false
+            referencedRelation: "provinces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       forest_nurseries: {
         Row: {
           address: string | null
@@ -3715,6 +4011,84 @@ export type Database = {
           },
         ]
       }
+      forest_occurrences: {
+        Row: {
+          affected_area_ha: number | null
+          attachments: Json | null
+          created_at: string
+          description: string | null
+          id: string
+          latitude: number | null
+          longitude: number | null
+          municipality_id: string | null
+          occurrence_number: string | null
+          occurrence_type: string
+          province_id: string | null
+          reported_at: string
+          reported_by: string | null
+          resolution_notes: string | null
+          resolved_at: string | null
+          severity: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          affected_area_ha?: number | null
+          attachments?: Json | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          municipality_id?: string | null
+          occurrence_number?: string | null
+          occurrence_type: string
+          province_id?: string | null
+          reported_at?: string
+          reported_by?: string | null
+          resolution_notes?: string | null
+          resolved_at?: string | null
+          severity?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          affected_area_ha?: number | null
+          attachments?: Json | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          municipality_id?: string | null
+          occurrence_number?: string | null
+          occurrence_type?: string
+          province_id?: string | null
+          reported_at?: string
+          reported_by?: string | null
+          resolution_notes?: string | null
+          resolved_at?: string | null
+          severity?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "forest_occurrences_municipality_id_fkey"
+            columns: ["municipality_id"]
+            isOneToOne: false
+            referencedRelation: "municipalities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "forest_occurrences_province_id_fkey"
+            columns: ["province_id"]
+            isOneToOne: false
+            referencedRelation: "provinces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       forest_operators: {
         Row: {
           address: string | null
@@ -3783,6 +4157,98 @@ export type Database = {
           },
           {
             foreignKeyName: "forest_operators_province_id_fkey"
+            columns: ["province_id"]
+            isOneToOne: false
+            referencedRelation: "provinces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      forest_payment_transactions: {
+        Row: {
+          agt_reference: string | null
+          agt_response: Json | null
+          base_amount_aoa: number
+          created_at: string
+          created_by: string | null
+          id: string
+          license_id: string | null
+          notes: string | null
+          operator_id: string | null
+          paid_at: string | null
+          permit_id: string | null
+          province_id: string | null
+          reference_type: string
+          status: string
+          surcharge_rl_aoa: number
+          total_amount_aoa: number | null
+          transaction_number: string | null
+          updated_at: string
+        }
+        Insert: {
+          agt_reference?: string | null
+          agt_response?: Json | null
+          base_amount_aoa?: number
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          license_id?: string | null
+          notes?: string | null
+          operator_id?: string | null
+          paid_at?: string | null
+          permit_id?: string | null
+          province_id?: string | null
+          reference_type: string
+          status?: string
+          surcharge_rl_aoa?: number
+          total_amount_aoa?: number | null
+          transaction_number?: string | null
+          updated_at?: string
+        }
+        Update: {
+          agt_reference?: string | null
+          agt_response?: Json | null
+          base_amount_aoa?: number
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          license_id?: string | null
+          notes?: string | null
+          operator_id?: string | null
+          paid_at?: string | null
+          permit_id?: string | null
+          province_id?: string | null
+          reference_type?: string
+          status?: string
+          surcharge_rl_aoa?: number
+          total_amount_aoa?: number | null
+          transaction_number?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "forest_payment_transactions_license_id_fkey"
+            columns: ["license_id"]
+            isOneToOne: false
+            referencedRelation: "forest_licenses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "forest_payment_transactions_operator_id_fkey"
+            columns: ["operator_id"]
+            isOneToOne: false
+            referencedRelation: "forest_operators"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "forest_payment_transactions_permit_id_fkey"
+            columns: ["permit_id"]
+            isOneToOne: false
+            referencedRelation: "forest_transport_permits"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "forest_payment_transactions_province_id_fkey"
             columns: ["province_id"]
             isOneToOne: false
             referencedRelation: "provinces"
@@ -5587,6 +6053,98 @@ export type Database = {
             columns: ["province_id"]
             isOneToOne: false
             referencedRelation: "provinces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      operator_biometrics: {
+        Row: {
+          captured_by: string | null
+          created_at: string
+          device_id: string | null
+          finger_position: string
+          id: string
+          operator_id: string | null
+          quality_score: number | null
+          template_data: string
+        }
+        Insert: {
+          captured_by?: string | null
+          created_at?: string
+          device_id?: string | null
+          finger_position: string
+          id?: string
+          operator_id?: string | null
+          quality_score?: number | null
+          template_data: string
+        }
+        Update: {
+          captured_by?: string | null
+          created_at?: string
+          device_id?: string | null
+          finger_position?: string
+          id?: string
+          operator_id?: string | null
+          quality_score?: number | null
+          template_data?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "operator_biometrics_device_id_fkey"
+            columns: ["device_id"]
+            isOneToOne: false
+            referencedRelation: "companion_devices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "operator_biometrics_operator_id_fkey"
+            columns: ["operator_id"]
+            isOneToOne: false
+            referencedRelation: "forest_operators"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      operator_nfc_cards: {
+        Row: {
+          created_at: string
+          id: string
+          issued_at: string
+          nfc_uid: string
+          operator_id: string | null
+          revoked_at: string | null
+          revoked_reason: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          issued_at?: string
+          nfc_uid: string
+          operator_id?: string | null
+          revoked_at?: string | null
+          revoked_reason?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          issued_at?: string
+          nfc_uid?: string
+          operator_id?: string | null
+          revoked_at?: string | null
+          revoked_reason?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "operator_nfc_cards_operator_id_fkey"
+            columns: ["operator_id"]
+            isOneToOne: false
+            referencedRelation: "forest_operators"
             referencedColumns: ["id"]
           },
         ]
