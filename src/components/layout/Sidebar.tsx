@@ -114,10 +114,27 @@ const navigation: NavItem[] = [
     children: [
       { label: 'Inventário Florestal', href: '/florestal/inventario' },
       { label: 'Licenciamento', href: '/florestal/licenciamento' },
+      { label: 'Planos de Maneio (EUDR)', href: '/florestal/planos-maneio' },
+      { label: 'Pagamentos AGT', href: '/florestal/pagamentos' },
+      { label: 'Certificação Verde', href: '/florestal/certificacao-verde' },
       { label: 'Rastreabilidade', href: '/florestal/rastreabilidade' },
       { label: 'Fiscalização', href: '/florestal/fiscalizacao' },
       { label: 'Reflorestamento', href: '/florestal/reflorestamento' },
+      { label: 'Ocorrências', href: '/florestal/ocorrencias' },
+      { label: 'Incêndios', href: '/florestal/incendios' },
+      { label: 'Pragas e Doenças', href: '/florestal/pragas' },
       { label: 'Denúncias', href: '/florestal/denuncias' },
+    ],
+  },
+  {
+    label: 'Companion / NFC',
+    icon: Fingerprint,
+    allowedRoles: ADMIN_ONLY,
+    adminOnly: true,
+    children: [
+      { label: 'Dispositivos Companion', href: '/admin/companion-devices' },
+      { label: 'Cartões NFC', href: '/admin/cartoes-nfc' },
+      { label: 'Auditoria de Capturas', href: '/admin/auditoria-capturas' },
     ],
   },
   {
