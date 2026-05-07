@@ -280,6 +280,15 @@ const App = () => {
             <Route path="/florestal/reflorestamento" element={<ProtectedRoute requiredRoles={FORESTRY_ROLES}><ForestryReforestationPage /></ProtectedRoute>} />
             <Route path="/florestal/denuncias" element={<ProtectedRoute requiredRoles={FORESTRY_ROLES}><ForestryComplaintsPage /></ProtectedRoute>} />
             <Route path="/florestal/concessao/:id" element={<ProtectedRoute requiredRoles={FORESTRY_ROLES}><ConcessionDetailPage /></ProtectedRoute>} />
+            <Route path="/florestal/planos-maneio" element={<ProtectedRoute requiredRoles={FORESTRY_ROLES}><ManagementPlansPage /></ProtectedRoute>} />
+            <Route path="/florestal/pagamentos" element={<ProtectedRoute requiredRoles={FORESTRY_ROLES}><PaymentsPage /></ProtectedRoute>} />
+            <Route path="/florestal/certificacao-verde" element={<ProtectedRoute requiredRoles={FORESTRY_ROLES}><GreenCertificationPage /></ProtectedRoute>} />
+            <Route path="/florestal/ocorrencias" element={<ProtectedRoute requiredRoles={FORESTRY_ROLES}><ForestOccurrencesPage /></ProtectedRoute>} />
+            <Route path="/florestal/incendios" element={<ProtectedRoute requiredRoles={FORESTRY_ROLES}><ForestryFiresPage /></ProtectedRoute>} />
+            <Route path="/florestal/pragas" element={<ProtectedRoute requiredRoles={FORESTRY_ROLES}><ForestryPestsPage /></ProtectedRoute>} />
+            <Route path="/admin/companion-devices" element={<ProtectedRoute requiredRoles={ADMIN_ROLES}><CompanionDevicesPage /></ProtectedRoute>} />
+            <Route path="/admin/cartoes-nfc" element={<ProtectedRoute requiredRoles={ADMIN_ROLES}><NFCCardsPage /></ProtectedRoute>} />
+            <Route path="/admin/auditoria-capturas" element={<ProtectedRoute requiredRoles={ADMIN_ROLES}><FieldCapturesAuditPage /></ProtectedRoute>} />
             <Route path="/florestal/*" element={<ProtectedRoute requiredRoles={FORESTRY_ROLES}><ForestryPage /></ProtectedRoute>} />
             
             {/* Coffee Module */}
