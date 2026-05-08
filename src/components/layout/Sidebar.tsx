@@ -53,217 +53,195 @@ const ALL_INTERNAL: UserRole[] = [...TECH_AND_ADMIN, 'private_entity'];
 const NATIONAL_ONLY: UserRole[] = ['admin_national', 'technician_national'];
 const ADMIN_ONLY: UserRole[] = ['admin_national', 'admin_provincial', 'admin_municipal'];
 
-const navigation: NavItem[] = [
+interface NavSection {
+  label: string;
+  items: NavItem[];
+}
+
+const navigationSections: NavSection[] = [
   {
-    label: 'Painel Principal',
-    href: '/',
-    icon: LayoutDashboard,
-  },
-  {
-    label: 'Agricultores',
-    icon: Users,
-    allowedRoles: ALL_INTERNAL,
-    children: [
-      { label: 'Registo de Agricultores', href: '/agricultores' },
-      { label: 'Escolas de Campo', href: '/agricultores/escolas' },
-      { label: 'Cooperativas', href: '/agricultores/cooperativas' },
-      { label: 'Parcelas', href: '/parcelas' },
-      { label: 'Cartões ID', href: '/agricultores/cartoes' },
-      { label: 'Cadastro de Campo', href: '/cadastro-campo' },
-      { label: 'Acesso Externo', href: '/cadastro-externo' },
+    label: 'Principal',
+    items: [
+      { label: 'Painel Principal', href: '/', icon: LayoutDashboard },
+      { label: 'Notificações', href: '/notificacoes', icon: Bell },
+      { label: 'Mapas', href: '/mapas', icon: Map },
     ],
   },
   {
-    label: 'Histórico de Produção',
-    href: '/producao',
-    icon: TrendingUp,
-    allowedRoles: ALL_INTERNAL,
-  },
-  {
-    label: 'Certificados',
-    icon: FileCheck,
-    allowedRoles: TECH_AND_ADMIN,
-    children: [
-      { label: 'Emissão de Certificados', href: '/certificados' },
-      { label: 'Verificação Pública', href: '/certificados/verificar' },
+    label: 'Cadastro e Território',
+    items: [
+      {
+        label: 'Agricultores',
+        icon: Users,
+        allowedRoles: ALL_INTERNAL,
+        children: [
+          { label: 'Registo de Agricultores', href: '/agricultores' },
+          { label: 'Escolas de Campo', href: '/agricultores/escolas' },
+          { label: 'Cooperativas', href: '/agricultores/cooperativas' },
+          { label: 'Parcelas', href: '/parcelas' },
+          { label: 'Cartões ID', href: '/agricultores/cartoes' },
+          { label: 'Cadastro de Campo', href: '/cadastro-campo' },
+          { label: 'Acesso Externo', href: '/cadastro-externo' },
+        ],
+      },
+      { label: 'Técnicos de Campo', href: '/tecnicos', icon: UserCog, allowedRoles: TECH_AND_ADMIN },
+      {
+        label: 'Infra-estruturas',
+        icon: Building2,
+        allowedRoles: ALL_INTERNAL,
+        children: [
+          { label: 'Agropecuárias', href: '/infraestruturas/agropecuarias' },
+          { label: 'Mercados', href: '/infraestruturas/mercados' },
+        ],
+      },
+      { label: 'Histórico de Produção', href: '/producao', icon: TrendingUp, allowedRoles: ALL_INTERNAL },
+      {
+        label: 'Certificados',
+        icon: FileCheck,
+        allowedRoles: TECH_AND_ADMIN,
+        children: [
+          { label: 'Emissão de Certificados', href: '/certificados' },
+          { label: 'Verificação Pública', href: '/certificados/verificar' },
+        ],
+      },
     ],
   },
   {
-    label: 'Ocorrências',
-    icon: CloudRain,
-    allowedRoles: TECH_AND_ADMIN,
-    children: [
-      { label: 'Climáticas', href: '/ocorrencias/climaticas' },
-      { label: 'Fitossanitárias', href: '/ocorrencias/fitossanitarias' },
-      { label: 'Alertas', href: '/ocorrencias/alertas' },
+    label: 'Sectores Produtivos',
+    items: [
+      {
+        label: 'Gestão Florestal',
+        icon: TreePine,
+        allowedRoles: ALL_INTERNAL,
+        children: [
+          { label: 'Inventário Florestal', href: '/florestal/inventario' },
+          { label: 'Licenciamento', href: '/florestal/licenciamento' },
+          { label: 'Planos de Maneio (EUDR)', href: '/florestal/planos-maneio' },
+          { label: 'Pagamentos AGT', href: '/florestal/pagamentos' },
+          { label: 'Certificação Verde', href: '/florestal/certificacao-verde' },
+          { label: 'Rastreabilidade', href: '/florestal/rastreabilidade' },
+          { label: 'Fiscalização', href: '/florestal/fiscalizacao' },
+          { label: 'Reflorestamento', href: '/florestal/reflorestamento' },
+          { label: 'Ocorrências', href: '/florestal/ocorrencias' },
+          { label: 'Incêndios', href: '/florestal/incendios' },
+          { label: 'Pragas e Doenças', href: '/florestal/pragas' },
+          { label: 'Denúncias', href: '/florestal/denuncias' },
+        ],
+      },
+      {
+        label: 'Cadeia do Café',
+        icon: Coffee,
+        allowedRoles: ALL_INTERNAL,
+        children: [
+          { label: 'Lotes de Café', href: '/cafe/lotes' },
+          { label: 'Rastreio por Lote', href: '/cafe/rastreio' },
+          { label: 'Semaforização', href: '/cafe/semaforizacao' },
+          { label: 'Portal de Verificação', href: '/cafe/verificar' },
+        ],
+      },
+      {
+        label: 'Produção de Arroz',
+        icon: Wheat,
+        allowedRoles: TECH_AND_ADMIN,
+        children: [
+          { label: 'Visão Geral', href: '/arroz' },
+          { label: 'Produção Nacional', href: '/arroz/producao' },
+          { label: 'Importações', href: '/arroz/importacoes' },
+          { label: 'Preços', href: '/arroz/precos' },
+          { label: 'Consumo', href: '/arroz/consumo' },
+          { label: 'Políticas', href: '/arroz/politicas' },
+        ],
+      },
+      { label: 'Mecanização Agrícola', href: '/mecanizacao', icon: Tractor, allowedRoles: TECH_AND_ADMIN },
     ],
   },
   {
-    label: 'Infra-estruturas',
-    icon: Building2,
-    allowedRoles: ALL_INTERNAL,
-    children: [
-      { label: 'Agropecuárias', href: '/infraestruturas/agropecuarias' },
-      { label: 'Mercados', href: '/infraestruturas/mercados' },
+    label: 'Comércio e Financeiro',
+    items: [
+      {
+        label: 'Vendas & POS',
+        icon: ShoppingCart,
+        allowedRoles: TECH_AND_ADMIN,
+        children: [
+          { label: 'Ponto de Venda', href: '/pos' },
+          { label: 'Facturas', href: '/faturas' },
+          { label: 'Compras Subsidiadas', href: '/compras' },
+          { label: 'Pacotes de Compras', href: '/pacotes-compras' },
+        ],
+      },
+      { label: 'Crédito e Seguro', href: '/credito-seguro', icon: Landmark, allowedRoles: TECH_AND_ADMIN },
+      { label: 'Seguros Agrícolas', href: '/seguros', icon: Shield, allowedRoles: TECH_AND_ADMIN },
+      {
+        label: 'Gestão de Incentivos',
+        icon: Gift,
+        allowedRoles: ADMIN_ONLY,
+        children: [
+          { label: 'Programas e Alocações', href: '/incentivos' },
+          { label: 'Analytics e Impacto', href: '/incentivos-analytics' },
+        ],
+      },
     ],
   },
   {
-    label: 'Gestão Florestal',
-    icon: TreePine,
-    allowedRoles: ALL_INTERNAL,
-    children: [
-      { label: 'Inventário Florestal', href: '/florestal/inventario' },
-      { label: 'Licenciamento', href: '/florestal/licenciamento' },
-      { label: 'Planos de Maneio (EUDR)', href: '/florestal/planos-maneio' },
-      { label: 'Pagamentos AGT', href: '/florestal/pagamentos' },
-      { label: 'Certificação Verde', href: '/florestal/certificacao-verde' },
-      { label: 'Rastreabilidade', href: '/florestal/rastreabilidade' },
-      { label: 'Fiscalização', href: '/florestal/fiscalizacao' },
-      { label: 'Reflorestamento', href: '/florestal/reflorestamento' },
-      { label: 'Ocorrências', href: '/florestal/ocorrencias' },
-      { label: 'Incêndios', href: '/florestal/incendios' },
-      { label: 'Pragas e Doenças', href: '/florestal/pragas' },
-      { label: 'Denúncias', href: '/florestal/denuncias' },
+    label: 'Inteligência e Monitoria',
+    items: [
+      { label: 'Observatório (ONAF)', href: '/onaf', icon: Eye, allowedRoles: NATIONAL_ONLY },
+      { label: 'Identidade Produtiva', href: '/ipn', icon: Fingerprint, allowedRoles: TECH_AND_ADMIN },
+      {
+        label: 'Monitoria',
+        icon: Activity,
+        allowedRoles: TECH_AND_ADMIN,
+        children: [
+          { label: 'Alertas & Riscos', href: '/monitoria/alertas' },
+          { label: 'Score Agrícola', href: '/monitoria/score' },
+          { label: 'NDVI Satélite', href: '/monitoria/ndvi' },
+        ],
+      },
+      {
+        label: 'Risco Climático',
+        icon: Umbrella,
+        allowedRoles: TECH_AND_ADMIN,
+        children: [
+          { label: 'Ocorrências e Gestão', href: '/risco-climatico' },
+          { label: 'Analytics e Seguro', href: '/risco-climatico-analytics' },
+        ],
+      },
+      {
+        label: 'Ocorrências',
+        icon: CloudRain,
+        allowedRoles: TECH_AND_ADMIN,
+        children: [
+          { label: 'Climáticas', href: '/ocorrencias/climaticas' },
+          { label: 'Fitossanitárias', href: '/ocorrencias/fitossanitarias' },
+          { label: 'Alertas', href: '/ocorrencias/alertas' },
+        ],
+      },
+      { label: 'Laboratório de Dados', href: '/laboratorio-dados', icon: FlaskConical, allowedRoles: NATIONAL_ONLY, adminOnly: true },
     ],
   },
   {
-    label: 'Companion / NFC',
-    icon: Fingerprint,
-    allowedRoles: ADMIN_ONLY,
-    adminOnly: true,
-    children: [
-      { label: 'Dispositivos Companion', href: '/admin/companion-devices' },
-      { label: 'Cartões NFC', href: '/admin/cartoes-nfc' },
-      { label: 'Auditoria de Capturas', href: '/admin/auditoria-capturas' },
+    label: 'Administração',
+    items: [
+      { label: 'Gestão de Utilizadores', href: '/utilizadores', icon: UserCog, allowedRoles: ADMIN_ONLY, adminOnly: true },
+      {
+        label: 'Companion / NFC',
+        icon: Fingerprint,
+        allowedRoles: ADMIN_ONLY,
+        adminOnly: true,
+        children: [
+          { label: 'Dispositivos Companion', href: '/admin/companion-devices' },
+          { label: 'Cartões NFC', href: '/admin/cartoes-nfc' },
+          { label: 'Auditoria de Capturas', href: '/admin/auditoria-capturas' },
+        ],
+      },
+      { label: 'Alertas de Elegibilidade', href: '/admin/alertas-elegibilidade', icon: ShieldAlert, allowedRoles: ADMIN_ONLY, adminOnly: true },
     ],
-  },
-  {
-    label: 'Cadeia do Café',
-    icon: Coffee,
-    allowedRoles: ALL_INTERNAL,
-    children: [
-      { label: 'Lotes de Café', href: '/cafe/lotes' },
-      { label: 'Rastreio por Lote', href: '/cafe/rastreio' },
-      { label: 'Semaforização', href: '/cafe/semaforizacao' },
-      { label: 'Portal de Verificação', href: '/cafe/verificar' },
-    ],
-  },
-  {
-    label: 'Produção de Arroz',
-    icon: Wheat,
-    allowedRoles: TECH_AND_ADMIN,
-    children: [
-      { label: 'Visão Geral', href: '/arroz' },
-      { label: 'Produção Nacional', href: '/arroz/producao' },
-      { label: 'Importações', href: '/arroz/importacoes' },
-      { label: 'Preços', href: '/arroz/precos' },
-      { label: 'Consumo', href: '/arroz/consumo' },
-      { label: 'Políticas', href: '/arroz/politicas' },
-    ],
-  },
-  {
-    label: 'Observatório (ONAF)',
-    href: '/onaf',
-    icon: Eye,
-    allowedRoles: NATIONAL_ONLY,
-  },
-  {
-    label: 'Identidade Produtiva',
-    href: '/ipn',
-    icon: Fingerprint,
-    allowedRoles: TECH_AND_ADMIN,
-  },
-  {
-    label: 'Gestão de Incentivos',
-    icon: Gift,
-    allowedRoles: ADMIN_ONLY,
-    children: [
-      { label: 'Programas e Alocações', href: '/incentivos' },
-      { label: 'Analytics e Impacto', href: '/incentivos-analytics' },
-    ],
-  },
-  {
-    label: 'Risco Climático',
-    icon: Umbrella,
-    allowedRoles: TECH_AND_ADMIN,
-    children: [
-      { label: 'Ocorrências e Gestão', href: '/risco-climatico' },
-      { label: 'Analytics e Seguro', href: '/risco-climatico-analytics' },
-    ],
-  },
-  {
-    label: 'Crédito e Seguro',
-    href: '/credito-seguro',
-    icon: Landmark,
-    allowedRoles: TECH_AND_ADMIN,
-  },
-  {
-    label: 'Mecanização Agrícola',
-    href: '/mecanizacao',
-    icon: Tractor,
-    allowedRoles: TECH_AND_ADMIN,
-  },
-  {
-    label: 'Técnicos de Campo',
-    href: '/tecnicos',
-    icon: UserCog,
-    allowedRoles: TECH_AND_ADMIN,
-  },
-  {
-    label: 'Vendas & POS',
-    icon: ShoppingCart,
-    allowedRoles: TECH_AND_ADMIN,
-    children: [
-      { label: 'Ponto de Venda', href: '/pos' },
-      { label: 'Facturas', href: '/faturas' },
-      { label: 'Compras Subsidiadas', href: '/compras' },
-      { label: 'Pacotes de Compras', href: '/pacotes-compras' },
-    ],
-  },
-  {
-    label: 'Seguros Agrícolas',
-    href: '/seguros',
-    icon: Shield,
-    allowedRoles: TECH_AND_ADMIN,
-  },
-  {
-    label: 'Monitoria',
-    icon: Activity,
-    allowedRoles: TECH_AND_ADMIN,
-    children: [
-      { label: 'Alertas & Riscos', href: '/monitoria/alertas' },
-      { label: 'Score Agrícola', href: '/monitoria/score' },
-      { label: 'NDVI Satélite', href: '/monitoria/ndvi' },
-    ],
-  },
-  {
-    label: 'Laboratório de Dados',
-    href: '/laboratorio-dados',
-    icon: FlaskConical,
-    allowedRoles: NATIONAL_ONLY,
-    adminOnly: true,
-  },
-  {
-    label: 'Gestão de Utilizadores',
-    href: '/utilizadores',
-    icon: UserCog,
-    allowedRoles: ADMIN_ONLY,
-    adminOnly: true,
-  },
-  {
-    label: 'Alertas de Elegibilidade',
-    href: '/admin/alertas-elegibilidade',
-    icon: ShieldAlert,
-    allowedRoles: ADMIN_ONLY,
-    adminOnly: true,
   },
 ];
 
 const secondaryNavigation = [
   { label: 'Relatórios', href: '/relatorios', icon: BarChart3 },
-  { label: 'Mapas', href: '/mapas', icon: Map },
   { label: 'Documentação', href: '/documentacao', icon: FileText },
-  { label: 'Notificações', href: '/notificacoes', icon: Bell },
 ];
 
 export function Sidebar() {
