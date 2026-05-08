@@ -29,3 +29,6 @@ verify_jwt = true
 
 [functions.sigaflo-chat]
 verify_jwt = true
+
+[functions.companion-ingest]
+verify_jwt = false
