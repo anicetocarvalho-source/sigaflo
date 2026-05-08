@@ -250,9 +250,11 @@ export function Sidebar() {
   
   // Find which menu should be expanded based on current route
   const getInitialExpanded = () => {
-    for (const item of navigation) {
-      if (item.children?.some(child => location.pathname.startsWith(child.href))) {
-        return [item.label];
+    for (const section of navigationSections) {
+      for (const item of section.items) {
+        if (item.children?.some(child => location.pathname.startsWith(child.href))) {
+          return [item.label];
+        }
       }
     }
     return [];
@@ -269,14 +271,18 @@ export function Sidebar() {
   const isActive = (href: string) => location.pathname === href;
   const isChildActive = (children?: { href: string }[]) =>
     children?.some(child => location.pathname.startsWith(child.href));
-  // Filter navigation items based on user roles
-  const visibleNavigation = navigation.filter(item => {
+
+  const isItemVisible = (item: NavItem) => {
     if (item.allowedRoles) {
       return item.allowedRoles.some(role => roles.includes(role));
     }
     if (item.adminOnly) return isAdmin;
     return true;
-  });
+  };
+
+  const visibleSections = navigationSections
+    .map(section => ({ ...section, items: section.items.filter(isItemVisible) }))
+    .filter(section => section.items.length > 0);
 
   const primaryRole = roles[0];
   const initials = profile?.full_name
@@ -301,64 +307,71 @@ export function Sidebar() {
 
       {/* Main Navigation */}
       <nav className="flex-1 overflow-y-auto px-3 py-4">
-        <div className="space-y-1">
-          {visibleNavigation.map(item => (
-            <div key={item.label}>
-              {item.href ? (
-                <Link
-                  to={item.href}
-                  className={cn(
-                    'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
-                    isActive(item.href)
-                      ? 'bg-sidebar-primary text-sidebar-primary-foreground'
-                      : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground'
+        {visibleSections.map((section, idx) => (
+          <div key={section.label} className={idx === 0 ? '' : 'mt-4'}>
+            <p className="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-sidebar-foreground/50">
+              {section.label}
+            </p>
+            <div className="space-y-1">
+              {section.items.map(item => (
+                <div key={item.label}>
+                  {item.href ? (
+                    <Link
+                      to={item.href}
+                      className={cn(
+                        'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
+                        isActive(item.href)
+                          ? 'bg-sidebar-primary text-sidebar-primary-foreground'
+                          : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground'
+                      )}
+                    >
+                      <item.icon className="h-5 w-5" />
+                      {item.label}
+                    </Link>
+                  ) : (
+                    <>
+                      <button
+                        onClick={() => toggleExpand(item.label)}
+                        className={cn(
+                          'flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
+                          isChildActive(item.children)
+                            ? 'bg-sidebar-accent text-sidebar-foreground'
+                            : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground'
+                        )}
+                      >
+                        <item.icon className="h-5 w-5" />
+                        <span className="flex-1 text-left">{item.label}</span>
+                        {expandedItems.includes(item.label) ? (
+                          <ChevronDown className="h-4 w-4" />
+                        ) : (
+                          <ChevronRight className="h-4 w-4" />
+                        )}
+                      </button>
+                      {expandedItems.includes(item.label) && item.children && (
+                        <div className="ml-8 mt-1 space-y-1">
+                          {item.children.map(child => (
+                            <Link
+                              key={child.href}
+                              to={child.href}
+                              className={cn(
+                                'block rounded-md px-3 py-2 text-sm transition-colors',
+                                isActive(child.href)
+                                  ? 'bg-sidebar-primary/80 text-sidebar-primary-foreground'
+                                  : 'text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground'
+                              )}
+                            >
+                              {child.label}
+                            </Link>
+                          ))}
+                        </div>
+                      )}
+                    </>
                   )}
-                >
-                  <item.icon className="h-5 w-5" />
-                  {item.label}
-                </Link>
-              ) : (
-                <>
-                  <button
-                    onClick={() => toggleExpand(item.label)}
-                    className={cn(
-                      'flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
-                      isChildActive(item.children)
-                        ? 'bg-sidebar-accent text-sidebar-foreground'
-                        : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground'
-                    )}
-                  >
-                    <item.icon className="h-5 w-5" />
-                    <span className="flex-1 text-left">{item.label}</span>
-                    {expandedItems.includes(item.label) ? (
-                      <ChevronDown className="h-4 w-4" />
-                    ) : (
-                      <ChevronRight className="h-4 w-4" />
-                    )}
-                  </button>
-                  {expandedItems.includes(item.label) && item.children && (
-                    <div className="ml-8 mt-1 space-y-1">
-                      {item.children.map(child => (
-                        <Link
-                          key={child.href}
-                          to={child.href}
-                          className={cn(
-                            'block rounded-md px-3 py-2 text-sm transition-colors',
-                            isActive(child.href)
-                              ? 'bg-sidebar-primary/80 text-sidebar-primary-foreground'
-                              : 'text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground'
-                          )}
-                        >
-                          {child.label}
-                        </Link>
-                      ))}
-                    </div>
-                  )}
-                </>
-              )}
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
+          </div>
+        ))}
 
         {/* Portal Público */}
         <div className="mt-6 border-t border-sidebar-border pt-4">
