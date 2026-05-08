@@ -248,8 +248,10 @@ export function Sidebar() {
   const location = useLocation();
   const { profile, roles, signOut, isAdmin } = useAuth();
   
+  const STORAGE_KEY = 'sigaflo:sidebar:expanded';
+
   // Find which menu should be expanded based on current route
-  const getInitialExpanded = () => {
+  const getRouteExpanded = (): string[] => {
     for (const section of navigationSections) {
       for (const item of section.items) {
         if (item.children?.some(child => location.pathname.startsWith(child.href))) {
@@ -259,8 +261,35 @@ export function Sidebar() {
     }
     return [];
   };
-  
+
+  const getInitialExpanded = (): string[] => {
+    if (typeof window !== 'undefined') {
+      try {
+        const stored = window.localStorage.getItem(STORAGE_KEY);
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed)) {
+            const merged = new Set<string>(parsed.filter((v): v is string => typeof v === 'string'));
+            getRouteExpanded().forEach(l => merged.add(l));
+            return Array.from(merged);
+          }
+        }
+      } catch {
+        // ignore parse errors
+      }
+    }
+    return getRouteExpanded();
+  };
+
   const [expandedItems, setExpandedItems] = useState<string[]>(getInitialExpanded);
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(expandedItems));
+    } catch {
+      // ignore storage errors (quota / privacy mode)
+    }
+  }, [expandedItems]);
 
   const toggleExpand = (label: string) => {
     setExpandedItems(prev =>
