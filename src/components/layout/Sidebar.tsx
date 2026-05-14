@@ -291,6 +291,28 @@ export function Sidebar() {
     }
   }, [expandedItems]);
 
+  // Sync expansion state across browser tabs/windows
+  useEffect(() => {
+    const handleStorage = (event: StorageEvent) => {
+      if (event.key !== STORAGE_KEY || event.newValue === null) return;
+      try {
+        const parsed = JSON.parse(event.newValue);
+        if (!Array.isArray(parsed)) return;
+        const next = parsed.filter((v): v is string => typeof v === 'string');
+        setExpandedItems(prev => {
+          if (prev.length === next.length && prev.every((v, i) => v === next[i])) {
+            return prev;
+          }
+          return next;
+        });
+      } catch {
+        // ignore parse errors from other tabs
+      }
+    };
+    window.addEventListener('storage', handleStorage);
+    return () => window.removeEventListener('storage', handleStorage);
+  }, []);
+
   const toggleExpand = (label: string) => {
     setExpandedItems(prev =>
       prev.includes(label) ? prev.filter(l => l !== label) : [...prev, label]
