@@ -5,8 +5,18 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowLeft, Download, FileText } from "lucide-react";
 import { usePublicLegislationDetail } from "@/hooks/usePublicLegislation";
+import { SeoHead } from "@/components/public/SeoHead";
+import type { OgSector } from "@/lib/seo/ogImageRegistry";
 import { format } from "date-fns";
 import { pt } from "date-fns/locale";
+
+const SECTOR_TO_OG: Record<string, OgSector> = {
+  agriculture: "agriculture",
+  forestry: "forestry",
+  coffee: "coffee",
+  rice: "rice",
+  general: "general",
+};
 
 const TYPE_LABELS: Record<string, string> = {
   decree: "Decreto", law: "Lei", notice: "Aviso", regulation: "Regulamento", resolution: "Resolução", directive: "Directiva",
@@ -36,6 +46,17 @@ export default function PortalLegislationDetail() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+      <SeoHead
+        title={`${doc.title} — SIGAFLO`}
+        description={doc.summary || doc.title}
+        path={`/portal/legislacao/${doc.id}`}
+        type="article"
+        dynamic={{
+          title: doc.title,
+          subtitle: doc.reference_number ? `Ref: ${doc.reference_number}` : (doc.summary || "Legislação"),
+          sector: SECTOR_TO_OG[doc.sector] || "general",
+        }}
+      />
       <Link to="/portal/legislacao" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-6">
         <ArrowLeft className="h-4 w-4" /> Voltar à Legislação
       </Link>
