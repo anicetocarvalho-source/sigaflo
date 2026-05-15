@@ -100,38 +100,43 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const lastFetchedUserIdRef = useRef<string | null>(null);
+
   useEffect(() => {
+    const handleSession = (newSession: Session | null, event?: string) => {
+      setSession(newSession);
+      setUser(newSession?.user ?? null);
+
+      const newUserId = newSession?.user?.id ?? null;
+
+      // Only refetch profile/roles when the user identity actually changes.
+      // Ignore TOKEN_REFRESHED / USER_UPDATED events that keep the same user —
+      // otherwise we trigger a re-render storm and parallel refresh-token
+      // races that end up signing the user out automatically.
+      if (newUserId && newUserId !== lastFetchedUserIdRef.current) {
+        lastFetchedUserIdRef.current = newUserId;
+        setTimeout(() => fetchUserData(newUserId), 0);
+      } else if (!newUserId) {
+        lastFetchedUserIdRef.current = null;
+        setProfile(null);
+        setRoles([]);
+      }
+
+      if (event === 'SIGNED_OUT') {
+        lastFetchedUserIdRef.current = null;
+        setProfile(null);
+        setRoles([]);
+      }
+    };
+
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, newSession) => {
-        setSession(newSession);
-        setUser(newSession?.user ?? null);
-
-        // Defer data fetching with setTimeout to avoid deadlock
-        if (newSession?.user) {
-          setTimeout(() => {
-            fetchUserData(newSession.user.id);
-          }, 0);
-        } else {
-          setProfile(null);
-          setRoles([]);
-        }
-
-        if (event === 'SIGNED_OUT') {
-          setProfile(null);
-          setRoles([]);
-        }
-      }
+      (event, newSession) => handleSession(newSession, event)
     );
 
     // THEN check for existing session
     supabase.auth.getSession().then(({ data: { session: existingSession } }) => {
-      setSession(existingSession);
-      setUser(existingSession?.user ?? null);
-
-      if (existingSession?.user) {
-        fetchUserData(existingSession.user.id);
-      }
+      handleSession(existingSession);
 
       setIsLoading(false);
     });
