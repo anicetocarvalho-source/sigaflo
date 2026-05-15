@@ -25,6 +25,11 @@ export default function PortalNews() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+      <SeoHead
+        title="Notícias — SIGAFLO"
+        description="Últimas notícias do sector agroflorestal angolano: agricultura, café, arroz, florestas e políticas públicas."
+        path="/portal/noticias"
+      />
       <div className="mb-8">
         <h1 className="text-3xl font-bold font-['Outfit'] flex items-center gap-2">
           <Newspaper className="h-8 w-8 text-primary" />

@@ -23,6 +23,7 @@ import { pt } from "date-fns/locale";
 
 import { HeroCarousel, type HeroSlide } from "@/components/public/HeroCarousel";
 import { ContentCarousel } from "@/components/public/ContentCarousel";
+import { SeoHead } from "@/components/public/SeoHead";
 
 import heroFields from "@/assets/portal/hero-fields.jpg";
 import heroCoffee from "@/assets/portal/hero-coffee.jpg";
@@ -133,6 +134,11 @@ export default function PortalHome() {
 
   return (
     <div>
+      <SeoHead
+        title="SIGAFLO — Portal Agro-Florestal de Angola"
+        description="Plataforma oficial de gestão agro-florestal: agricultores, cooperativas, café, arroz, florestas, legislação e indicadores nacionais."
+        path="/portal"
+      />
       {/* Hero carousel */}
       <HeroCarousel slides={slides} />
 

@@ -40,6 +40,11 @@ export default function PortalLegislation() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+      <SeoHead
+        title="Legislação Agroflorestal — SIGAFLO"
+        description="Base legal do sector agropecuário e florestal de Angola: decretos, leis, regulamentos e directivas."
+        path="/portal/legislacao"
+      />
       <div className="mb-8">
         <h1 className="text-3xl font-bold font-['Outfit'] flex items-center gap-2">
           <BookOpen className="h-8 w-8 text-primary" />

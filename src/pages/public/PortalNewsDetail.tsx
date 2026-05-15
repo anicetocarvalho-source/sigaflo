@@ -5,8 +5,20 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowLeft, Calendar, Newspaper } from "lucide-react";
 import { usePublicNewsDetail } from "@/hooks/usePublicNews";
+import { SeoHead } from "@/components/public/SeoHead";
+import type { OgSector } from "@/lib/seo/ogImageRegistry";
 import { format } from "date-fns";
 import { pt } from "date-fns/locale";
+
+const CATEGORY_TO_SECTOR: Record<string, OgSector> = {
+  agriculture: "agriculture",
+  forestry: "forestry",
+  coffee: "coffee",
+  rice: "rice",
+  general: "general",
+  policy: "general",
+  events: "general",
+};
 
 const CATEGORY_LABELS: Record<string, string> = {
   general: "Geral", agriculture: "Agricultura", forestry: "Florestas", coffee: "Café", rice: "Arroz", policy: "Política", events: "Eventos",
@@ -34,6 +46,18 @@ export default function PortalNewsDetail() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+      <SeoHead
+        title={`${item.title} — SIGAFLO`}
+        description={item.excerpt || item.title}
+        path={`/portal/noticias/${item.id}`}
+        type="article"
+        image={item.image_url || undefined}
+        dynamic={!item.image_url ? {
+          title: item.title,
+          subtitle: item.excerpt || "Notícia · SIGAFLO",
+          sector: CATEGORY_TO_SECTOR[item.category] || "general",
+        } : undefined}
+      />
       <Link to="/portal/noticias" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-6">
         <ArrowLeft className="h-4 w-4" /> Voltar às Notícias
       </Link>
