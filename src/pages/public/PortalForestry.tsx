@@ -107,12 +107,15 @@ export default function PortalForestry() {
 
       <section className="mt-10">
         <h2 className="text-xl font-bold font-['Outfit'] mb-4">Galeria Florestal</h2>
-        <ImageGallery items={[
-          { src: gTimber, alt: "Madeira", caption: "Cadeia da madeira" },
-          { src: gNursery, alt: "Viveiro", caption: "Viveiros de mudas" },
-          { src: gFields, alt: "Cobertura florestal", caption: "Cobertura florestal" },
-          { src: gTech, alt: "Fiscalização", caption: "Fiscalização e monitoria" },
-        ]} />
+        <ImageGallery
+          ariaLabel="Galeria do sector florestal"
+          items={buildSectorGallery("Florestas", [
+            { src: gTimber, subject: "Transporte de madeira certificada", caption: "Cadeia da madeira legal" },
+            { src: gNursery, subject: "Viveiro de mudas", caption: "Viveiros do IDF" },
+            { src: gFields, subject: "Cobertura florestal nativa", caption: "Florestas de miombo" },
+            { src: gTech, subject: "Fiscalização florestal", caption: "Monitoria e fiscalização" },
+          ])}
+        />
       </section>
 
       <Card className="mt-8">
