@@ -4,6 +4,7 @@ import { Wheat, Ship, TrendingUp, DollarSign } from "lucide-react";
 import { usePublicRiceStats } from "@/hooks/usePublicStats";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import { PageHero } from "@/components/public/PageHero";
+import { SeoHead } from "@/components/public/SeoHead";
 import { ImageGallery } from "@/components/public/ImageGallery";
 import { buildSectorGallery } from "@/components/public/galleryUtils";
 import heroImage from "@/assets/portal/hero-rice.jpg";
@@ -27,6 +28,13 @@ export default function PortalRice() {
 
   return (
     <>
+      <SeoHead
+        title="Arroz Nacional — SIGAFLO"
+        description="Produção, importações e indicadores de soberania alimentar do arroz em Angola, monitorizados pelo módulo estratégico do SIGAFLO."
+        path="/portal/arroz"
+        image={heroImage}
+        imageAlt="Arrozais irrigados de Angola — SIGAFLO"
+      />
       <PageHero
         image={heroImage}
         eyebrow="Sector"

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { PageHero } from "@/components/public/PageHero";
+import { SeoHead } from "@/components/public/SeoHead";
 import { ImageGallery, type GalleryItem } from "@/components/public/ImageGallery";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -56,6 +57,13 @@ export default function PortalGallery() {
 
   return (
     <div>
+      <SeoHead
+        title="Galeria SIGAFLO — Multimédia do sector agroflorestal"
+        description="Imagens das paisagens, comunidades e cadeias produtivas agroflorestais de Angola: agricultura, florestas, café, arroz e comunidades rurais."
+        path="/portal/galeria"
+        image={heroFarmer}
+        imageAlt="Galeria multimédia do SIGAFLO"
+      />
       <PageHero
         image={heroFarmer}
         eyebrow="Multimédia"

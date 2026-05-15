@@ -5,6 +5,7 @@ import { TreePine, FileText, AlertTriangle, Sprout } from "lucide-react";
 import { usePublicForestryStats } from "@/hooks/usePublicStats";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import { PageHero } from "@/components/public/PageHero";
+import { SeoHead } from "@/components/public/SeoHead";
 import { ImageGallery } from "@/components/public/ImageGallery";
 import { buildSectorGallery } from "@/components/public/galleryUtils";
 import heroImage from "@/assets/portal/hero-forest.jpg";
@@ -30,6 +31,13 @@ export default function PortalForestry() {
 
   return (
     <>
+      <SeoHead
+        title="Sector Florestal — SIGAFLO"
+        description="Gestão florestal de Angola: licenciamento, reflorestamento, infracções e cobertura florestal nativa monitorizada pelo SIGAFLO."
+        path="/portal/florestal"
+        image={heroImage}
+        imageAlt="Floresta de miombo — Sector Florestal de Angola"
+      />
       <PageHero
         image={heroImage}
         eyebrow="Sector"

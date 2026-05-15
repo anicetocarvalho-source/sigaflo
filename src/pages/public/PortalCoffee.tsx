@@ -6,6 +6,7 @@ import { Coffee, Package, Ship, Star, Search } from "lucide-react";
 import { usePublicCoffeeStats } from "@/hooks/usePublicStats";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, BarChart, Bar, XAxis, YAxis } from "recharts";
 import { PageHero } from "@/components/public/PageHero";
+import { SeoHead } from "@/components/public/SeoHead";
 import { ImageGallery } from "@/components/public/ImageGallery";
 import { buildSectorGallery } from "@/components/public/galleryUtils";
 import heroImage from "@/assets/portal/hero-coffee.jpg";
@@ -33,6 +34,13 @@ export default function PortalCoffee() {
 
   return (
     <>
+      <SeoHead
+        title="Cadeia do Café — SIGAFLO"
+        description="Rastreabilidade e qualidade do café arábica e robusta de Angola: lotes registados, em trânsito, exportados e classificação por qualidade."
+        path="/portal/cafe"
+        image={heroImage}
+        imageAlt="Plantação de café angolano — SIGAFLO"
+      />
       <PageHero
         image={heroImage}
         eyebrow="Sector"

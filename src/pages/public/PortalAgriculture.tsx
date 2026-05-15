@@ -4,6 +4,7 @@ import { Users, Sprout, Award, MapPin } from "lucide-react";
 import { usePublicAgricultureStats, usePublicAgricultureByProvince } from "@/hooks/usePublicStats";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import { PageHero } from "@/components/public/PageHero";
+import { SeoHead } from "@/components/public/SeoHead";
 import { ImageGallery } from "@/components/public/ImageGallery";
 import { buildSectorGallery } from "@/components/public/galleryUtils";
 import heroImage from "@/assets/portal/sector-agricultura.jpg";
@@ -35,6 +36,13 @@ export default function PortalAgriculture() {
 
   return (
     <>
+      <SeoHead
+        title="Sector Agrícola — SIGAFLO"
+        description="Indicadores agregados da agricultura angolana: agricultores, hectares cultivados, produção e certificados emitidos por província."
+        path="/portal/agricultura"
+        image={heroImage}
+        imageAlt="Sector agrícola de Angola — SIGAFLO"
+      />
       <PageHero
         image={heroImage}
         eyebrow="Sector"
