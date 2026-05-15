@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&family=Sora:wght@400;500;600;700;800&family=Manrope:wght@300;400;500;600;700;800&display=swap');
 
 @layer base {
   :root {
@@ -130,6 +130,23 @@
     font-family: 'Outfit', system-ui, sans-serif;
     @apply font-semibold tracking-tight;
   }
+}
+
+/* Public Portal typography scope — Sora (display) + Manrope (body) */
+.font-portal {
+  font-family: 'Manrope', system-ui, sans-serif;
+  font-feature-settings: "ss01", "cv11";
+}
+.font-portal h1,
+.font-portal h2,
+.font-portal h3,
+.font-portal h4,
+.font-portal h5,
+.font-portal h6,
+.font-portal [class*="font-['Outfit']"],
+.font-portal .font-display {
+  font-family: 'Sora', system-ui, sans-serif;
+  letter-spacing: -0.015em;
 }
 
 @layer components {
