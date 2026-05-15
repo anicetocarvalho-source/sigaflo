@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { BookOpen, Search, FileText, ExternalLink } from "lucide-react";
 import { usePublicLegislation } from "@/hooks/usePublicLegislation";
+import { SeoHead } from "@/components/public/SeoHead";
 import { format } from "date-fns";
 import { pt } from "date-fns/locale";
 
