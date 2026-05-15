@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Newspaper, Search, Calendar } from "lucide-react";
 import { usePublicNews } from "@/hooks/usePublicNews";
+import { SeoHead } from "@/components/public/SeoHead";
 import { format } from "date-fns";
 import { pt } from "date-fns/locale";
 
