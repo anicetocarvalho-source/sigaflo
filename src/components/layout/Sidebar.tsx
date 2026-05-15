@@ -3,6 +3,8 @@ import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { BrandLogo } from '@/components/brand/BrandLogo';
 import { useAuth, getRoleLabel } from '@/contexts/AuthContext';
+import { useModulePermissions, checkModuleAccess } from '@/hooks/useModulePermissions';
+import type { AppModule } from '@/lib/modules';
 import {
   LayoutDashboard,
   Users,
@@ -47,6 +49,7 @@ interface NavItem {
   children?: { label: string; href: string }[];
   adminOnly?: boolean;
   allowedRoles?: UserRole[];
+  module?: AppModule;
 }
 
 const TECH_AND_ADMIN: UserRole[] = ['admin_national', 'admin_provincial', 'admin_municipal', 'technician_national', 'technician_provincial', 'technician_municipal'];
