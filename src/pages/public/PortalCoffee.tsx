@@ -6,6 +6,7 @@ import { Coffee, Package, Ship, Star, Search } from "lucide-react";
 import { usePublicCoffeeStats } from "@/hooks/usePublicStats";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, BarChart, Bar, XAxis, YAxis } from "recharts";
 import { PageHero } from "@/components/public/PageHero";
+import { SeoHead } from "@/components/public/SeoHead";
 import { ImageGallery } from "@/components/public/ImageGallery";
 import { buildSectorGallery } from "@/components/public/galleryUtils";
 import heroImage from "@/assets/portal/hero-coffee.jpg";

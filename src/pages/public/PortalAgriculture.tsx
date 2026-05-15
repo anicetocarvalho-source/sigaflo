@@ -4,6 +4,7 @@ import { Users, Sprout, Award, MapPin } from "lucide-react";
 import { usePublicAgricultureStats, usePublicAgricultureByProvince } from "@/hooks/usePublicStats";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import { PageHero } from "@/components/public/PageHero";
+import { SeoHead } from "@/components/public/SeoHead";
 import { ImageGallery } from "@/components/public/ImageGallery";
 import { buildSectorGallery } from "@/components/public/galleryUtils";
 import heroImage from "@/assets/portal/sector-agricultura.jpg";
