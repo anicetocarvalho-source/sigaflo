@@ -133,8 +133,8 @@ const AuthPage = () => {
         <div className="relative z-10 flex flex-col justify-between p-12 w-full">
           {/* Top — logo */}
           <div className="flex items-center gap-3">
-            <div className="h-11 w-11 rounded-xl bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center">
-              <Leaf className="h-6 w-6 text-white" />
+            <div className="rounded-xl bg-white/95 backdrop-blur-sm border border-white/20 p-2 shadow-lg">
+              <BrandLogo variant="mark" className="h-9 w-9" priority />
             </div>
             <div>
               <span className="text-white font-bold text-xl tracking-tight" style={{ fontFamily: 'Outfit, sans-serif' }}>
@@ -189,18 +189,8 @@ const AuthPage = () => {
       {/* Right panel — auth forms */}
       <div className="flex-1 flex flex-col items-center bg-background p-6 sm:p-10 lg:p-12 overflow-y-auto min-h-screen lg:justify-center">
         {/* Mobile logo */}
-        <div className="lg:hidden flex items-center gap-3 mb-8">
-          <div className="h-12 w-12 rounded-xl gradient-primary flex items-center justify-center">
-            <Leaf className="h-6 w-6 text-white" />
-          </div>
-          <div>
-            <span className="text-foreground font-bold text-2xl tracking-tight" style={{ fontFamily: 'Outfit, sans-serif' }}>
-              SIGAFLO
-            </span>
-            <span className="block text-muted-foreground text-xs">
-              Sistema Integrado de Gestão Agro-Florestal
-            </span>
-          </div>
+        <div className="lg:hidden mb-8">
+          <BrandLogo variant="horizontal" className="h-12" priority />
         </div>
 
         <div className="w-full max-w-[420px]">

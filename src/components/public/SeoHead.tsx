@@ -25,9 +25,11 @@ function absolutize(url?: string) {
   }
 }
 
+const DEFAULT_OG_IMAGE = `${SITE}/og-image.png`;
+
 export function SeoHead({ title, description, path, image, imageAlt, type = "website" }: SeoHeadProps) {
   const url = `${SITE}${path.startsWith("/") ? path : `/${path}`}`;
-  const ogImage = absolutize(image);
+  const ogImage = absolutize(image) ?? DEFAULT_OG_IMAGE;
 
   return (
     <Helmet>

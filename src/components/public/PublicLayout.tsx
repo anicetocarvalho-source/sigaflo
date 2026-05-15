@@ -59,14 +59,9 @@ export default function PublicLayout() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
-            <Link to="/portal" className="flex items-center gap-2">
-              <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center">
-                <Leaf className="h-5 w-5 text-primary-foreground" />
-              </div>
-              <div className="hidden sm:block">
-                <span className="text-lg font-bold text-foreground font-['Outfit']">SIGAFLO</span>
-                <span className="text-xs block text-muted-foreground -mt-1">Portal Agroflorestal</span>
-              </div>
+            <Link to="/portal" className="flex items-center gap-2" aria-label="SIGAFLO — Início">
+              <BrandLogo variant="mark" className="h-10 w-10 sm:hidden" priority />
+              <BrandLogo variant="horizontal" className="hidden sm:block h-10" priority />
             </Link>
 
             {/* Desktop Nav */}
@@ -160,9 +155,9 @@ export default function PublicLayout() {
                   </Button>
                 </SheetTrigger>
                 <SheetContent side="right" className="w-72 overflow-y-auto">
-                  <SheetTitle className="flex items-center gap-2 mb-6">
-                    <Leaf className="h-5 w-5 text-primary" />
-                    SIGAFLO
+                  <SheetTitle className="mb-6">
+                    <BrandLogo variant="horizontal" className="h-9" />
+                    <span className="sr-only">SIGAFLO</span>
                   </SheetTitle>
                   <nav className="flex flex-col gap-1">
                     {allMobileItems.map((item) => {
@@ -209,11 +204,8 @@ export default function PublicLayout() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div className="md:col-span-2">
-              <div className="flex items-center gap-2 mb-3">
-                <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-                  <Leaf className="h-4 w-4 text-primary-foreground" />
-                </div>
-                <span className="text-lg font-bold font-['Outfit']">SIGAFLO</span>
+              <div className="mb-3">
+                <BrandLogo variant="horizontal" className="h-10" />
               </div>
               <p className="text-sm text-muted-foreground max-w-md">
                 Sistema Integrado de Gestão Agropecuária e Florestal — Plataforma oficial de informação 
