@@ -3,6 +3,8 @@ import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { BrandLogo } from '@/components/brand/BrandLogo';
 import { useAuth, getRoleLabel } from '@/contexts/AuthContext';
+import { useModulePermissions, checkModuleAccess } from '@/hooks/useModulePermissions';
+import type { AppModule } from '@/lib/modules';
 import {
   LayoutDashboard,
   Users,
@@ -47,6 +49,7 @@ interface NavItem {
   children?: { label: string; href: string }[];
   adminOnly?: boolean;
   allowedRoles?: UserRole[];
+  module?: AppModule;
 }
 
 const TECH_AND_ADMIN: UserRole[] = ['admin_national', 'admin_provincial', 'admin_municipal', 'technician_national', 'technician_provincial', 'technician_municipal'];
@@ -75,6 +78,7 @@ const navigationSections: NavSection[] = [
         label: 'Agricultores',
         icon: Users,
         allowedRoles: ALL_INTERNAL,
+        module: 'farmers',
         children: [
           { label: 'Registo de Agricultores', href: '/agricultores' },
           { label: 'Escolas de Campo', href: '/agricultores/escolas' },
@@ -85,21 +89,23 @@ const navigationSections: NavSection[] = [
           { label: 'Acesso Externo', href: '/cadastro-externo' },
         ],
       },
-      { label: 'Técnicos de Campo', href: '/tecnicos', icon: UserCog, allowedRoles: TECH_AND_ADMIN },
+      { label: 'Técnicos de Campo', href: '/tecnicos', icon: UserCog, allowedRoles: TECH_AND_ADMIN, module: 'farmers' },
       {
         label: 'Infra-estruturas',
         icon: Building2,
         allowedRoles: ALL_INTERNAL,
+        module: 'farmers',
         children: [
           { label: 'Agropecuárias', href: '/infraestruturas/agropecuarias' },
           { label: 'Mercados', href: '/infraestruturas/mercados' },
         ],
       },
-      { label: 'Histórico de Produção', href: '/producao', icon: TrendingUp, allowedRoles: ALL_INTERNAL },
+      { label: 'Histórico de Produção', href: '/producao', icon: TrendingUp, allowedRoles: ALL_INTERNAL, module: 'farmers' },
       {
         label: 'Certificados',
         icon: FileCheck,
         allowedRoles: TECH_AND_ADMIN,
+        module: 'farmers',
         children: [
           { label: 'Emissão de Certificados', href: '/certificados' },
           { label: 'Verificação Pública', href: '/certificados/verificar' },
@@ -114,6 +120,7 @@ const navigationSections: NavSection[] = [
         label: 'Gestão Florestal',
         icon: TreePine,
         allowedRoles: ALL_INTERNAL,
+        module: 'forestry',
         children: [
           { label: 'Inventário Florestal', href: '/florestal/inventario' },
           { label: 'Licenciamento', href: '/florestal/licenciamento' },
@@ -133,6 +140,7 @@ const navigationSections: NavSection[] = [
         label: 'Cadeia do Café',
         icon: Coffee,
         allowedRoles: ALL_INTERNAL,
+        module: 'coffee',
         children: [
           { label: 'Lotes de Café', href: '/cafe/lotes' },
           { label: 'Rastreio por Lote', href: '/cafe/rastreio' },
@@ -144,6 +152,7 @@ const navigationSections: NavSection[] = [
         label: 'Produção de Arroz',
         icon: Wheat,
         allowedRoles: TECH_AND_ADMIN,
+        module: 'rice',
         children: [
           { label: 'Visão Geral', href: '/arroz' },
           { label: 'Produção Nacional', href: '/arroz/producao' },
@@ -153,7 +162,7 @@ const navigationSections: NavSection[] = [
           { label: 'Políticas', href: '/arroz/politicas' },
         ],
       },
-      { label: 'Mecanização Agrícola', href: '/mecanizacao', icon: Tractor, allowedRoles: TECH_AND_ADMIN },
+      { label: 'Mecanização Agrícola', href: '/mecanizacao', icon: Tractor, allowedRoles: TECH_AND_ADMIN, module: 'mechanization' },
     ],
   },
   {
@@ -163,6 +172,7 @@ const navigationSections: NavSection[] = [
         label: 'Vendas & POS',
         icon: ShoppingCart,
         allowedRoles: TECH_AND_ADMIN,
+        module: 'pos',
         children: [
           { label: 'Ponto de Venda', href: '/pos' },
           { label: 'Facturas', href: '/faturas' },
@@ -170,12 +180,13 @@ const navigationSections: NavSection[] = [
           { label: 'Pacotes de Compras', href: '/pacotes-compras' },
         ],
       },
-      { label: 'Crédito e Seguro', href: '/credito-seguro', icon: Landmark, allowedRoles: TECH_AND_ADMIN },
-      { label: 'Seguros Agrícolas', href: '/seguros', icon: Shield, allowedRoles: TECH_AND_ADMIN },
+      { label: 'Crédito e Seguro', href: '/credito-seguro', icon: Landmark, allowedRoles: TECH_AND_ADMIN, module: 'credit_insurance' },
+      { label: 'Seguros Agrícolas', href: '/seguros', icon: Shield, allowedRoles: TECH_AND_ADMIN, module: 'credit_insurance' },
       {
         label: 'Gestão de Incentivos',
         icon: Gift,
         allowedRoles: ADMIN_ONLY,
+        module: 'incentives',
         children: [
           { label: 'Programas e Alocações', href: '/incentivos' },
           { label: 'Analytics e Impacto', href: '/incentivos-analytics' },
@@ -186,12 +197,13 @@ const navigationSections: NavSection[] = [
   {
     label: 'Inteligência e Monitoria',
     items: [
-      { label: 'Observatório (ONAF)', href: '/onaf', icon: Eye, allowedRoles: NATIONAL_ONLY },
-      { label: 'Identidade Produtiva', href: '/ipn', icon: Fingerprint, allowedRoles: TECH_AND_ADMIN },
+      { label: 'Observatório (ONAF)', href: '/onaf', icon: Eye, allowedRoles: NATIONAL_ONLY, module: 'data_lab' },
+      { label: 'Identidade Produtiva', href: '/ipn', icon: Fingerprint, allowedRoles: TECH_AND_ADMIN, module: 'ipn' },
       {
         label: 'Monitoria',
         icon: Activity,
         allowedRoles: TECH_AND_ADMIN,
+        module: 'occurrences',
         children: [
           { label: 'Alertas & Riscos', href: '/monitoria/alertas' },
           { label: 'Score Agrícola', href: '/monitoria/score' },
@@ -202,6 +214,7 @@ const navigationSections: NavSection[] = [
         label: 'Risco Climático',
         icon: Umbrella,
         allowedRoles: TECH_AND_ADMIN,
+        module: 'climate_risk',
         children: [
           { label: 'Ocorrências e Gestão', href: '/risco-climatico' },
           { label: 'Analytics e Seguro', href: '/risco-climatico-analytics' },
@@ -211,13 +224,14 @@ const navigationSections: NavSection[] = [
         label: 'Ocorrências',
         icon: CloudRain,
         allowedRoles: TECH_AND_ADMIN,
+        module: 'occurrences',
         children: [
           { label: 'Climáticas', href: '/ocorrencias/climaticas' },
           { label: 'Fitossanitárias', href: '/ocorrencias/fitossanitarias' },
           { label: 'Alertas', href: '/ocorrencias/alertas' },
         ],
       },
-      { label: 'Laboratório de Dados', href: '/laboratorio-dados', icon: FlaskConical, allowedRoles: NATIONAL_ONLY, adminOnly: true },
+      { label: 'Laboratório de Dados', href: '/laboratorio-dados', icon: FlaskConical, allowedRoles: NATIONAL_ONLY, adminOnly: true, module: 'data_lab' },
     ],
   },
   {
@@ -248,6 +262,7 @@ const secondaryNavigation = [
 export function Sidebar() {
   const location = useLocation();
   const { profile, roles, signOut, isAdmin } = useAuth();
+  const modulePerms = useModulePermissions();
   
   const STORAGE_KEY = 'sigaflo:sidebar:expanded';
 
@@ -326,9 +341,13 @@ export function Sidebar() {
 
   const isItemVisible = (item: NavItem) => {
     if (item.allowedRoles) {
-      return item.allowedRoles.some(role => roles.includes(role));
+      if (!item.allowedRoles.some(role => roles.includes(role))) return false;
+    } else if (item.adminOnly) {
+      if (!isAdmin) return false;
     }
-    if (item.adminOnly) return isAdmin;
+    if (item.module && !checkModuleAccess(item.module, modulePerms, isAdmin)) {
+      return false;
+    }
     return true;
   };
 

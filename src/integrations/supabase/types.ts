@@ -5877,6 +5877,30 @@ export type Database = {
           },
         ]
       }
+      module_permissions: {
+        Row: {
+          granted_at: string
+          granted_by: string | null
+          id: string
+          module: Database["public"]["Enums"]["app_module"]
+          user_id: string
+        }
+        Insert: {
+          granted_at?: string
+          granted_by?: string | null
+          id?: string
+          module: Database["public"]["Enums"]["app_module"]
+          user_id: string
+        }
+        Update: {
+          granted_at?: string
+          granted_by?: string | null
+          id?: string
+          module?: Database["public"]["Enums"]["app_module"]
+          user_id?: string
+        }
+        Relationships: []
+      }
       monitoring_alerts: {
         Row: {
           affected_area_ha: number | null
@@ -8139,8 +8163,19 @@ export type Database = {
       }
       dblink_is_busy: { Args: { "": string }; Returns: number }
       detect_eligibility_block_anomalies: { Args: never; Returns: number }
+      get_my_module_permissions: {
+        Args: never
+        Returns: Database["public"]["Enums"]["app_module"][]
+      }
       get_user_municipality: { Args: { _user_id: string }; Returns: string }
       get_user_province: { Args: { _user_id: string }; Returns: string }
+      has_module_access: {
+        Args: {
+          _module: Database["public"]["Enums"]["app_module"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["user_role"]
@@ -8218,6 +8253,19 @@ export type Database = {
       }
     }
     Enums: {
+      app_module:
+        | "farmers"
+        | "forestry"
+        | "coffee"
+        | "rice"
+        | "pos"
+        | "mechanization"
+        | "credit_insurance"
+        | "incentives"
+        | "climate_risk"
+        | "ipn"
+        | "data_lab"
+        | "occurrences"
       card_event_type:
         | "generated"
         | "printed"
@@ -8467,6 +8515,20 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      app_module: [
+        "farmers",
+        "forestry",
+        "coffee",
+        "rice",
+        "pos",
+        "mechanization",
+        "credit_insurance",
+        "incentives",
+        "climate_risk",
+        "ipn",
+        "data_lab",
+        "occurrences",
+      ],
       card_event_type: [
         "generated",
         "printed",
