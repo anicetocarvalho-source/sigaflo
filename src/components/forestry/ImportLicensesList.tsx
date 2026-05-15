@@ -4,10 +4,11 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Plus, Search, Edit, Eye, Loader2, PackageSearch, User, Building2 } from 'lucide-react';
+import { Plus, Search, Edit, FileText, Loader2, PackageSearch, User, Building2 } from 'lucide-react';
 import { QueryError } from '@/components/ui/query-state';
 import { useForestImportLicenses, type ForestImportLicense } from '@/hooks/useForestImportLicenses';
 import { ImportLicenseForm } from './ImportLicenseForm';
+import { ImportLicensePrintView } from './ImportLicensePrintView';
 import { format } from 'date-fns';
 import { pt } from 'date-fns/locale';
 
@@ -38,6 +39,7 @@ export function ImportLicensesList() {
   const [personFilter, setPersonFilter] = useState('all');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [open, setOpen] = useState(false);
+  const [printOpen, setPrintOpen] = useState(false);
   const [selected, setSelected] = useState<ForestImportLicense | null>(null);
 
   const { data, isLoading, isError, error, refetch } = useForestImportLicenses({
