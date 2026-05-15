@@ -5,7 +5,12 @@ import { TreePine, FileText, AlertTriangle, Sprout } from "lucide-react";
 import { usePublicForestryStats } from "@/hooks/usePublicStats";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import { PageHero } from "@/components/public/PageHero";
+import { ImageGallery } from "@/components/public/ImageGallery";
 import heroImage from "@/assets/portal/hero-forest.jpg";
+import gTimber from "@/assets/portal/gallery-timber.jpg";
+import gNursery from "@/assets/portal/gallery-nursery.jpg";
+import gTech from "@/assets/portal/gallery-technician.jpg";
+import gFields from "@/assets/portal/hero-fields.jpg";
 
 export default function PortalForestry() {
   const { data: stats, isLoading } = usePublicForestryStats();
@@ -98,6 +103,16 @@ export default function PortalForestry() {
           </CardContent>
         </Card>
       </div>
+
+      <section className="mt-10">
+        <h2 className="text-xl font-bold font-['Outfit'] mb-4">Galeria Florestal</h2>
+        <ImageGallery items={[
+          { src: gTimber, alt: "Madeira", caption: "Cadeia da madeira" },
+          { src: gNursery, alt: "Viveiro", caption: "Viveiros de mudas" },
+          { src: gFields, alt: "Cobertura florestal", caption: "Cobertura florestal" },
+          { src: gTech, alt: "Fiscalização", caption: "Fiscalização e monitoria" },
+        ]} />
+      </section>
 
       <Card className="mt-8">
         <CardContent className="p-6">

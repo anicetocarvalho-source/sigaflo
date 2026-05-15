@@ -4,7 +4,12 @@ import { Users, Sprout, Award, MapPin } from "lucide-react";
 import { usePublicAgricultureStats, usePublicAgricultureByProvince } from "@/hooks/usePublicStats";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import { PageHero } from "@/components/public/PageHero";
+import { ImageGallery } from "@/components/public/ImageGallery";
 import heroImage from "@/assets/portal/sector-agricultura.jpg";
+import gCoop from "@/assets/portal/gallery-cooperative.jpg";
+import gMech from "@/assets/portal/gallery-mechanization.jpg";
+import gWoman from "@/assets/portal/gallery-woman-farmer.jpg";
+import gTech from "@/assets/portal/gallery-technician.jpg";
 
 const COLORS = ["hsl(152,45%,25%)", "hsl(38,92%,50%)", "hsl(205,85%,45%)", "hsl(30,25%,55%)", "hsl(152,60%,40%)"];
 
@@ -101,6 +106,16 @@ export default function PortalAgriculture() {
       </div>
 
       {/* Info */}
+      <section className="mt-10">
+        <h2 className="text-xl font-bold font-['Outfit'] mb-4">Galeria do Sector</h2>
+        <ImageGallery items={[
+          { src: gCoop, alt: "Cooperativa agrícola", caption: "Cooperativas locais" },
+          { src: gMech, alt: "Mecanização", caption: "Mecanização agrícola" },
+          { src: gWoman, alt: "Mulher agricultora", caption: "Agricultura familiar" },
+          { src: gTech, alt: "Técnico de campo", caption: "Assistência técnica" },
+        ]} />
+      </section>
+
       <Card className="mt-8">
         <CardContent className="p-6">
           <h3 className="font-semibold mb-2">Sobre os Dados</h3>

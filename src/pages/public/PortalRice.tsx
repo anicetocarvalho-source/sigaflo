@@ -4,7 +4,12 @@ import { Wheat, Ship, TrendingUp, DollarSign } from "lucide-react";
 import { usePublicRiceStats } from "@/hooks/usePublicStats";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import { PageHero } from "@/components/public/PageHero";
+import { ImageGallery } from "@/components/public/ImageGallery";
 import heroImage from "@/assets/portal/hero-rice.jpg";
+import gFields from "@/assets/portal/hero-fields.jpg";
+import gMarket from "@/assets/portal/gallery-market.jpg";
+import gCoop from "@/assets/portal/gallery-cooperative.jpg";
+import gMech from "@/assets/portal/gallery-mechanization.jpg";
 
 export default function PortalRice() {
   const { data: stats, isLoading } = usePublicRiceStats();
@@ -93,6 +98,16 @@ export default function PortalRice() {
           </CardContent>
         </Card>
       </div>
+
+      <section className="mt-10">
+        <h2 className="text-xl font-bold font-['Outfit'] mb-4">Galeria do Arroz</h2>
+        <ImageGallery items={[
+          { src: gFields, alt: "Campos de arroz", caption: "Áreas de produção" },
+          { src: gMech, alt: "Mecanização", caption: "Mecanização do cultivo" },
+          { src: gMarket, alt: "Mercado", caption: "Comercialização interna" },
+          { src: gCoop, alt: "Cooperativas", caption: "Cooperativas produtoras" },
+        ]} />
+      </section>
 
       <Card className="mt-8">
         <CardContent className="p-6">

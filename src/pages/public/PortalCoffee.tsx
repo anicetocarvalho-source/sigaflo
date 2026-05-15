@@ -6,7 +6,12 @@ import { Coffee, Package, Ship, Star, Search } from "lucide-react";
 import { usePublicCoffeeStats } from "@/hooks/usePublicStats";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, BarChart, Bar, XAxis, YAxis } from "recharts";
 import { PageHero } from "@/components/public/PageHero";
+import { ImageGallery } from "@/components/public/ImageGallery";
 import heroImage from "@/assets/portal/hero-coffee.jpg";
+import gDrying from "@/assets/portal/gallery-coffee-drying.jpg";
+import gMarket from "@/assets/portal/gallery-market.jpg";
+import gWoman from "@/assets/portal/gallery-woman-farmer.jpg";
+import gCoop from "@/assets/portal/gallery-cooperative.jpg";
 
 const COLORS = ["hsl(38,92%,50%)", "hsl(152,45%,25%)", "hsl(205,85%,45%)", "hsl(30,25%,55%)"];
 
@@ -87,6 +92,16 @@ export default function PortalCoffee() {
       </div>
 
       {/* Verification CTA */}
+      <section className="mt-10">
+        <h2 className="text-xl font-bold font-['Outfit'] mb-4">Galeria do Café</h2>
+        <ImageGallery items={[
+          { src: gDrying, alt: "Secagem do café", caption: "Secagem tradicional" },
+          { src: gCoop, alt: "Cooperativa", caption: "Cooperativas cafeeiras" },
+          { src: gMarket, alt: "Mercado", caption: "Comercialização" },
+          { src: gWoman, alt: "Produtora", caption: "Produtoras locais" },
+        ]} />
+      </section>
+
       <Card className="mt-8">
         <CardContent className="p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div>
