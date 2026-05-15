@@ -81,14 +81,11 @@ serve(async (req) => {
       auth: { autoRefreshToken: false, persistSession: false },
     });
 
-    // Bootstrap mode: se ainda não existir nenhum admin nacional, permite seeding aberto.
-    // Caso contrário, exige sessão de admin nacional autenticado.
-    const { count: adminCount } = await supabaseAdmin
-      .from('user_roles')
-      .select('id', { count: 'exact', head: true })
-      .eq('role', 'admin_national');
-
-    const isBootstrap = !adminCount || adminCount === 0;
+    // Bootstrap mode: se ainda faltar qualquer conta demo, permite seeding aberto (idempotente).
+    const { data: listed } = await supabaseAdmin.auth.admin.listUsers();
+    const existingEmails = new Set((listed?.users ?? []).map(u => u.email));
+    const missingDemo = ALL_USERS.some(u => !existingEmails.has(u.email));
+    const isBootstrap = missingDemo;
 
     if (!isBootstrap) {
       const authHeader = req.headers.get('Authorization');
