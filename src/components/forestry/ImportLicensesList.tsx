@@ -154,8 +154,12 @@ export function ImportLicensesList() {
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center justify-end gap-1">
-                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleEdit(l)}>
-                        <Eye className="h-4 w-4" />
+                      <Button
+                        variant="ghost" size="icon" className="h-8 w-8"
+                        title="Ver / Imprimir autorização"
+                        onClick={() => { setSelected(l); setPrintOpen(true); }}
+                      >
+                        <FileText className="h-4 w-4" />
                       </Button>
                       <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleEdit(l)}>
                         <Edit className="h-4 w-4" />
@@ -170,6 +174,7 @@ export function ImportLicensesList() {
       </div>
 
       <ImportLicenseForm open={open} onClose={() => setOpen(false)} license={selected} />
+      <ImportLicensePrintView open={printOpen} onClose={() => setPrintOpen(false)} license={selected} />
     </div>
   );
 }
