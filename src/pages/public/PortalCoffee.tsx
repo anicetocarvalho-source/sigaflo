@@ -7,6 +7,7 @@ import { usePublicCoffeeStats } from "@/hooks/usePublicStats";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, BarChart, Bar, XAxis, YAxis } from "recharts";
 import { PageHero } from "@/components/public/PageHero";
 import { ImageGallery } from "@/components/public/ImageGallery";
+import { buildSectorGallery } from "@/components/public/galleryUtils";
 import heroImage from "@/assets/portal/hero-coffee.jpg";
 import gDrying from "@/assets/portal/gallery-coffee-drying.jpg";
 import gMarket from "@/assets/portal/gallery-market.jpg";
@@ -94,12 +95,15 @@ export default function PortalCoffee() {
       {/* Verification CTA */}
       <section className="mt-10">
         <h2 className="text-xl font-bold font-['Outfit'] mb-4">Galeria do Café</h2>
-        <ImageGallery items={[
-          { src: gDrying, alt: "Secagem do café", caption: "Secagem tradicional" },
-          { src: gCoop, alt: "Cooperativa", caption: "Cooperativas cafeeiras" },
-          { src: gMarket, alt: "Mercado", caption: "Comercialização" },
-          { src: gWoman, alt: "Produtora", caption: "Produtoras locais" },
-        ]} />
+        <ImageGallery
+          ariaLabel="Galeria do sector cafeeiro"
+          items={buildSectorGallery("Café", [
+            { src: gDrying, subject: "Secagem em terreiro", caption: "Secagem tradicional do café" },
+            { src: gCoop, subject: "Cooperativa cafeeira", caption: "Cooperativas de cafeicultores" },
+            { src: gMarket, subject: "Comercialização do café", caption: "Mercados de café verde" },
+            { src: gWoman, subject: "Produtora de café", caption: "Mulheres na cafeicultura" },
+          ])}
+        />
       </section>
 
       <Card className="mt-8">

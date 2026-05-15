@@ -6,6 +6,7 @@ import { usePublicForestryStats } from "@/hooks/usePublicStats";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import { PageHero } from "@/components/public/PageHero";
 import { ImageGallery } from "@/components/public/ImageGallery";
+import { buildSectorGallery } from "@/components/public/galleryUtils";
 import heroImage from "@/assets/portal/hero-forest.jpg";
 import gTimber from "@/assets/portal/gallery-timber.jpg";
 import gNursery from "@/assets/portal/gallery-nursery.jpg";

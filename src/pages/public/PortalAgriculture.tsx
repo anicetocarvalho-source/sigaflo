@@ -5,6 +5,7 @@ import { usePublicAgricultureStats, usePublicAgricultureByProvince } from "@/hoo
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import { PageHero } from "@/components/public/PageHero";
 import { ImageGallery } from "@/components/public/ImageGallery";
+import { buildSectorGallery } from "@/components/public/galleryUtils";
 import heroImage from "@/assets/portal/sector-agricultura.jpg";
 import gCoop from "@/assets/portal/gallery-cooperative.jpg";
 import gMech from "@/assets/portal/gallery-mechanization.jpg";
@@ -108,12 +109,15 @@ export default function PortalAgriculture() {
       {/* Info */}
       <section className="mt-10">
         <h2 className="text-xl font-bold font-['Outfit'] mb-4">Galeria do Sector</h2>
-        <ImageGallery items={[
-          { src: gCoop, alt: "Cooperativa agrícola", caption: "Cooperativas locais" },
-          { src: gMech, alt: "Mecanização", caption: "Mecanização agrícola" },
-          { src: gWoman, alt: "Mulher agricultora", caption: "Agricultura familiar" },
-          { src: gTech, alt: "Técnico de campo", caption: "Assistência técnica" },
-        ]} />
+        <ImageGallery
+          ariaLabel="Galeria do sector agrícola"
+          items={buildSectorGallery("Agricultura", [
+            { src: gCoop, subject: "Cooperativa agrícola", caption: "Cooperativas locais" },
+            { src: gMech, subject: "Mecanização agrícola", caption: "Tractores em operação" },
+            { src: gWoman, subject: "Mulher agricultora", caption: "Agricultura familiar" },
+            { src: gTech, subject: "Técnico de extensão", caption: "Assistência técnica no campo" },
+          ])}
+        />
       </section>
 
       <Card className="mt-8">
