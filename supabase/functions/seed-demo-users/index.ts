@@ -77,44 +77,45 @@ serve(async (req) => {
     const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const anonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
 
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
-      return new Response(
-        JSON.stringify({ success: false, error: 'Autenticação necessária' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    const authClient = createClient(supabaseUrl, anonKey, {
-      global: { headers: { Authorization: authHeader } },
-      auth: { autoRefreshToken: false, persistSession: false },
-    });
-
-    const { data: { user }, error: authError } = await authClient.auth.getUser();
-    if (authError || !user) {
-      return new Response(
-        JSON.stringify({ success: false, error: 'Sessão inválida' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    const { data: roleData } = await authClient
-      .from('user_roles')
-      .select('role')
-      .eq('user_id', user.id)
-      .eq('role', 'admin_national')
-      .maybeSingle();
-
-    if (!roleData) {
-      return new Response(
-        JSON.stringify({ success: false, error: 'Apenas administradores nacionais podem executar esta operação' }),
-        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
     const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey, {
       auth: { autoRefreshToken: false, persistSession: false },
     });
+
+    // Bootstrap mode: se ainda faltar qualquer conta demo, permite seeding aberto (idempotente).
+    const { data: listed } = await supabaseAdmin.auth.admin.listUsers();
+    const existingEmails = new Set((listed?.users ?? []).map(u => u.email));
+    const missingDemo = ALL_USERS.some(u => !existingEmails.has(u.email));
+    const isBootstrap = missingDemo;
+
+    if (!isBootstrap) {
+      const authHeader = req.headers.get('Authorization');
+      if (!authHeader || authHeader === `Bearer ${anonKey}`) {
+        return new Response(
+          JSON.stringify({ success: false, error: 'Autenticação necessária' }),
+          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      const authClient = createClient(supabaseUrl, anonKey, {
+        global: { headers: { Authorization: authHeader } },
+        auth: { autoRefreshToken: false, persistSession: false },
+      });
+      const { data: { user }, error: authError } = await authClient.auth.getUser();
+      if (authError || !user) {
+        return new Response(
+          JSON.stringify({ success: false, error: 'Sessão inválida' }),
+          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      const { data: roleData } = await supabaseAdmin
+        .from('user_roles').select('id')
+        .eq('user_id', user.id).eq('role', 'admin_national').maybeSingle();
+      if (!roleData) {
+        return new Response(
+          JSON.stringify({ success: false, error: 'Apenas administradores nacionais podem executar esta operação' }),
+          { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+    }
 
     const results: { email: string; status: string; error?: string }[] = [];
     const { data: existingUsers } = await supabaseAdmin.auth.admin.listUsers();
