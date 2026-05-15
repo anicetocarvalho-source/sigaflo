@@ -1,5 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Phone, Mail, MapPin, Building2 } from "lucide-react";
+import { PageHero } from "@/components/public/PageHero";
+import heroImage from "@/assets/portal/about-team.jpg";
 
 const INSTITUTIONS = [
   {
