@@ -3,6 +3,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Users, Sprout, Award, MapPin } from "lucide-react";
 import { usePublicAgricultureStats, usePublicAgricultureByProvince } from "@/hooks/usePublicStats";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
+import { PageHero } from "@/components/public/PageHero";
+import heroImage from "@/assets/portal/sector-agricultura.jpg";
 
 const COLORS = ["hsl(152,45%,25%)", "hsl(38,92%,50%)", "hsl(205,85%,45%)", "hsl(30,25%,55%)", "hsl(152,60%,40%)"];
 
@@ -26,11 +28,15 @@ export default function PortalAgriculture() {
     .map((p: any) => ({ name: p.province_name, total: Number(p.farmer_count) }));
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold font-['Outfit'] mb-2">Sector Agrícola</h1>
-        <p className="text-muted-foreground">Indicadores agregados da agricultura angolana</p>
-      </div>
+    <>
+      <PageHero
+        image={heroImage}
+        eyebrow="Sector"
+        title="Sector Agrícola"
+        subtitle="Indicadores agregados da agricultura angolana"
+        breadcrumbs={[{ label: "Agricultura" }]}
+      />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
       {/* KPIs */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
