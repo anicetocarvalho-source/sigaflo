@@ -111,6 +111,7 @@ export default function PortalAgriculture() {
           </p>
         </CardContent>
       </Card>
-    </div>
+      </div>
+    </>
   );
 }
