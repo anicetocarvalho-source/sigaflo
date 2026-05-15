@@ -97,6 +97,7 @@ export default function PortalAbout() {
           </div>
         </CardContent>
       </Card>
-    </div>
+      </div>
+    </>
   );
 }

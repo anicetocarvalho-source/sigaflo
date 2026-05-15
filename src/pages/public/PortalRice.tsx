@@ -103,6 +103,7 @@ export default function PortalRice() {
           </p>
         </CardContent>
       </Card>
-    </div>
+      </div>
+    </>
   );
 }

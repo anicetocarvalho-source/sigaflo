@@ -108,6 +108,7 @@ export default function PortalForestry() {
           </p>
         </CardContent>
       </Card>
-    </div>
+      </div>
+    </>
   );
 }
