@@ -6,56 +6,66 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const DEMO_USERS = [
-  {
-    email: 'admin.nacional@demo.sigaflo.ao',
-    password: 'demo123456',
-    full_name: 'Administrador Nacional (Demo)',
-    role: 'admin_national',
-  },
-  {
-    email: 'admin.provincial@demo.sigaflo.ao',
-    password: 'demo123456',
-    full_name: 'Administrador Provincial (Demo)',
-    role: 'admin_provincial',
-  },
-  {
-    email: 'admin.municipal@demo.sigaflo.ao',
-    password: 'demo123456',
-    full_name: 'Administrador Municipal (Demo)',
-    role: 'admin_municipal',
-  },
-  {
-    email: 'tecnico.nacional@demo.sigaflo.ao',
-    password: 'demo123456',
-    full_name: 'Técnico Nacional (Demo)',
-    role: 'technician_national',
-  },
-  {
-    email: 'tecnico.provincial@demo.sigaflo.ao',
-    password: 'demo123456',
-    full_name: 'Técnico Provincial (Demo)',
-    role: 'technician_provincial',
-  },
-  {
-    email: 'tecnico.municipal@demo.sigaflo.ao',
-    password: 'demo123456',
-    full_name: 'Técnico Municipal (Demo)',
-    role: 'technician_municipal',
-  },
-  {
-    email: 'entidade@demo.sigaflo.ao',
-    password: 'demo123456',
-    full_name: 'Entidade Privada (Demo)',
-    role: 'private_entity',
-  },
-  {
-    email: 'visualizador@demo.sigaflo.ao',
-    password: 'demo123456',
-    full_name: 'Visualizador (Demo)',
-    role: 'viewer',
-  },
+type AppModule =
+  | 'farmers' | 'forestry' | 'coffee' | 'rice' | 'pos' | 'mechanization'
+  | 'credit_insurance' | 'incentives' | 'climate_risk' | 'ipn' | 'data_lab' | 'occurrences';
+
+interface DemoUser {
+  email: string;
+  password: string;
+  full_name: string;
+  role: string;
+  module?: AppModule; // undefined => acesso total (existing global accounts)
+}
+
+const PASSWORD = 'demo123456';
+
+// Contas globais existentes (mantidas para compatibilidade)
+const GLOBAL_USERS: DemoUser[] = [
+  { email: 'admin.nacional@demo.sigaflo.ao',     password: PASSWORD, full_name: 'Administrador Nacional (Demo)',     role: 'admin_national' },
+  { email: 'admin.provincial@demo.sigaflo.ao',   password: PASSWORD, full_name: 'Administrador Provincial (Demo)',   role: 'admin_provincial' },
+  { email: 'admin.municipal@demo.sigaflo.ao',    password: PASSWORD, full_name: 'Administrador Municipal (Demo)',    role: 'admin_municipal' },
+  { email: 'tecnico.nacional@demo.sigaflo.ao',   password: PASSWORD, full_name: 'Técnico Nacional (Demo)',           role: 'technician_national' },
+  { email: 'tecnico.provincial@demo.sigaflo.ao', password: PASSWORD, full_name: 'Técnico Provincial (Demo)',         role: 'technician_provincial' },
+  { email: 'tecnico.municipal@demo.sigaflo.ao',  password: PASSWORD, full_name: 'Técnico Municipal (Demo)',          role: 'technician_municipal' },
+  { email: 'entidade@demo.sigaflo.ao',           password: PASSWORD, full_name: 'Entidade Privada (Demo)',           role: 'private_entity' },
+  { email: 'visualizador@demo.sigaflo.ao',       password: PASSWORD, full_name: 'Visualizador (Demo)',               role: 'viewer' },
 ];
+
+// 12 módulos × 2 níveis (nacional + provincial)
+const MODULES: { key: AppModule; label: string; slug: string }[] = [
+  { key: 'farmers',          label: 'Cadastro de Produtores',     slug: 'cadastro' },
+  { key: 'forestry',         label: 'Gestão Florestal',           slug: 'florestal' },
+  { key: 'coffee',           label: 'Cadeia do Café',             slug: 'cafe' },
+  { key: 'rice',             label: 'Produção de Arroz',          slug: 'arroz' },
+  { key: 'pos',              label: 'Vendas & POS',               slug: 'pos' },
+  { key: 'mechanization',    label: 'Mecanização Agrícola',       slug: 'mecanizacao' },
+  { key: 'credit_insurance', label: 'Crédito & Seguros',          slug: 'credito' },
+  { key: 'incentives',       label: 'Gestão de Incentivos',       slug: 'incentivos' },
+  { key: 'climate_risk',     label: 'Risco Climático',            slug: 'risco-climatico' },
+  { key: 'ipn',              label: 'Identidade Produtiva (IPN)', slug: 'ipn' },
+  { key: 'data_lab',         label: 'Laboratório de Dados',       slug: 'datalab' },
+  { key: 'occurrences',      label: 'Ocorrências Fitossanitárias', slug: 'ocorrencias' },
+];
+
+const MODULE_USERS: DemoUser[] = MODULES.flatMap((m) => [
+  {
+    email: `${m.slug}.nacional@demo.sigaflo.ao`,
+    password: PASSWORD,
+    full_name: `${m.label} — Técnico Nacional (Demo)`,
+    role: 'technician_national',
+    module: m.key,
+  },
+  {
+    email: `${m.slug}.provincial@demo.sigaflo.ao`,
+    password: PASSWORD,
+    full_name: `${m.label} — Técnico Provincial (Demo)`,
+    role: 'technician_provincial',
+    module: m.key,
+  },
+]);
+
+const ALL_USERS: DemoUser[] = [...GLOBAL_USERS, ...MODULE_USERS];
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -67,7 +77,6 @@ serve(async (req) => {
     const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const anonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
 
-    // Verify the caller is an authenticated admin
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
       return new Response(
@@ -89,7 +98,6 @@ serve(async (req) => {
       );
     }
 
-    // Check if user has admin_national role
     const { data: roleData } = await authClient
       .from('user_roles')
       .select('role')
@@ -98,88 +106,68 @@ serve(async (req) => {
       .maybeSingle();
 
     if (!roleData) {
-      console.log(`Unauthorized seed-users attempt by user ${user.id}`);
       return new Response(
         JSON.stringify({ success: false, error: 'Apenas administradores nacionais podem executar esta operação' }),
         { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    console.log(`Seed-users initiated by admin: ${user.id}`);
-
     const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey, {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false,
-      },
+      auth: { autoRefreshToken: false, persistSession: false },
     });
 
     const results: { email: string; status: string; error?: string }[] = [];
+    const { data: existingUsers } = await supabaseAdmin.auth.admin.listUsers();
 
-    for (const user of DEMO_USERS) {
+    for (const u of ALL_USERS) {
       try {
-        // Check if user already exists
-        const { data: existingUsers } = await supabaseAdmin.auth.admin.listUsers();
-        const existingUser = existingUsers?.users?.find(u => u.email === user.email);
-
+        const existingUser = existingUsers?.users?.find(x => x.email === u.email);
         let userId: string;
 
         if (existingUser) {
           userId = existingUser.id;
-          results.push({ email: user.email, status: 'exists' });
+          results.push({ email: u.email, status: 'exists' });
         } else {
-          // Create new user
           const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
-            email: user.email,
-            password: user.password,
+            email: u.email,
+            password: u.password,
             email_confirm: true,
-            user_metadata: {
-              full_name: user.full_name,
-            },
+            user_metadata: { full_name: u.full_name },
           });
-
           if (createError) {
-            results.push({ email: user.email, status: 'error', error: createError.message });
+            results.push({ email: u.email, status: 'error', error: createError.message });
             continue;
           }
-
           userId = newUser.user.id;
-          results.push({ email: user.email, status: 'created' });
+          results.push({ email: u.email, status: 'created' });
         }
 
-        // Ensure profile exists
+        // Profile
         const { data: existingProfile } = await supabaseAdmin
-          .from('profiles')
-          .select('id')
-          .eq('id', userId)
-          .single();
-
+          .from('profiles').select('id').eq('id', userId).maybeSingle();
         if (!existingProfile) {
           await supabaseAdmin.from('profiles').insert({
-            id: userId,
-            email: user.email,
-            full_name: user.full_name,
-            is_active: true,
+            id: userId, email: u.email, full_name: u.full_name, is_active: true,
           });
         }
 
-        // Ensure role exists
+        // Role
         const { data: existingRole } = await supabaseAdmin
-          .from('user_roles')
-          .select('id')
-          .eq('user_id', userId)
-          .eq('role', user.role)
-          .single();
-
+          .from('user_roles').select('id').eq('user_id', userId).eq('role', u.role).maybeSingle();
         if (!existingRole) {
-          await supabaseAdmin.from('user_roles').insert({
-            user_id: userId,
-            role: user.role,
-          });
+          await supabaseAdmin.from('user_roles').insert({ user_id: userId, role: u.role });
         }
 
+        // Module permissions
+        if (u.module) {
+          // Garante que tem APENAS este módulo
+          await supabaseAdmin.from('module_permissions').delete().eq('user_id', userId);
+          await supabaseAdmin.from('module_permissions').insert({
+            user_id: userId, module: u.module,
+          });
+        }
       } catch (err) {
-        results.push({ email: user.email, status: 'error', error: String(err) });
+        results.push({ email: u.email, status: 'error', error: String(err) });
       }
     }
 
