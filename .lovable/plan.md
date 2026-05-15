@@ -1,150 +1,98 @@
+## Objectivo
 
-# Portal Visualmente Atractivo — Imagens, Slides e Galeria
+Substituir o ícone genérico `Leaf` (lucide) usado actualmente como marca SIGAFLO pelos logotipos oficiais anexados, em todas as superfícies do produto (portal público, app interna, autenticação, favicon, PWA, social).
 
-Manter a paleta **Verde Institucional** actual (`#0a4d2e`, `#1a7f4f`, `#d4a84b`, `#f5f0e0`) e a identidade SIGAFLO. Acrescentar fotografia, carrosséis e uma nova página de Multimédia.
+## Inventário dos 5 ficheiros recebidos
 
----
+| Ficheiro | Variante | Uso recomendado |
+|---|---|---|
+| `1.png` | Horizontal a cores (ícone + "SIGAFLO" + tagline + tira de pictogramas) | Header desktop largo, rodapé |
+| `2.png` | Vertical/empilhada a cores | Splash, ecrã de login, cartões institucionais |
+| `3.png` | Horizontal monocromática verde escuro | Documentos, e-mails, fundos claros institucionais |
+| `4.png` | Vertical monocromática verde escuro | Versões impressas, exportações PDF |
+| `icone.png` | Só o emblema circular (sem texto) | Favicon, ícones PWA, avatar, header mobile |
 
-## 1. Geração de imagens (IA — Nano Banana)
-
-Criar um banco fotográfico institucional em `src/assets/portal/` com cenas autênticas de Angola (sem texto sobreposto, formato 16:9 paisagem, 21:9 para heroes):
-
-**Heroes principais (5 imagens, 21:9):**
-- `hero-fields.jpg` — campos de cultivo no planalto angolano ao amanhecer
-- `hero-coffee.jpg` — plantação de café arábica com baga vermelha em close
-- `hero-forest.jpg` — floresta de miombo com luz filtrada
-- `hero-rice.jpg` — campos alagados de arroz com agricultora
-- `hero-farmer.jpg` — agricultor angolano com ferramentas no campo
-
-**Sectores (4 imagens, 16:9):** `sector-agricultura.jpg`, `sector-florestas.jpg`, `sector-cafe.jpg`, `sector-arroz.jpg`
-
-**Galeria geral (8 imagens, 4:3/3:2):** mercados rurais, cooperativas, técnicos de campo, mecanização, transporte de madeira licenciada, secagem de café, viveiros de reflorestamento, mulher agricultora.
-
-**Sobre/Contactos (2 imagens, 16:9):** edifício institucional MINAGRIP, equipa de técnicos.
-
-Total: ~19 imagens geradas via `imagegen--generate_image` (model `standard`).
-
----
-
-## 2. Componente reutilizável: HeroCarousel
-
-Novo `src/components/public/HeroCarousel.tsx`:
-- Baseado no `Carousel` shadcn (já disponível) + autoplay (3s/slide com pausa no hover)
-- Slides full-bleed com imagem de fundo, gradiente verde sobreposto (`from-primary/85 via-primary/60 to-transparent`)
-- Cada slide: título grande, subtítulo, CTA, badge de sector
-- Indicadores (dots) e setas, navegação por teclado
-- Altura responsiva: `h-[60vh] min-h-[480px]` desktop, `h-[55vh]` mobile
-- Mantém a barra de pesquisa de verificação sobreposta na base
-
----
-
-## 3. Componente reutilizável: ContentCarousel
-
-Novo `src/components/public/ContentCarousel.tsx`:
-- Carrossel horizontal de cards com setas (1→3 cards visíveis conforme breakpoint)
-- Usado para: notícias em destaque, legislação recente, galeria de projectos
-- Snap-scroll no mobile, setas no desktop
-
----
-
-## 4. Componente: ImageGallery (lightbox)
-
-Novo `src/components/public/ImageGallery.tsx`:
-- Grid masonry responsivo (2/3/4 colunas)
-- Click → lightbox via Dialog do shadcn
-- Hover: zoom suave + legenda fade-in
-- Lazy loading nativo (`loading="lazy"`)
-
----
-
-## 5. Página Home (`PortalHome.tsx`) — redesenho
-
-Substituir a hero actual por:
+## Onde a marca aparece hoje (a substituir)
 
 ```text
-[ HeroCarousel 5 slides full-bleed ]
-   ├─ slide 1: "Portal Nacional Agroflorestal" + pesquisa
-   ├─ slide 2: "Café de Angola" → /portal/cafe
-   ├─ slide 3: "Florestas Sustentáveis" → /portal/florestal
-   ├─ slide 4: "Soberania do Arroz" → /portal/arroz
-   └─ slide 5: "Verifique Documentos" → /portal/verificar
-
-[ KPIs sobrepostos ao carrossel (-mt-12) ]
-
-[ Serviços Rápidos — manter mas em cards com gradient hover ]
-
-[ Sectores — adicionar imagem de fundo a cada card (sector-*.jpg) ]
-   Card com overlay verde, imagem visível ao hover
-
-[ Galeria em destaque (8 fotos) — ContentCarousel ]
-   "Angola Agroflorestal em Imagens" → CTA para /portal/galeria
-
-[ Notícias + Legislação — manter, com thumbnails maiores ]
-
-[ Faixa de Impacto — fundo hero-farmer.jpg + estatísticas grandes ]
-
-[ Verificação + Parceiros — manter ]
+src/components/public/PublicLayout.tsx   header + footer + dropdowns (3 × <Leaf />)
+src/components/layout/Sidebar.tsx        marca da app interna (texto só, falta ícone)
+src/pages/auth/AuthPage.tsx              split-screen login (2 × <Leaf />)
+public/favicon.ico                       favicon antigo
+public/icons/icon-192.png, icon-512.png  ícones PWA antigos
+index.html                               sem og:image — passa a usar logo social
 ```
 
----
+## Plano de execução
 
-## 6. Páginas dos 4 Sectores — header visual
+### 1. Importar e organizar assets
 
-Cada uma (Agricultura, Florestas, Café, Arroz) recebe:
-- **Hero banner** 21:9 com imagem dedicada + overlay verde + título e breadcrumb
-- **Mini-galeria** de 4–6 imagens relevantes ao sector (ContentCarousel)
-- KPIs e conteúdo existente preservados abaixo
+Copiar as 5 imagens para `src/assets/brand/` com nomes semânticos:
 
----
+```text
+src/assets/brand/
+├── sigaflo-horizontal-color.png   (1.png)
+├── sigaflo-stacked-color.png      (2.png)
+├── sigaflo-horizontal-mono.png    (3.png)
+├── sigaflo-stacked-mono.png       (4.png)
+└── sigaflo-mark.png               (icone.png — só emblema)
+```
 
-## 7. Páginas Sobre / Contactos — toques visuais
+E para `public/` (referenciados por HTML/manifest, não bundled):
 
-- `PortalAbout.tsx`: hero com `hero-farmer.jpg`, foto institucional na secção de instituições parceiras, divisores visuais.
-- `PortalContacts.tsx`: hero com edifício MINAGRIP.
+```text
+public/
+├── favicon.png            (32×32 derivado de icone.png)
+├── apple-touch-icon.png   (180×180 derivado de icone.png)
+└── og-image.png           (1200×630, baseado no horizontal a cores)
+```
 
----
+### 2. Componente único `<BrandLogo>`
 
-## 8. Nova página: Galeria/Multimédia
+Criar `src/components/brand/BrandLogo.tsx` com API:
 
-Rota: `/portal/galeria` → `src/pages/public/PortalGallery.tsx`
+```tsx
+<BrandLogo variant="horizontal" tone="color" className="h-10" />
+<BrandLogo variant="stacked"    tone="mono"  />
+<BrandLogo variant="mark"       /> {/* só emblema */}
+```
 
-Estrutura:
-- Hero compacto "Multimédia & Galeria"
-- Filtros por categoria (Agricultura, Florestas, Café, Arroz, Comunidades)
-- Grid masonry com `ImageGallery` + lightbox
-- Secção "Em destaque" com 3 fotos grandes
-- Placeholder para vídeos institucionais (cards com thumbnail e botão play — sem player real nesta iteração)
+Vantagens: um único ponto para futuras substituições; alt-text consistente ("SIGAFLO — Sistema Integrado de Gestão Agro-Florestal"); aspect-ratio garantido.
 
-Adicionar entrada no menu (`PublicLayout.tsx` → `infoItems`) e no rodapé.
+### 3. Substituir placements
 
----
+| Local | Antes | Depois |
+|---|---|---|
+| Portal header (desktop) | caixa 36×36 com `<Leaf />` + texto | `<BrandLogo variant="horizontal" />` (~ h-10) |
+| Portal header (mobile) | mesmo | `<BrandLogo variant="mark" className="h-9" />` |
+| Portal footer | `<Leaf />` + texto | `<BrandLogo variant="horizontal" tone="mono" />` |
+| Portal dropdown ícone | `<Leaf />` | manter `<Leaf />` (ícone funcional, não marca) |
+| Sidebar app interna | só texto | `<BrandLogo variant="mark" />` + texto "SIGAFLO" |
+| AuthPage (split-screen) | `<Leaf />` em caixa | `<BrandLogo variant="stacked" tone="color" />` no painel esquerdo, `<BrandLogo variant="mark" />` no painel direito |
 
-## 9. Detalhes técnicos
+### 4. Favicon, PWA e social
 
-- **Imagens importadas como ES6**: `import heroFields from '@/assets/portal/hero-fields.jpg'` (não usar paths string para tirar partido do build do Vite e hashing).
-- **Acessibilidade**: alt-text descritivo em PT-AO em todas as imagens; `aria-label` nos controles do carrossel; respeitar `prefers-reduced-motion` para desactivar autoplay.
-- **Performance**: `loading="lazy"` excepto na primeira slide do hero; `decoding="async"`.
-- **SEO**: tags `<meta>` Open Graph na Home com `hero-fields.jpg`.
-- **Sem alteração de backend** — apenas frontend e assets.
+- Substituir `public/favicon.ico` por `public/favicon.png` (32×32 baseado em `icone.png`).
+- Regenerar `public/icons/icon-192.png` e `icon-512.png` a partir de `icone.png` (mantendo padding interior para evitar corte em ícones maskable).
+- Adicionar em `index.html`:
+  - `<link rel="icon" href="/favicon.png" type="image/png" />`
+  - `<link rel="apple-touch-icon" href="/apple-touch-icon.png" />`
+  - `<meta property="og:image" content="https://sigaflo.lovable.app/og-image.png" />` (1200×630 com horizontal color centrado em fundo branco/verde institucional).
 
----
+### 5. SeoHead — image fallback
 
-## Ficheiros afectados
+`SeoHead` já aceita `image` por página. Adicionar fallback global para `/og-image.png` quando a página não passar imagem própria, garantindo que partilhas no LinkedIn/WhatsApp mostrem sempre o logo oficial.
 
-**Novos:**
-- `src/assets/portal/*.jpg` (≈19 imagens)
-- `src/components/public/HeroCarousel.tsx`
-- `src/components/public/ContentCarousel.tsx`
-- `src/components/public/ImageGallery.tsx`
-- `src/pages/public/PortalGallery.tsx`
+## Notas técnicas
 
-**Editados:**
-- `src/pages/public/PortalHome.tsx`
-- `src/pages/public/PortalAgriculture.tsx`
-- `src/pages/public/PortalForestry.tsx`
-- `src/pages/public/PortalCoffee.tsx`
-- `src/pages/public/PortalRice.tsx`
-- `src/pages/public/PortalAbout.tsx`
-- `src/pages/public/PortalContacts.tsx`
-- `src/components/public/PublicLayout.tsx` (entrada Galeria)
-- `src/App.tsx` (rota `/portal/galeria`)
+- Os PNGs anexados têm fundo transparente — funcionam sobre qualquer fundo.
+- A tira de pictogramas dentro do logotipo horizontal é pequena demais para ler abaixo de h-10; em mobile (h-7/h-8) usar sempre `variant="mark"`.
+- O Sidebar interno usa fundo escuro — usar `tone="color"` (o verde-claro do "FLO" mantém contraste) ou `mark` se o texto já existir.
+- Não tocar em `<Leaf />` quando este é usado como **ícone funcional** de menu (ex.: item "Início" no portal) — só substituir nas 6 instâncias que representam a marca.
+
+## Entregáveis
+
+1. 5 ficheiros em `src/assets/brand/` + 3 em `public/`.
+2. `src/components/brand/BrandLogo.tsx` (novo).
+3. Edits em `PublicLayout.tsx`, `Sidebar.tsx`, `AuthPage.tsx`, `SeoHead.tsx`, `index.html`, `manifest.webmanifest`.
+4. Memória `mem://ui/brand-logo-system` a documentar a regra "usar `<BrandLogo>`, nunca `<Leaf />` como marca".
