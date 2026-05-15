@@ -6,6 +6,7 @@ import { KPICard } from '@/components/dashboard/KPICard';
 import { LicensesList } from '@/components/forestry/LicensesList';
 import { LicenseForm } from '@/components/forestry/LicenseForm';
 import { LicenseRequestForm } from '@/components/forestry/LicenseRequestForm';
+import { ImportLicensesList } from '@/components/forestry/ImportLicensesList';
 import { TraceabilityDashboard } from '@/components/forestry/TraceabilityDashboard';
 import { useForestryStats, type ForestLicense } from '@/hooks/useForestry';
 import {
@@ -111,11 +112,22 @@ export default function ForestryPage() {
           </TabsList>
 
           <TabsContent value="licenses">
-            <LicensesList
-              onAddNew={() => setShowLicenseRequestForm(true)}
-              onView={handleViewLicense}
-              onEdit={handleEditLicense}
-            />
+            <Tabs defaultValue="forest" className="space-y-4">
+              <TabsList>
+                <TabsTrigger value="forest">Licenças Florestais</TabsTrigger>
+                <TabsTrigger value="import">Importação Agroflorestal</TabsTrigger>
+              </TabsList>
+              <TabsContent value="forest">
+                <LicensesList
+                  onAddNew={() => setShowLicenseRequestForm(true)}
+                  onView={handleViewLicense}
+                  onEdit={handleEditLicense}
+                />
+              </TabsContent>
+              <TabsContent value="import">
+                <ImportLicensesList />
+              </TabsContent>
+            </Tabs>
           </TabsContent>
 
           <TabsContent value="traceability">
