@@ -262,6 +262,7 @@ const secondaryNavigation = [
 export function Sidebar() {
   const location = useLocation();
   const { profile, roles, signOut, isAdmin } = useAuth();
+  const modulePerms = useModulePermissions();
   
   const STORAGE_KEY = 'sigaflo:sidebar:expanded';
 
@@ -340,9 +341,13 @@ export function Sidebar() {
 
   const isItemVisible = (item: NavItem) => {
     if (item.allowedRoles) {
-      return item.allowedRoles.some(role => roles.includes(role));
+      if (!item.allowedRoles.some(role => roles.includes(role))) return false;
+    } else if (item.adminOnly) {
+      if (!isAdmin) return false;
     }
-    if (item.adminOnly) return isAdmin;
+    if (item.module && !checkModuleAccess(item.module, modulePerms, isAdmin)) {
+      return false;
+    }
     return true;
   };
 
