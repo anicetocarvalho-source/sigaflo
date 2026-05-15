@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Coffee, Package, Ship, Star, Search } from "lucide-react";
 import { usePublicCoffeeStats } from "@/hooks/usePublicStats";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, BarChart, Bar, XAxis, YAxis } from "recharts";
+import { PageHero } from "@/components/public/PageHero";
+import heroImage from "@/assets/portal/hero-coffee.jpg";
 
 const COLORS = ["hsl(38,92%,50%)", "hsl(152,45%,25%)", "hsl(205,85%,45%)", "hsl(30,25%,55%)"];
 
@@ -24,11 +26,15 @@ export default function PortalCoffee() {
   ].filter(d => d.valor > 0) : [];
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold font-['Outfit'] mb-2">Cadeia do Café</h1>
-        <p className="text-muted-foreground">Rastreabilidade e qualidade do café angolano</p>
-      </div>
+    <>
+      <PageHero
+        image={heroImage}
+        eyebrow="Sector"
+        title="Cadeia do Café"
+        subtitle="Rastreabilidade e qualidade do café angolano"
+        breadcrumbs={[{ label: "Café" }]}
+      />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         {[
@@ -97,6 +103,7 @@ export default function PortalCoffee() {
           </Link>
         </CardContent>
       </Card>
-    </div>
+      </div>
+    </>
   );
 }
