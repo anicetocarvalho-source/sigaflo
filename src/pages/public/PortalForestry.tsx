@@ -31,6 +31,13 @@ export default function PortalForestry() {
 
   return (
     <>
+      <SeoHead
+        title="Sector Florestal — SIGAFLO"
+        description="Gestão florestal de Angola: licenciamento, reflorestamento, infracções e cobertura florestal nativa monitorizada pelo SIGAFLO."
+        path="/portal/florestal"
+        image={heroImage}
+        imageAlt="Floresta de miombo — Sector Florestal de Angola"
+      />
       <PageHero
         image={heroImage}
         eyebrow="Sector"

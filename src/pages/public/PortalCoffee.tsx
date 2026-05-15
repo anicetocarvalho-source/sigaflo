@@ -34,6 +34,13 @@ export default function PortalCoffee() {
 
   return (
     <>
+      <SeoHead
+        title="Cadeia do Café — SIGAFLO"
+        description="Rastreabilidade e qualidade do café arábica e robusta de Angola: lotes registados, em trânsito, exportados e classificação por qualidade."
+        path="/portal/cafe"
+        image={heroImage}
+        imageAlt="Plantação de café angolano — SIGAFLO"
+      />
       <PageHero
         image={heroImage}
         eyebrow="Sector"

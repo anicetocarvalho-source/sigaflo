@@ -28,6 +28,13 @@ export default function PortalRice() {
 
   return (
     <>
+      <SeoHead
+        title="Arroz Nacional — SIGAFLO"
+        description="Produção, importações e indicadores de soberania alimentar do arroz em Angola, monitorizados pelo módulo estratégico do SIGAFLO."
+        path="/portal/arroz"
+        image={heroImage}
+        imageAlt="Arrozais irrigados de Angola — SIGAFLO"
+      />
       <PageHero
         image={heroImage}
         eyebrow="Sector"

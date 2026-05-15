@@ -36,6 +36,13 @@ export default function PortalAgriculture() {
 
   return (
     <>
+      <SeoHead
+        title="Sector Agrícola — SIGAFLO"
+        description="Indicadores agregados da agricultura angolana: agricultores, hectares cultivados, produção e certificados emitidos por província."
+        path="/portal/agricultura"
+        image={heroImage}
+        imageAlt="Sector agrícola de Angola — SIGAFLO"
+      />
       <PageHero
         image={heroImage}
         eyebrow="Sector"
