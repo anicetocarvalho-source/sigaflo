@@ -3255,6 +3255,98 @@ export type Database = {
           },
         ]
       }
+      forest_import_licenses: {
+        Row: {
+          address: string | null
+          cif_value: number | null
+          created_at: string
+          created_by: string | null
+          currency: string | null
+          document_number: string
+          document_url: string | null
+          email: string | null
+          entry_point: string | null
+          expiry_date: string | null
+          id: string
+          importer_name: string
+          issue_date: string | null
+          license_number: string | null
+          notes: string | null
+          origin_country: string
+          person_type: Database["public"]["Enums"]["import_person_type"]
+          phone: string | null
+          product_category: Database["public"]["Enums"]["import_product_category"]
+          product_description: string
+          province_id: string | null
+          quantity: number
+          status: Database["public"]["Enums"]["import_license_status"]
+          unit: string
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          cif_value?: number | null
+          created_at?: string
+          created_by?: string | null
+          currency?: string | null
+          document_number: string
+          document_url?: string | null
+          email?: string | null
+          entry_point?: string | null
+          expiry_date?: string | null
+          id?: string
+          importer_name: string
+          issue_date?: string | null
+          license_number?: string | null
+          notes?: string | null
+          origin_country: string
+          person_type: Database["public"]["Enums"]["import_person_type"]
+          phone?: string | null
+          product_category: Database["public"]["Enums"]["import_product_category"]
+          product_description: string
+          province_id?: string | null
+          quantity?: number
+          status?: Database["public"]["Enums"]["import_license_status"]
+          unit?: string
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          cif_value?: number | null
+          created_at?: string
+          created_by?: string | null
+          currency?: string | null
+          document_number?: string
+          document_url?: string | null
+          email?: string | null
+          entry_point?: string | null
+          expiry_date?: string | null
+          id?: string
+          importer_name?: string
+          issue_date?: string | null
+          license_number?: string | null
+          notes?: string | null
+          origin_country?: string
+          person_type?: Database["public"]["Enums"]["import_person_type"]
+          phone?: string | null
+          product_category?: Database["public"]["Enums"]["import_product_category"]
+          product_description?: string
+          province_id?: string | null
+          quantity?: number
+          status?: Database["public"]["Enums"]["import_license_status"]
+          unit?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "forest_import_licenses_province_id_fkey"
+            columns: ["province_id"]
+            isOneToOne: false
+            referencedRelation: "provinces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       forest_infractions: {
         Row: {
           assigned_to: string | null
@@ -8150,6 +8242,25 @@ export type Database = {
         | "export"
         | "sawmill"
         | "processing"
+      import_license_status:
+        | "draft"
+        | "submitted"
+        | "under_review"
+        | "approved"
+        | "issued"
+        | "rejected"
+        | "expired"
+        | "revoked"
+      import_person_type: "singular" | "colectiva"
+      import_product_category:
+        | "madeira"
+        | "sementes"
+        | "mudas"
+        | "fertilizantes"
+        | "pesticidas"
+        | "equipamento"
+        | "racao"
+        | "outro"
       infraction_status:
         | "reported"
         | "investigating"
@@ -8384,6 +8495,27 @@ export const Constants = {
         "export",
         "sawmill",
         "processing",
+      ],
+      import_license_status: [
+        "draft",
+        "submitted",
+        "under_review",
+        "approved",
+        "issued",
+        "rejected",
+        "expired",
+        "revoked",
+      ],
+      import_person_type: ["singular", "colectiva"],
+      import_product_category: [
+        "madeira",
+        "sementes",
+        "mudas",
+        "fertilizantes",
+        "pesticidas",
+        "equipamento",
+        "racao",
+        "outro",
       ],
       infraction_status: [
         "reported",
