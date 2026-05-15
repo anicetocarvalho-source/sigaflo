@@ -4,6 +4,7 @@ import { Menu, Leaf, TreePine, Coffee, Wheat, ShieldCheck, Info, BarChart3, Book
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
+import { BrandLogo } from "@/components/brand/BrandLogo";
 import {
   NavigationMenu,
   NavigationMenuContent,
