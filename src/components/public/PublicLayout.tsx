@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, Outlet, useLocation } from "react-router-dom";
-import { Menu, Leaf, TreePine, Coffee, Wheat, ShieldCheck, Info, BarChart3, BookOpen, Newspaper, MapPin, HelpCircle, Building2, Users, ChevronDown } from "lucide-react";
+import { Menu, Leaf, TreePine, Coffee, Wheat, ShieldCheck, Info, BarChart3, BookOpen, Newspaper, MapPin, HelpCircle, Building2, Users, ChevronDown, Images } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
@@ -25,6 +25,7 @@ const infoItems = [
   { label: "Legislação", path: "/portal/legislacao", icon: BookOpen },
   { label: "Notícias", path: "/portal/noticias", icon: Newspaper },
   { label: "Mapa", path: "/portal/mapa", icon: MapPin },
+  { label: "Galeria", path: "/portal/galeria", icon: Images },
   { label: "Registos", path: "/portal/registos", icon: Users },
 ];
 
