@@ -1,13 +1,19 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Leaf, Building2, TreePine, Coffee, BarChart3, Shield, Users, Globe } from "lucide-react";
+import { PageHero } from "@/components/public/PageHero";
+import heroImage from "@/assets/portal/about-ministry.jpg";
 
 export default function PortalAbout() {
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold font-['Outfit'] mb-2">Sobre o SIGAFLO</h1>
-        <p className="text-muted-foreground">Sistema Integrado de Gestão Agropecuária e Florestal</p>
-      </div>
+    <>
+      <PageHero
+        image={heroImage}
+        eyebrow="Institucional"
+        title="Sobre o SIGAFLO"
+        subtitle="Sistema Integrado de Gestão Agropecuária e Florestal"
+        breadcrumbs={[{ label: "Sobre" }]}
+      />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
       {/* Mission */}
       <Card className="mb-8 overflow-hidden">

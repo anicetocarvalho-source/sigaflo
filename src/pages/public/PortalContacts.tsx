@@ -82,6 +82,7 @@ export default function PortalContacts() {
           </Card>
         ))}
       </div>
-    </div>
+      </div>
+    </>
   );
 }
