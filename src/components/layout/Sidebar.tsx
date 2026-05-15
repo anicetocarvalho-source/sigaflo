@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
+import { BrandLogo } from '@/components/brand/BrandLogo';
 import { useAuth, getRoleLabel } from '@/contexts/AuthContext';
 import {
   LayoutDashboard,
@@ -347,8 +348,8 @@ export function Sidebar() {
     <aside className="fixed left-0 top-0 z-40 flex h-screen w-64 flex-col sidebar-gradient">
       {/* Logo */}
       <div className="flex h-16 items-center gap-3 border-b border-sidebar-border px-4">
-        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-sidebar-primary">
-          <Shield className="h-6 w-6 text-sidebar-primary-foreground" />
+        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/95 p-1 shadow-sm">
+          <BrandLogo variant="mark" className="h-8 w-8" priority />
         </div>
         <div>
           <h1 className="font-display text-lg font-bold text-sidebar-foreground">SIGAFLO</h1>
