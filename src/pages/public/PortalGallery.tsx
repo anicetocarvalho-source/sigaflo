@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { PageHero } from "@/components/public/PageHero";
+import { SeoHead } from "@/components/public/SeoHead";
 import { ImageGallery, type GalleryItem } from "@/components/public/ImageGallery";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
