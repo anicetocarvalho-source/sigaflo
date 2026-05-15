@@ -4,10 +4,11 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Plus, Search, Edit, Eye, Loader2, PackageSearch, User, Building2 } from 'lucide-react';
+import { Plus, Search, Edit, FileText, Loader2, PackageSearch, User, Building2 } from 'lucide-react';
 import { QueryError } from '@/components/ui/query-state';
 import { useForestImportLicenses, type ForestImportLicense } from '@/hooks/useForestImportLicenses';
 import { ImportLicenseForm } from './ImportLicenseForm';
+import { ImportLicensePrintView } from './ImportLicensePrintView';
 import { format } from 'date-fns';
 import { pt } from 'date-fns/locale';
 
@@ -38,6 +39,7 @@ export function ImportLicensesList() {
   const [personFilter, setPersonFilter] = useState('all');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [open, setOpen] = useState(false);
+  const [printOpen, setPrintOpen] = useState(false);
   const [selected, setSelected] = useState<ForestImportLicense | null>(null);
 
   const { data, isLoading, isError, error, refetch } = useForestImportLicenses({
@@ -152,8 +154,12 @@ export function ImportLicensesList() {
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center justify-end gap-1">
-                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleEdit(l)}>
-                        <Eye className="h-4 w-4" />
+                      <Button
+                        variant="ghost" size="icon" className="h-8 w-8"
+                        title="Ver / Imprimir autorização"
+                        onClick={() => { setSelected(l); setPrintOpen(true); }}
+                      >
+                        <FileText className="h-4 w-4" />
                       </Button>
                       <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleEdit(l)}>
                         <Edit className="h-4 w-4" />
@@ -168,6 +174,7 @@ export function ImportLicensesList() {
       </div>
 
       <ImportLicenseForm open={open} onClose={() => setOpen(false)} license={selected} />
+      <ImportLicensePrintView open={printOpen} onClose={() => setPrintOpen(false)} license={selected} />
     </div>
   );
 }

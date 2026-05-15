@@ -3270,6 +3270,8 @@ export type Database = {
           id: string
           importer_name: string
           issue_date: string | null
+          issued_location: string | null
+          legal_reference: string | null
           license_number: string | null
           notes: string | null
           origin_country: string
@@ -3277,8 +3279,11 @@ export type Database = {
           phone: string | null
           product_category: Database["public"]["Enums"]["import_product_category"]
           product_description: string
+          proforma_invoice_date: string | null
+          proforma_invoice_number: string | null
           province_id: string | null
           quantity: number
+          requires_phytosanitary_cert: boolean
           status: Database["public"]["Enums"]["import_license_status"]
           unit: string
           updated_at: string
@@ -3297,6 +3302,8 @@ export type Database = {
           id?: string
           importer_name: string
           issue_date?: string | null
+          issued_location?: string | null
+          legal_reference?: string | null
           license_number?: string | null
           notes?: string | null
           origin_country: string
@@ -3304,8 +3311,11 @@ export type Database = {
           phone?: string | null
           product_category: Database["public"]["Enums"]["import_product_category"]
           product_description: string
+          proforma_invoice_date?: string | null
+          proforma_invoice_number?: string | null
           province_id?: string | null
           quantity?: number
+          requires_phytosanitary_cert?: boolean
           status?: Database["public"]["Enums"]["import_license_status"]
           unit?: string
           updated_at?: string
@@ -3324,6 +3334,8 @@ export type Database = {
           id?: string
           importer_name?: string
           issue_date?: string | null
+          issued_location?: string | null
+          legal_reference?: string | null
           license_number?: string | null
           notes?: string | null
           origin_country?: string
@@ -3331,8 +3343,11 @@ export type Database = {
           phone?: string | null
           product_category?: Database["public"]["Enums"]["import_product_category"]
           product_description?: string
+          proforma_invoice_date?: string | null
+          proforma_invoice_number?: string | null
           province_id?: string | null
           quantity?: number
+          requires_phytosanitary_cert?: boolean
           status?: Database["public"]["Enums"]["import_license_status"]
           unit?: string
           updated_at?: string

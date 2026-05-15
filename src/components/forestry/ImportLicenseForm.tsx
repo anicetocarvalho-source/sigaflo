@@ -188,6 +188,17 @@ export function ImportLicenseForm({ open, onClose, license }: Props) {
             </div>
           </div>
 
+          <div className="grid gap-4 md:grid-cols-2 pt-2 border-t">
+            <div className="space-y-2">
+              <Label>Nº Factura Proforma</Label>
+              <Input {...register('proforma_invoice_number')} placeholder="Ex.: 20224071" />
+            </div>
+            <div className="space-y-2">
+              <Label>Data Factura Proforma</Label>
+              <Input type="date" {...register('proforma_invoice_date')} />
+            </div>
+          </div>
+
           <div className="grid gap-4 md:grid-cols-3 pt-2 border-t">
             <div className="space-y-2">
               <Label>Data de Emissão</Label>
@@ -206,6 +217,29 @@ export function ImportLicenseForm({ open, onClose, license }: Props) {
                 </SelectContent>
               </Select>
             </div>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2 pt-2 border-t">
+            <div className="space-y-2">
+              <Label>Local de Emissão</Label>
+              <Input {...register('issued_location')} placeholder="LUANDA" />
+            </div>
+            <div className="flex items-end gap-2 pb-2">
+              <input
+                type="checkbox"
+                id="phyto"
+                className="h-4 w-4"
+                {...register('requires_phytosanitary_cert')}
+              />
+              <Label htmlFor="phyto" className="cursor-pointer">
+                Exige Certificado Fitossanitário da origem
+              </Label>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label>Base Legal</Label>
+            <Input {...register('legal_reference')} />
           </div>
 
           <div className="space-y-2">
