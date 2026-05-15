@@ -53,7 +53,7 @@ export default function PublicLayout() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
+    <div className="font-portal min-h-screen flex flex-col bg-background">
       {/* Header */}
       <header className="sticky top-0 z-50 border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
