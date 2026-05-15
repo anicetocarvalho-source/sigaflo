@@ -22,6 +22,19 @@ interface ImageGalleryProps {
 export function ImageGallery({ items, activeCategory, ariaLabel = "Galeria de imagens" }: ImageGalleryProps) {
   const [openIdx, setOpenIdx] = useState<number | null>(null);
 
+  // Dev-only: warn on duplicate alt/caption to avoid SEO duplication.
+  if (import.meta.env.DEV) {
+    const altSeen = new Set<string>();
+    const capSeen = new Set<string>();
+    for (const it of items) {
+      if (!it.alt) console.warn("[ImageGallery] Missing alt for", it.src);
+      if (it.alt && altSeen.has(it.alt)) console.warn("[ImageGallery] Duplicate alt:", it.alt);
+      if (it.caption && capSeen.has(it.caption)) console.warn("[ImageGallery] Duplicate caption:", it.caption);
+      if (it.alt) altSeen.add(it.alt);
+      if (it.caption) capSeen.add(it.caption);
+    }
+  }
+
   const filtered =
     activeCategory && activeCategory !== "todos"
       ? items.filter((i) => i.category === activeCategory)

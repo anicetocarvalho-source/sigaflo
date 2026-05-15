@@ -5,6 +5,7 @@ import { usePublicRiceStats } from "@/hooks/usePublicStats";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import { PageHero } from "@/components/public/PageHero";
 import { ImageGallery } from "@/components/public/ImageGallery";
+import { buildSectorGallery } from "@/components/public/galleryUtils";
 import heroImage from "@/assets/portal/hero-rice.jpg";
 import gFields from "@/assets/portal/hero-fields.jpg";
 import gMarket from "@/assets/portal/gallery-market.jpg";
@@ -101,12 +102,15 @@ export default function PortalRice() {
 
       <section className="mt-10">
         <h2 className="text-xl font-bold font-['Outfit'] mb-4">Galeria do Arroz</h2>
-        <ImageGallery items={[
-          { src: gFields, alt: "Campos de arroz", caption: "Áreas de produção" },
-          { src: gMech, alt: "Mecanização", caption: "Mecanização do cultivo" },
-          { src: gMarket, alt: "Mercado", caption: "Comercialização interna" },
-          { src: gCoop, alt: "Cooperativas", caption: "Cooperativas produtoras" },
-        ]} />
+        <ImageGallery
+          ariaLabel="Galeria do sector do arroz"
+          items={buildSectorGallery("Arroz", [
+            { src: gFields, subject: "Arrozais alagados", caption: "Áreas irrigadas de produção" },
+            { src: gMech, subject: "Mecanização orizícola", caption: "Mecanização do cultivo de arroz" },
+            { src: gMarket, subject: "Comercialização do arroz", caption: "Mercados internos de arroz" },
+            { src: gCoop, subject: "Cooperativa orizícola", caption: "Cooperativas produtoras de arroz" },
+          ])}
+        />
       </section>
 
       <Card className="mt-8">
