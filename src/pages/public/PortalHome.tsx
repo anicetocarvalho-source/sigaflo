@@ -1,4 +1,5 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,8 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Users, Wheat, TreePine, Coffee, ShieldCheck, AlertTriangle,
-  ArrowRight, Search, Leaf, BarChart3, Map, BookOpen, Newspaper, Users2,
-  HelpCircle, Building2, MapPin
+  ArrowRight, Search, BarChart3, Map, BookOpen, Newspaper, Users2,
+  HelpCircle, Building2, MapPin, Images,
 } from "lucide-react";
 import {
   usePublicAgricultureStats,
@@ -17,10 +18,40 @@ import {
 } from "@/hooks/usePublicStats";
 import { usePublicNews } from "@/hooks/usePublicNews";
 import { usePublicLegislation } from "@/hooks/usePublicLegislation";
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import { pt } from "date-fns/locale";
+
+import { HeroCarousel, type HeroSlide } from "@/components/public/HeroCarousel";
+import { ContentCarousel } from "@/components/public/ContentCarousel";
+
+import heroFields from "@/assets/portal/hero-fields.jpg";
+import heroCoffee from "@/assets/portal/hero-coffee.jpg";
+import heroForest from "@/assets/portal/hero-forest.jpg";
+import heroRice from "@/assets/portal/hero-rice.jpg";
+import heroFarmer from "@/assets/portal/hero-farmer.jpg";
+import sectorAgricultura from "@/assets/portal/sector-agricultura.jpg";
+import sectorFlorestas from "@/assets/portal/sector-florestas.jpg";
+import sectorCafe from "@/assets/portal/sector-cafe.jpg";
+import sectorArroz from "@/assets/portal/sector-arroz.jpg";
+import gMarket from "@/assets/portal/gallery-market.jpg";
+import gCooperative from "@/assets/portal/gallery-cooperative.jpg";
+import gTechnician from "@/assets/portal/gallery-technician.jpg";
+import gMechanization from "@/assets/portal/gallery-mechanization.jpg";
+import gCoffeeDrying from "@/assets/portal/gallery-coffee-drying.jpg";
+import gNursery from "@/assets/portal/gallery-nursery.jpg";
+import gWomanFarmer from "@/assets/portal/gallery-woman-farmer.jpg";
+import gTimber from "@/assets/portal/gallery-timber.jpg";
+
+const galleryFeatured = [
+  { src: gMarket, caption: "Mercados rurais activos em todo o país" },
+  { src: gCooperative, caption: "Cooperativas a transformar comunidades" },
+  { src: gTechnician, caption: "Assistência técnica de proximidade" },
+  { src: gMechanization, caption: "Mecanização para maior produtividade" },
+  { src: gCoffeeDrying, caption: "Café angolano em secagem tradicional" },
+  { src: gNursery, caption: "Viveiros para o reflorestamento" },
+  { src: gWomanFarmer, caption: "Mulheres rurais no centro da produção" },
+  { src: gTimber, caption: "Madeira certificada e rastreável" },
+];
 
 export default function PortalHome() {
   const [searchCode, setSearchCode] = useState("");
@@ -34,74 +65,98 @@ export default function PortalHome() {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    if (searchCode.trim()) {
-      if (searchCode.startsWith("CERT")) navigate(`/portal/verificar/certificado/${searchCode}`);
-      else if (searchCode.startsWith("L")) navigate(`/portal/verificar/licenca/${searchCode}`);
-      else if (searchCode.startsWith("LOT")) navigate(`/portal/verificar/cafe/${searchCode}`);
-      else navigate(`/portal/verificar/certificado/${searchCode}`);
-    }
+    if (!searchCode.trim()) return;
+    if (searchCode.startsWith("CERT")) navigate(`/portal/verificar/certificado/${searchCode}`);
+    else if (searchCode.startsWith("L")) navigate(`/portal/verificar/licenca/${searchCode}`);
+    else if (searchCode.startsWith("LOT")) navigate(`/portal/verificar/cafe/${searchCode}`);
+    else navigate(`/portal/verificar/certificado/${searchCode}`);
   };
 
-  const fmt = (n: any) => n == null ? "—" : Number(n).toLocaleString("pt-AO");
+  const fmt = (n: any) => (n == null ? "—" : Number(n).toLocaleString("pt-AO"));
+
+  const slides: HeroSlide[] = [
+    {
+      image: heroFields,
+      eyebrow: "Portal Oficial",
+      title: "Portal Nacional Agroflorestal",
+      subtitle: "Informação, indicadores, legislação e serviços do sector agroflorestal de Angola — num só lugar.",
+      children: (
+        <form onSubmit={handleSearch} className="flex max-w-lg gap-2">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder="Verificar certificado, licença ou lote..."
+              value={searchCode}
+              onChange={(e) => setSearchCode(e.target.value)}
+              className="h-12 border-0 bg-background/95 pl-10 text-foreground"
+            />
+          </div>
+          <Button type="submit" size="lg" variant="secondary" className="h-12 px-6">
+            Verificar
+          </Button>
+        </form>
+      ),
+    },
+    {
+      image: heroCoffee,
+      eyebrow: "Cadeia de Valor",
+      title: "Café de Angola",
+      subtitle: "Rastreabilidade, qualidade e exportação do café angolano com a marca INCA.",
+      ctaLabel: "Explorar o sector do café",
+      ctaHref: "/portal/cafe",
+    },
+    {
+      image: heroForest,
+      eyebrow: "Florestas Sustentáveis",
+      title: "Gestão Florestal Responsável",
+      subtitle: "Licenciamento, fiscalização e programas nacionais de reflorestamento conduzidos pelo IDF.",
+      ctaLabel: "Conhecer o sector florestal",
+      ctaHref: "/portal/florestal",
+    },
+    {
+      image: heroRice,
+      eyebrow: "Soberania Alimentar",
+      title: "Arroz para Angola",
+      subtitle: "Produção nacional, importações e estratégias para a segurança alimentar.",
+      ctaLabel: "Ver indicadores do arroz",
+      ctaHref: "/portal/arroz",
+    },
+    {
+      image: heroFarmer,
+      eyebrow: "Confiança Pública",
+      title: "Verifique Documentos Oficiais",
+      subtitle: "Confirme em segundos a autenticidade de certificados, licenças florestais e lotes de café.",
+      ctaLabel: "Aceder à verificação",
+      ctaHref: "/portal/verificar",
+    },
+  ];
 
   return (
     <div>
-      {/* Hero */}
-      <section className="relative bg-gradient-to-br from-primary via-primary/90 to-primary/80 overflow-hidden">
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-10 left-10 w-64 h-64 rounded-full bg-accent blur-3xl" />
-          <div className="absolute bottom-10 right-10 w-96 h-96 rounded-full bg-primary-foreground blur-3xl" />
-        </div>
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24 text-center">
-          <div className="flex items-center justify-center gap-3 mb-6">
-            <div className="w-14 h-14 rounded-2xl bg-primary-foreground/20 backdrop-blur flex items-center justify-center">
-              <Leaf className="h-8 w-8 text-primary-foreground" />
-            </div>
-          </div>
-          <h1 className="text-3xl sm:text-5xl font-bold text-primary-foreground font-['Outfit'] mb-4">
-            Portal Nacional Agroflorestal
-          </h1>
-          <p className="text-lg sm:text-xl text-primary-foreground/80 max-w-2xl mx-auto mb-8">
-            A plataforma oficial de informação, indicadores, legislação e serviços do sector agroflorestal de Angola.
-          </p>
+      {/* Hero carousel */}
+      <HeroCarousel slides={slides} />
 
-          {/* Search */}
-          <form onSubmit={handleSearch} className="max-w-lg mx-auto flex gap-2">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Verificar certificado, licença ou lote..."
-                value={searchCode}
-                onChange={(e) => setSearchCode(e.target.value)}
-                className="pl-10 bg-primary-foreground/95 border-0 h-12"
-              />
-            </div>
-            <Button type="submit" size="lg" variant="secondary" className="h-12 px-6">
-              Verificar
-            </Button>
-          </form>
-        </div>
-      </section>
-
-      {/* KPIs */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-8 relative z-10">
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* KPIs overlapping the hero */}
+      <section className="relative z-20 mx-auto -mt-12 max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
           {[
-            { label: "Agricultores Registados", value: loadingAgri ? null : fmt(agriStats?.total_farmers), icon: Users, color: "text-primary" },
-            { label: "Hectares Cultivados", value: loadingAgri ? null : fmt(agriStats?.total_cultivated_ha), icon: Map, color: "text-accent-foreground" },
-            { label: "Certificados Emitidos", value: loadingAgri ? null : fmt(agriStats?.certificates_issued), icon: ShieldCheck, color: "text-primary" },
-            { label: "Licenças Florestais", value: loadingForest ? null : fmt(forestStats?.active_licenses), icon: TreePine, color: "text-primary" },
+            { label: "Agricultores Registados", value: loadingAgri ? null : fmt(agriStats?.total_farmers), icon: Users },
+            { label: "Hectares Cultivados", value: loadingAgri ? null : fmt(agriStats?.total_cultivated_ha), icon: Map },
+            { label: "Certificados Emitidos", value: loadingAgri ? null : fmt(agriStats?.certificates_issued), icon: ShieldCheck },
+            { label: "Licenças Florestais", value: loadingForest ? null : fmt(forestStats?.active_licenses), icon: TreePine },
           ].map((kpi, i) => (
-            <Card key={i} className="shadow-lg border-0">
+            <Card key={i} className="border-0 shadow-xl">
               <CardContent className="p-5">
                 <div className="flex items-start justify-between">
-                  <div>
-                    <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">{kpi.label}</p>
-                    {kpi.value === null ? <Skeleton className="h-8 w-20" /> : (
-                      <p className="text-2xl sm:text-3xl font-bold font-['Outfit']">{kpi.value}</p>
+                  <div className="min-w-0">
+                    <p className="text-xs uppercase tracking-wider text-muted-foreground">{kpi.label}</p>
+                    {kpi.value === null ? (
+                      <Skeleton className="mt-1 h-8 w-20" />
+                    ) : (
+                      <p className="mt-1 font-['Outfit'] text-2xl sm:text-3xl font-bold">{kpi.value}</p>
                     )}
                   </div>
-                  <kpi.icon className={`h-8 w-8 ${kpi.color} opacity-60`} />
+                  <kpi.icon className="h-8 w-8 shrink-0 text-primary opacity-70" />
                 </div>
               </CardContent>
             </Card>
@@ -109,58 +164,66 @@ export default function PortalHome() {
         </div>
       </section>
 
-      {/* Quick Services */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <h2 className="text-xl font-bold font-['Outfit'] mb-6">Serviços Rápidos</h2>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+      {/* Quick services */}
+      <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+        <h2 className="mb-6 font-['Outfit'] text-xl font-bold">Serviços Rápidos</h2>
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
           {[
             { label: "Verificação", path: "/portal/verificar", icon: ShieldCheck },
             { label: "Indicadores", path: "/portal/indicadores", icon: BarChart3 },
             { label: "Legislação", path: "/portal/legislacao", icon: BookOpen },
             { label: "Registos", path: "/portal/registos", icon: Users2 },
             { label: "Mapa", path: "/portal/mapa", icon: MapPin },
-            { label: "FAQ", path: "/portal/faq", icon: HelpCircle },
+            { label: "Galeria", path: "/portal/galeria", icon: Images },
           ].map((item) => (
             <Link key={item.path} to={item.path}>
-              <Card className="text-center p-4 hover:shadow-md transition-shadow cursor-pointer group h-full">
-                <item.icon className="h-8 w-8 mx-auto mb-2 text-primary group-hover:scale-110 transition-transform" />
-                <p className="font-medium text-sm">{item.label}</p>
+              <Card className="group h-full cursor-pointer p-4 text-center transition-shadow hover:shadow-md">
+                <item.icon className="mx-auto mb-2 h-8 w-8 text-primary transition-transform group-hover:scale-110" />
+                <p className="text-sm font-medium">{item.label}</p>
               </Card>
             </Link>
           ))}
         </div>
       </section>
 
-      {/* Sectors */}
+      {/* Sectors with imagery */}
       <section className="bg-muted">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-          <div className="text-center mb-10">
-            <h2 className="text-2xl sm:text-3xl font-bold font-['Outfit'] mb-2">Sectores Agroflorestais</h2>
+        <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+          <div className="mb-10 text-center">
+            <h2 className="mb-2 font-['Outfit'] text-2xl sm:text-3xl font-bold">Sectores Agroflorestais</h2>
             <p className="text-muted-foreground">Explore os principais sectores produtivos de Angola</p>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {[
-              { title: "Agricultura", desc: "Registo de agricultores, produção agrícola, cooperativas e escolas de campo.", icon: Wheat, path: "/portal/agricultura", stat: loadingAgri ? "..." : `${fmt(agriStats?.total_farmers)} agricultores`, gradient: "from-green-600 to-emerald-700" },
-              { title: "Florestas", desc: "Licenciamento florestal, rastreabilidade de madeira e reflorestamento.", icon: TreePine, path: "/portal/florestal", stat: loadingForest ? "..." : `${fmt(forestStats?.total_licenses)} licenças`, gradient: "from-emerald-700 to-green-800" },
-              { title: "Café", desc: "Cadeia de valor do café angolano — lotes, qualidade e exportação.", icon: Coffee, path: "/portal/cafe", stat: loadingCoffee ? "..." : `${fmt(coffeeStats?.total_lots)} lotes`, gradient: "from-amber-700 to-yellow-800" },
-              { title: "Arroz", desc: "Produção nacional, importações, preços e políticas de soberania alimentar.", icon: Wheat, path: "/portal/arroz", stat: "Dados estratégicos", gradient: "from-lime-700 to-green-700" },
+              { title: "Agricultura", desc: "Registo de agricultores, produção, cooperativas e escolas de campo.", icon: Wheat, path: "/portal/agricultura", stat: loadingAgri ? "..." : `${fmt(agriStats?.total_farmers)} agricultores`, image: sectorAgricultura },
+              { title: "Florestas", desc: "Licenciamento florestal, rastreabilidade de madeira e reflorestamento.", icon: TreePine, path: "/portal/florestal", stat: loadingForest ? "..." : `${fmt(forestStats?.total_licenses)} licenças`, image: sectorFlorestas },
+              { title: "Café", desc: "Cadeia de valor do café angolano — lotes, qualidade e exportação.", icon: Coffee, path: "/portal/cafe", stat: loadingCoffee ? "..." : `${fmt(coffeeStats?.total_lots)} lotes`, image: sectorCafe },
+              { title: "Arroz", desc: "Produção nacional, importações, preços e soberania alimentar.", icon: Wheat, path: "/portal/arroz", stat: "Dados estratégicos", image: sectorArroz },
             ].map((sector) => (
-              <Link key={sector.path} to={sector.path}>
-                <Card className="group h-full hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border-0 shadow-md overflow-hidden">
-                  <div className={`h-2 bg-gradient-to-r ${sector.gradient}`} />
-                  <CardHeader className="pb-2">
-                    <div className="flex items-center gap-3">
-                      <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${sector.gradient} flex items-center justify-center`}>
-                        <sector.icon className="h-5 w-5 text-white" />
+              <Link key={sector.path} to={sector.path} className="group">
+                <Card className="h-full overflow-hidden border-0 shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl">
+                  <div className="relative h-40 overflow-hidden">
+                    <img
+                      src={sector.image}
+                      alt=""
+                      loading="lazy"
+                      className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-primary/90 via-primary/30 to-transparent" />
+                    <div className="absolute bottom-3 left-3 flex items-center gap-2">
+                      <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-background/90 backdrop-blur">
+                        <sector.icon className="h-5 w-5 text-primary" />
                       </div>
-                      <CardTitle className="text-lg">{sector.title}</CardTitle>
+                      <h3 className="font-['Outfit'] text-lg font-bold text-primary-foreground drop-shadow">
+                        {sector.title}
+                      </h3>
                     </div>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm text-muted-foreground mb-3">{sector.desc}</p>
+                  </div>
+                  <CardContent className="pt-4">
+                    <p className="mb-3 text-sm text-muted-foreground line-clamp-2">{sector.desc}</p>
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-medium text-primary">{sector.stat}</span>
-                      <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                      <ArrowRight className="h-4 w-4 text-muted-foreground transition-colors group-hover:text-primary" />
                     </div>
                   </CardContent>
                 </Card>
@@ -170,13 +233,41 @@ export default function PortalHome() {
         </div>
       </section>
 
-      {/* Latest News + Legislation side by side */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* News */}
+      {/* Featured gallery carousel */}
+      <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+        <div className="mb-6 flex items-end justify-between gap-4">
           <div>
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold font-['Outfit'] flex items-center gap-2">
+            <h2 className="font-['Outfit'] text-2xl sm:text-3xl font-bold">Angola Agroflorestal em Imagens</h2>
+            <p className="mt-1 text-muted-foreground">Comunidades, paisagens e cadeias produtivas pelo país</p>
+          </div>
+          <Link to="/portal/galeria" className="hidden text-sm font-medium text-primary hover:underline sm:inline">
+            Ver galeria completa →
+          </Link>
+        </div>
+        <ContentCarousel itemClassName="basis-4/5 sm:basis-1/2 lg:basis-1/3">
+          {galleryFeatured.map((g, i) => (
+            <div key={i} className="group relative overflow-hidden rounded-xl shadow-md">
+              <img
+                src={g.src}
+                alt={g.caption}
+                loading="lazy"
+                className="aspect-[4/3] w-full object-cover transition-transform duration-500 group-hover:scale-105"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/0 to-transparent" />
+              <p className="absolute bottom-3 left-3 right-3 text-sm font-medium text-white drop-shadow">
+                {g.caption}
+              </p>
+            </div>
+          ))}
+        </ContentCarousel>
+      </section>
+
+      {/* News + Legislation */}
+      <section className="bg-muted/40">
+        <div className="mx-auto grid max-w-7xl grid-cols-1 gap-8 px-4 py-16 sm:px-6 lg:grid-cols-2 lg:px-8">
+          <div>
+            <div className="mb-6 flex items-center justify-between">
+              <h2 className="flex items-center gap-2 font-['Outfit'] text-xl font-bold">
                 <Newspaper className="h-5 w-5 text-primary" /> Últimas Notícias
               </h2>
               <Link to="/portal/noticias" className="text-sm text-primary hover:underline">Ver todas →</Link>
@@ -185,15 +276,15 @@ export default function PortalHome() {
               <div className="space-y-3">
                 {news.slice(0, 4).map((item: any) => (
                   <Link key={item.id} to={`/portal/noticias/${item.id}`}>
-                    <Card className="hover:shadow-sm transition-shadow">
-                      <CardContent className="p-4 flex gap-3">
+                    <Card className="transition-shadow hover:shadow-md">
+                      <CardContent className="flex gap-3 p-4">
                         {item.image_url && (
-                          <img src={item.image_url} alt="" className="w-16 h-16 rounded-lg object-cover shrink-0" />
+                          <img src={item.image_url} alt="" loading="lazy" className="h-20 w-28 shrink-0 rounded-lg object-cover" />
                         )}
                         <div className="min-w-0">
-                          <p className="font-medium text-sm line-clamp-2">{item.title}</p>
+                          <p className="line-clamp-2 text-sm font-medium">{item.title}</p>
                           {item.published_at && (
-                            <p className="text-xs text-muted-foreground mt-1">
+                            <p className="mt-1 text-xs text-muted-foreground">
                               {format(new Date(item.published_at), "d MMM yyyy", { locale: pt })}
                             </p>
                           )}
@@ -208,10 +299,9 @@ export default function PortalHome() {
             )}
           </div>
 
-          {/* Legislation */}
           <div>
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold font-['Outfit'] flex items-center gap-2">
+            <div className="mb-6 flex items-center justify-between">
+              <h2 className="flex items-center gap-2 font-['Outfit'] text-xl font-bold">
                 <BookOpen className="h-5 w-5 text-primary" /> Legislação Recente
               </h2>
               <Link to="/portal/legislacao" className="text-sm text-primary hover:underline">Ver toda →</Link>
@@ -220,13 +310,13 @@ export default function PortalHome() {
               <div className="space-y-3">
                 {legislation.slice(0, 4).map((doc: any) => (
                   <Link key={doc.id} to={`/portal/legislacao/${doc.id}`}>
-                    <Card className="hover:shadow-sm transition-shadow">
+                    <Card className="transition-shadow hover:shadow-md">
                       <CardContent className="p-4">
                         <div className="flex items-start gap-2">
-                          <Badge variant="secondary" className="text-xs shrink-0">{doc.legislation_type}</Badge>
+                          <Badge variant="secondary" className="shrink-0 text-xs">{doc.legislation_type}</Badge>
                           <div className="min-w-0">
-                            <p className="font-medium text-sm line-clamp-2">{doc.title}</p>
-                            <p className="text-xs text-muted-foreground mt-1">
+                            <p className="line-clamp-2 text-sm font-medium">{doc.title}</p>
+                            <p className="mt-1 text-xs text-muted-foreground">
                               {format(new Date(doc.published_date), "d MMM yyyy", { locale: pt })}
                             </p>
                           </div>
@@ -243,30 +333,60 @@ export default function PortalHome() {
         </div>
       </section>
 
-      {/* Climate Alerts */}
+      {/* Impact band */}
+      <section className="relative overflow-hidden">
+        <img src={heroFarmer} alt="" className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
+        <div className="absolute inset-0 bg-primary/85" />
+        <div className="relative mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-3xl text-center text-primary-foreground">
+            <h2 className="mb-3 font-['Outfit'] text-2xl sm:text-3xl font-bold">
+              Um sistema nacional ao serviço do agricultor angolano
+            </h2>
+            <p className="mb-8 text-primary-foreground/85">
+              O SIGAFLO conecta instituições, técnicos e produtores num ecossistema digital comum
+              — promovendo transparência, rastreabilidade e desenvolvimento rural sustentável.
+            </p>
+          </div>
+          <div className="grid grid-cols-2 gap-6 text-center text-primary-foreground sm:grid-cols-4">
+            {[
+              { value: loadingAgri ? "—" : fmt(agriStats?.total_farmers), label: "Agricultores" },
+              { value: loadingForest ? "—" : fmt(forestStats?.total_licenses), label: "Licenças florestais" },
+              { value: loadingCoffee ? "—" : fmt(coffeeStats?.total_lots), label: "Lotes de café" },
+              { value: "18", label: "Províncias cobertas" },
+            ].map((s, i) => (
+              <div key={i}>
+                <p className="font-['Outfit'] text-3xl sm:text-4xl font-bold">{s.value}</p>
+                <p className="mt-1 text-xs uppercase tracking-wider text-primary-foreground/80">{s.label}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Climate alerts */}
       {!loadingAlerts && alerts && alerts.length > 0 && (
         <section className="bg-muted">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-            <div className="flex items-center gap-2 mb-6">
+          <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+            <div className="mb-6 flex items-center gap-2">
               <AlertTriangle className="h-5 w-5 text-destructive" />
-              <h2 className="text-xl font-bold font-['Outfit']">Alertas Climáticos Activos</h2>
+              <h2 className="font-['Outfit'] text-xl font-bold">Alertas Climáticos Activos</h2>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
               {alerts.slice(0, 6).map((alert: any, i: number) => (
                 <Card key={i} className="border-l-4 border-l-destructive">
                   <CardContent className="p-4">
-                    <div className="flex items-start justify-between mb-2">
-                      <h3 className="font-semibold text-sm">{alert.title}</h3>
+                    <div className="mb-2 flex items-start justify-between">
+                      <h3 className="text-sm font-semibold">{alert.title}</h3>
                       <Badge variant={alert.severity === "critical" ? "destructive" : "secondary"} className="text-xs">
                         {alert.severity === "critical" ? "Crítico" : "Alto"}
                       </Badge>
                     </div>
-                    <p className="text-xs text-muted-foreground mb-1">{alert.province_name || "Nacional"}</p>
+                    <p className="mb-1 text-xs text-muted-foreground">{alert.province_name || "Nacional"}</p>
                     <p className="text-xs text-muted-foreground">
                       {alert.report_date ? format(new Date(alert.report_date), "d MMM yyyy", { locale: pt }) : ""}
                     </p>
                     {alert.affected_farmers_count > 0 && (
-                      <p className="text-xs mt-1 text-destructive font-medium">
+                      <p className="mt-1 text-xs font-medium text-destructive">
                         {fmt(alert.affected_farmers_count)} agricultores afectados
                       </p>
                     )}
@@ -279,29 +399,28 @@ export default function PortalHome() {
       )}
 
       {/* Verification + Partners */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="text-center mb-8">
-          <h2 className="text-2xl font-bold font-['Outfit'] mb-2">Verificação de Documentos</h2>
+      <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+        <div className="mb-8 text-center">
+          <h2 className="mb-2 font-['Outfit'] text-2xl font-bold">Verificação de Documentos</h2>
           <p className="text-muted-foreground">Verifique a autenticidade de certificados, licenças e lotes de café</p>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-3xl mx-auto mb-16">
+        <div className="mx-auto mb-16 grid max-w-3xl grid-cols-1 gap-4 sm:grid-cols-3">
           {[
             { label: "Certificados Agrícolas", path: "/portal/verificar/certificado", icon: ShieldCheck },
             { label: "Licenças Florestais", path: "/portal/verificar/licenca", icon: TreePine },
             { label: "Lotes de Café", path: "/portal/verificar/cafe", icon: Coffee },
           ].map((item) => (
             <Link key={item.path} to={item.path}>
-              <Card className="text-center p-6 hover:shadow-lg transition-shadow cursor-pointer group">
-                <item.icon className="h-10 w-10 mx-auto mb-3 text-primary group-hover:scale-110 transition-transform" />
-                <p className="font-semibold text-sm">{item.label}</p>
+              <Card className="group cursor-pointer p-6 text-center transition-shadow hover:shadow-lg">
+                <item.icon className="mx-auto mb-3 h-10 w-10 text-primary transition-transform group-hover:scale-110" />
+                <p className="text-sm font-semibold">{item.label}</p>
               </Card>
             </Link>
           ))}
         </div>
 
-        {/* Partners */}
         <div className="text-center">
-          <p className="text-xs text-muted-foreground uppercase tracking-wider mb-4">Entidades Parceiras</p>
+          <p className="mb-4 text-xs uppercase tracking-wider text-muted-foreground">Entidades Parceiras</p>
           <div className="flex flex-wrap items-center justify-center gap-6 text-sm font-medium text-muted-foreground">
             {["MINAGRIP", "INCA", "IDF", "INCER", "INE", "INAMET"].map((p) => (
               <div key={p} className="flex items-center gap-2">

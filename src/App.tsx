@@ -111,6 +111,7 @@ import PortalForestry from "./pages/public/PortalForestry";
 import PortalCoffee from "./pages/public/PortalCoffee";
 import PortalRice from "./pages/public/PortalRice";
 import PortalAbout from "./pages/public/PortalAbout";
+import PortalGallery from "./pages/public/PortalGallery";
 import PortalIndicators from "./pages/public/PortalIndicators";
 import PortalLegislation from "./pages/public/PortalLegislation";
 import PortalLegislationDetail from "./pages/public/PortalLegislationDetail";
@@ -364,6 +365,7 @@ const App = () => {
               <Route path="cafe" element={<PortalCoffee />} />
               <Route path="arroz" element={<PortalRice />} />
               <Route path="sobre" element={<PortalAbout />} />
+              <Route path="galeria" element={<PortalGallery />} />
               <Route path="indicadores" element={<PortalIndicators />} />
               <Route path="legislacao" element={<PortalLegislation />} />
               <Route path="legislacao/:id" element={<PortalLegislationDetail />} />
