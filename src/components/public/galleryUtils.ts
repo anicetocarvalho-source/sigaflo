@@ -63,3 +63,39 @@ export function buildSectorGallery(
     };
   });
 }
+
+/** Map of category id → human label used as the disambiguator suffix. */
+export type CategoryLabels = Record<string, string>;
+
+export interface CategorizedGalleryInput extends SectorGalleryInput {
+  /** Required for categorized galleries. Must exist in the labels map. */
+  category: string;
+}
+
+/**
+ * Variant of buildSectorGallery for the consolidated multimedia gallery.
+ * Each item's category label is used as the suffix, so titles/captions stay
+ * unique across all categories on a single page.
+ */
+export function buildCategorizedGallery(
+  labels: CategoryLabels,
+  items: CategorizedGalleryInput[]
+): GalleryItem[] {
+  const localAlt = new Set<string>();
+  const localCaption = new Set<string>();
+
+  return items.map((it) => {
+    const label = labels[it.category] ?? it.category;
+    const alt = `${it.subject} — ${label} (Angola)`;
+    const caption = `${it.caption} · ${label}`;
+
+    if (import.meta.env.DEV) {
+      if (localAlt.has(alt)) console.warn(`[ImageGallery] Duplicate alt:`, alt);
+      if (localCaption.has(caption)) console.warn(`[ImageGallery] Duplicate caption:`, caption);
+      localAlt.add(alt);
+      localCaption.add(caption);
+    }
+
+    return { src: it.src, alt, caption, title: caption, category: it.category };
+  });
+}
