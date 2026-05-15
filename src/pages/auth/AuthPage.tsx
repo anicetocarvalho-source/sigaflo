@@ -13,6 +13,7 @@ import { toast } from 'sonner';
 import { Loader2, LogIn, UserPlus, Leaf, Shield, BarChart3, Globe } from 'lucide-react';
 import { DemoLogin } from '@/components/auth/DemoLogin';
 import authBg from '@/assets/auth-bg.jpg';
+import { BrandLogo } from '@/components/brand/BrandLogo';
 
 const loginSchema = z.object({
   email: z.string().email('Email inválido'),

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
+import { BrandLogo } from '@/components/brand/BrandLogo';
 import { useAuth, getRoleLabel } from '@/contexts/AuthContext';
 import {
   LayoutDashboard,
