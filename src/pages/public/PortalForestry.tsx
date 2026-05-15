@@ -4,6 +4,8 @@ import { Progress } from "@/components/ui/progress";
 import { TreePine, FileText, AlertTriangle, Sprout } from "lucide-react";
 import { usePublicForestryStats } from "@/hooks/usePublicStats";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
+import { PageHero } from "@/components/public/PageHero";
+import heroImage from "@/assets/portal/hero-forest.jpg";
 
 export default function PortalForestry() {
   const { data: stats, isLoading } = usePublicForestryStats();
@@ -21,11 +23,15 @@ export default function PortalForestry() {
   ] : [];
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold font-['Outfit'] mb-2">Sector Florestal</h1>
-        <p className="text-muted-foreground">Gestão florestal, licenciamento e reflorestamento em Angola</p>
-      </div>
+    <>
+      <PageHero
+        image={heroImage}
+        eyebrow="Sector"
+        title="Sector Florestal"
+        subtitle="Gestão florestal, licenciamento e reflorestamento em Angola"
+        breadcrumbs={[{ label: "Florestas" }]}
+      />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         {[

@@ -3,6 +3,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Wheat, Ship, TrendingUp, DollarSign } from "lucide-react";
 import { usePublicRiceStats } from "@/hooks/usePublicStats";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
+import { PageHero } from "@/components/public/PageHero";
+import heroImage from "@/assets/portal/hero-rice.jpg";
 
 export default function PortalRice() {
   const { data: stats, isLoading } = usePublicRiceStats();
@@ -18,11 +20,15 @@ export default function PortalRice() {
     : 0;
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold font-['Outfit'] mb-2">Arroz Nacional</h1>
-        <p className="text-muted-foreground">Produção, importações e indicadores de soberania alimentar</p>
-      </div>
+    <>
+      <PageHero
+        image={heroImage}
+        eyebrow="Sector"
+        title="Arroz Nacional"
+        subtitle="Produção, importações e indicadores de soberania alimentar"
+        breadcrumbs={[{ label: "Arroz" }]}
+      />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         {[
