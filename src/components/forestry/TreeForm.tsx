@@ -164,6 +164,7 @@ export function TreeForm({ open, onClose, tree, preselectedLicenseId }: TreeForm
     if (!open) {
       setSavedTree(null);
       setGpsAccuracyM(undefined);
+      setPhotos([]);
     }
   }, [open, tree, form]);
 
