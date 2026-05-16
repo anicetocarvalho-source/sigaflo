@@ -66,7 +66,7 @@ const farmerSchema = z.object({
   household_members_count: z.number().min(0, 'O valor deve ser positivo').optional().nullable(),
   dependents_count: z.number().min(0, 'O valor deve ser positivo').optional().nullable(),
   spouse_name: z.string().max(100, 'Máximo de 100 caracteres').optional().nullable(),
-  spouse_bi_nif: z.string().max(20, 'Máximo de 20 caracteres').optional().nullable(),
+  spouse_bi_nif: optionalBiOrNifSchema,
   children_count: z.number().min(0, 'O valor deve ser positivo').optional().nullable(),
   children_under_5: z.number().min(0, 'O valor deve ser positivo').optional().nullable(),
   children_5_to_14: z.number().min(0, 'O valor deve ser positivo').optional().nullable(),
