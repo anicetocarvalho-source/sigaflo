@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { BrandLogo } from '@/components/brand/BrandLogo';
+import { ForceUpdateButton } from '@/components/layout/ForceUpdateButton';
 import { useAuth, getRoleLabel } from '@/contexts/AuthContext';
 import { useModulePermissions, checkModuleAccess } from '@/hooks/useModulePermissions';
 import type { AppModule } from '@/lib/modules';
