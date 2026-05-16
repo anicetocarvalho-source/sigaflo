@@ -80,12 +80,13 @@ const months = [
   { value: 12, label: 'Dezembro' },
 ];
 
-export function RiceImportForm({ open, onOpenChange }: Props) {
+export function RiceImportForm({ open, onOpenChange, defaultGrainType }: Props) {
   const queryClient = useQueryClient();
 
   const form = useForm<ImportFormData>({
     resolver: zodResolver(importSchema),
     defaultValues: {
+      grain_type: defaultGrainType ?? 'arroz',
       year: new Date().getFullYear(),
       month: new Date().getMonth() + 1,
       volume_tonnes: 0,
@@ -99,6 +100,7 @@ export function RiceImportForm({ open, onOpenChange }: Props) {
         : null;
 
       const { error } = await supabase.from('rice_imports').insert({
+        grain_type: values.grain_type,
         year: values.year,
         month: values.month,
         origin_country: values.origin_country,
