@@ -200,6 +200,7 @@ export function ForestInventoryDashboard() {
   const [mapboxToken, setMapboxToken] = useState<string | null>(null);
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [selectedInventory, setSelectedInventory] = useState<ForestInventory | null>(null);
+  const [showRfidQrDialog, setShowRfidQrDialog] = useState(false);
   const [formProvinceId, setFormProvinceId] = useState<string>('');
 
   const { data: provinces } = useProvinces();
