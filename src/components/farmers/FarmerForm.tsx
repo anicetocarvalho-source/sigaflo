@@ -30,7 +30,7 @@ import { PhotoUpload } from './PhotoUpload';
 import { DocumentUpload } from './DocumentUpload';
 import { FingerprintCapture } from './FingerprintCapture';
 import { toast } from 'sonner';
-import { optionalEmailSchema, optionalPhoneAOSchema, optionalBiSchema } from '@/lib/validation';
+import { optionalEmailSchema, optionalPhoneAOSchema, optionalBiOrNifSchema, normalizeBiOrNif } from '@/lib/validation';
 import { PhoneInputAO } from '@/components/ui/phone-input-ao';
 import { EmailInput } from '@/components/ui/email-input';
 
