@@ -363,6 +363,8 @@ export default function TreesRfidPage() {
       toast.error('Erro ao gerar PDF');
     }
   };
+
+  const resetConcession = () => {
     setConcession(null);
     setConcessionCodeInput('');
     setTrees([]);
