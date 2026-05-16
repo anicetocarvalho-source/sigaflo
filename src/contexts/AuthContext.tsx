@@ -206,13 +206,34 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     // THEN check for existing session
     supabase.auth.getSession().then(({ data: { session: existingSession } }) => {
       handleSession(existingSession);
-
       setIsLoading(false);
     });
+
+    // Recupera sessão ao voltar online (PWA / quedas de rede)
+    const onOnline = () => tryRefresh('online');
+    // Revalida sessão quando o utilizador volta à aba
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        tryRefresh('visibility');
+      }
+    };
+    // Sincroniza login/logout entre abas (mesmo localStorage)
+    const onStorage = (e: StorageEvent) => {
+      if (e.key && e.key.includes('supabase.auth.token')) {
+        supabase.auth.getSession().then(({ data: { session: s } }) => handleSession(s));
+      }
+    };
+
+    window.addEventListener('online', onOnline);
+    document.addEventListener('visibilitychange', onVisibility);
+    window.addEventListener('storage', onStorage);
 
     return () => {
       clearRefreshTimer();
       subscription.unsubscribe();
+      window.removeEventListener('online', onOnline);
+      document.removeEventListener('visibilitychange', onVisibility);
+      window.removeEventListener('storage', onStorage);
     };
   }, []);
 
