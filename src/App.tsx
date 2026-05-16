@@ -19,6 +19,18 @@ import OfflinePage from "./pages/OfflinePage";
 import DiagnosticPage from "./pages/DiagnosticPage";
 import TreesRfidPage from "./pages/public/TreesRfidPage";
 
+const RfidSubdomainRedirect = () => {
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const host = window.location.hostname;
+    const isRfidSub = /^rfid\./i.test(host);
+    if (isRfidSub && window.location.pathname !== "/rfid-arvores") {
+      window.location.replace("/rfid-arvores" + window.location.search);
+    }
+  }, []);
+  return null;
+};
+
 const CooperativeAliasRedirect = () => {
   const { id } = useParams();
   return <Navigate to={`/agricultores/cooperativas/${id}/editar`} replace />;
