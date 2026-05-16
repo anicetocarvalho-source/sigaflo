@@ -14,7 +14,9 @@ import {
 } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { toast } from 'sonner';
-import { TreePine, Radio, Search, Download, Plus, Edit, Eye, LogOut } from 'lucide-react';
+import { TreePine, Radio, Search, Download, Plus, Edit, Eye, LogOut, QrCode, FileDown } from 'lucide-react';
+import jsPDF from 'jspdf';
+import QRCode from 'qrcode';
 
 type TreeStatus = 'saudavel' | 'em_risco' | 'doente' | 'removida';
 
