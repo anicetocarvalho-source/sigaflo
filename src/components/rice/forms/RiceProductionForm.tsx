@@ -30,6 +30,11 @@ import {
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
 import { riceProductionFormSchema, type RiceProductionFormValues } from '@/lib/validations';
+import { GRAIN_TYPES, type GrainType } from '@/lib/grains';
+
+interface FormProps {
+  defaultGrainType?: GrainType;
+}
 
 interface Props {
   open: boolean;
