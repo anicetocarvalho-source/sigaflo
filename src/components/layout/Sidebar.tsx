@@ -123,6 +123,7 @@ const navigationSections: NavSection[] = [
         module: 'forestry',
         children: [
           { label: 'Inventário Florestal', href: '/florestal/inventario' },
+          { label: '↳ Leitor RFID Árvores', href: '/rfid-arvores' },
           { label: 'Licenciamento', href: '/florestal/licenciamento' },
           { label: 'Planos de Maneio (EUDR)', href: '/florestal/planos-maneio' },
           { label: 'Pagamentos AGT', href: '/florestal/pagamentos' },
