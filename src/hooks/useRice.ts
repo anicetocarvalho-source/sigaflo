@@ -212,16 +212,31 @@ export const useGrainPrices = useRicePrices;
 export const useGrainConsumption = useRiceConsumption;
 export const useGrainAlerts = useRiceAlerts;
 
-// Breakdown agregado por tipo de grão (todos os anos)
-export const useGrainsOverview = () => {
+// Breakdown agregado por tipo de grão, opcionalmente filtrado por intervalo de anos.
+export interface GrainsOverviewFilters {
+  yearFrom?: number;
+  yearTo?: number;
+}
+
+export const useGrainsOverview = (filters: GrainsOverviewFilters = {}) => {
+  const { yearFrom, yearTo } = filters;
   return useQuery({
-    queryKey: ['grains-overview'],
+    queryKey: ['grains-overview', yearFrom ?? null, yearTo ?? null],
     queryFn: async () => {
-      const [{ data: production }, { data: imports }, { data: prices }] = await Promise.all([
-        supabase.from('rice_production').select('grain_type, production_tonnes, cultivated_area_ha, year'),
-        supabase.from('rice_imports').select('grain_type, volume_tonnes, total_value_usd, year'),
-        supabase.from('rice_prices').select('grain_type, retail_price_aoa, recorded_date').order('recorded_date', { ascending: false }).limit(200),
-      ]);
+      let prodQ = supabase.from('rice_production').select('grain_type, production_tonnes, cultivated_area_ha, year');
+      let impQ = supabase.from('rice_imports').select('grain_type, volume_tonnes, total_value_usd, year');
+      let priceQ = supabase.from('rice_prices').select('grain_type, retail_price_aoa, recorded_date').order('recorded_date', { ascending: false }).limit(500);
+      if (yearFrom != null) {
+        prodQ = prodQ.gte('year', yearFrom);
+        impQ = impQ.gte('year', yearFrom);
+        priceQ = priceQ.gte('recorded_date', `${yearFrom}-01-01`);
+      }
+      if (yearTo != null) {
+        prodQ = prodQ.lte('year', yearTo);
+        impQ = impQ.lte('year', yearTo);
+        priceQ = priceQ.lte('recorded_date', `${yearTo}-12-31`);
+      }
+      const [{ data: production }, { data: imports }, { data: prices }] = await Promise.all([prodQ, impQ, priceQ]);
 
       const byGrain: Record<string, { production: number; area: number; imports: number; importValue: number; avgPrice: number; priceSamples: number }> = {};
       const ensure = (g: string) => {
