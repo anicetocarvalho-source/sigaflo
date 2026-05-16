@@ -6992,6 +6992,7 @@ export type Database = {
           alert_type: string
           created_at: string
           current_value: number | null
+          grain_type: Database["public"]["Enums"]["grain_type"]
           id: string
           is_read: boolean | null
           is_resolved: boolean | null
@@ -7008,6 +7009,7 @@ export type Database = {
           alert_type: string
           created_at?: string
           current_value?: number | null
+          grain_type?: Database["public"]["Enums"]["grain_type"]
           id?: string
           is_read?: boolean | null
           is_resolved?: boolean | null
@@ -7024,6 +7026,7 @@ export type Database = {
           alert_type?: string
           created_at?: string
           current_value?: number | null
+          grain_type?: Database["public"]["Enums"]["grain_type"]
           id?: string
           is_read?: boolean | null
           is_resolved?: boolean | null
@@ -7050,6 +7053,7 @@ export type Database = {
         Row: {
           created_at: string
           data_source: string | null
+          grain_type: Database["public"]["Enums"]["grain_type"]
           id: string
           notes: string | null
           per_capita_kg: number
@@ -7062,6 +7066,7 @@ export type Database = {
         Insert: {
           created_at?: string
           data_source?: string | null
+          grain_type?: Database["public"]["Enums"]["grain_type"]
           id?: string
           notes?: string | null
           per_capita_kg: number
@@ -7074,6 +7079,7 @@ export type Database = {
         Update: {
           created_at?: string
           data_source?: string | null
+          grain_type?: Database["public"]["Enums"]["grain_type"]
           id?: string
           notes?: string | null
           per_capita_kg?: number
@@ -7097,6 +7103,7 @@ export type Database = {
         Row: {
           created_at: string
           created_by: string | null
+          grain_type: Database["public"]["Enums"]["grain_type"]
           id: string
           importer_name: string | null
           month: number
@@ -7114,6 +7121,7 @@ export type Database = {
         Insert: {
           created_at?: string
           created_by?: string | null
+          grain_type?: Database["public"]["Enums"]["grain_type"]
           id?: string
           importer_name?: string | null
           month: number
@@ -7131,6 +7139,7 @@ export type Database = {
         Update: {
           created_at?: string
           created_by?: string | null
+          grain_type?: Database["public"]["Enums"]["grain_type"]
           id?: string
           importer_name?: string | null
           month?: number
@@ -7183,6 +7192,7 @@ export type Database = {
           created_by: string | null
           currency: string | null
           exchange_rate_usd: number | null
+          grain_type: Database["public"]["Enums"]["grain_type"]
           id: string
           market_name: string | null
           notes: string | null
@@ -7197,6 +7207,7 @@ export type Database = {
           created_by?: string | null
           currency?: string | null
           exchange_rate_usd?: number | null
+          grain_type?: Database["public"]["Enums"]["grain_type"]
           id?: string
           market_name?: string | null
           notes?: string | null
@@ -7211,6 +7222,7 @@ export type Database = {
           created_by?: string | null
           currency?: string | null
           exchange_rate_usd?: number | null
+          grain_type?: Database["public"]["Enums"]["grain_type"]
           id?: string
           market_name?: string | null
           notes?: string | null
@@ -7235,6 +7247,7 @@ export type Database = {
           created_at: string
           created_by: string | null
           cultivated_area_ha: number
+          grain_type: Database["public"]["Enums"]["grain_type"]
           harvested_area_ha: number
           id: string
           irrigation_type: string | null
@@ -7252,6 +7265,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           cultivated_area_ha?: number
+          grain_type?: Database["public"]["Enums"]["grain_type"]
           harvested_area_ha?: number
           id?: string
           irrigation_type?: string | null
@@ -7269,6 +7283,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           cultivated_area_ha?: number
+          grain_type?: Database["public"]["Enums"]["grain_type"]
           harvested_area_ha?: number
           id?: string
           irrigation_type?: string | null
@@ -8337,6 +8352,7 @@ export type Database = {
         | "ipn"
         | "data_lab"
         | "occurrences"
+        | "grains"
       card_event_type:
         | "generated"
         | "printed"
@@ -8376,6 +8392,15 @@ export type Database = {
         | "export"
         | "sawmill"
         | "processing"
+      grain_type:
+        | "arroz"
+        | "milho"
+        | "trigo"
+        | "sorgo"
+        | "massambala"
+        | "massango"
+        | "cevada"
+        | "aveia"
       import_license_status:
         | "draft"
         | "submitted"
@@ -8600,6 +8625,7 @@ export const Constants = {
         "ipn",
         "data_lab",
         "occurrences",
+        "grains",
       ],
       card_event_type: [
         "generated",
@@ -8644,6 +8670,16 @@ export const Constants = {
         "export",
         "sawmill",
         "processing",
+      ],
+      grain_type: [
+        "arroz",
+        "milho",
+        "trigo",
+        "sorgo",
+        "massambala",
+        "massango",
+        "cevada",
+        "aveia",
       ],
       import_license_status: [
         "draft",
