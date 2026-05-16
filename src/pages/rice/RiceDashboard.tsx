@@ -271,7 +271,8 @@ export default function RiceDashboard() {
               </span>
             )}
           </div>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <GrainTypeSelector value={grainType} onChange={setGrainType} />
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="default" size="sm">
