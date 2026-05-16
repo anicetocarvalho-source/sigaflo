@@ -21,7 +21,8 @@ import {
 } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { MapPin, User, Leaf, Building2, Users, FileText, Camera, Award, Home } from 'lucide-react';
+import { MapPin, User, Leaf, Building2, Users, FileText, Camera, Award, Home, Search, X, Check } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { useProvinces, useMunicipalities, useCommunes, useFarmers } from '@/hooks/useFarmers';
 import { supabase } from '@/integrations/supabase/client';
 import type { Farmer, FarmerType } from '@/hooks/useFarmers';
