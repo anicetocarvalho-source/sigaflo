@@ -687,7 +687,13 @@ export function ForestInventoryDashboard() {
                 {filteredInventory.length} concessões registadas
               </CardDescription>
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-wrap">
+              <Button variant="outline" asChild>
+                <a href="/rfid-arvores" target="_blank" rel="noopener noreferrer">
+                  <Radio className="mr-2 h-4 w-4" />
+                  App RFID Árvores
+                </a>
+              </Button>
               <Button variant="outline" onClick={handleExport}>
                 <FileSpreadsheet className="mr-2 h-4 w-4" />
                 Exportar
