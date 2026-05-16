@@ -109,14 +109,39 @@ export function RiceProductionForm({ open, onOpenChange, defaultGrainType }: Pro
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle>Registar Produção de Arroz</DialogTitle>
+          <DialogTitle>Registar Produção de Grãos</DialogTitle>
           <DialogDescription>
-            Adicione dados de produção por província e época
+            Adicione dados de produção por província, época e tipo de grão
           </DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="grain_type"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Tipo de Grão *</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent className="z-50 bg-popover">
+                      {GRAIN_TYPES.map((g) => (
+                        <SelectItem key={g.value} value={g.value}>
+                          {g.emoji} {g.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
             <div className="grid grid-cols-2 gap-4">
               <FormField
                 control={form.control}
