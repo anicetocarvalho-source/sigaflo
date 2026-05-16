@@ -27,8 +27,18 @@ const formatTonnes = (tonnes: number) => {
   return { ton: `${fmt(abs)} t`, kg: kgLabel };
 };
 
+const CURRENT_YEAR = new Date().getFullYear();
+const YEAR_OPTIONS = Array.from({ length: 11 }, (_, i) => CURRENT_YEAR - i);
+
 export function GrainsOverview() {
-  const { data, isLoading } = useGrainsOverview();
+  const [yearFrom, setYearFrom] = useState<number | null>(null);
+  const [yearTo, setYearTo] = useState<number | null>(null);
+
+  const filters = useMemo(
+    () => ({ yearFrom: yearFrom ?? undefined, yearTo: yearTo ?? undefined }),
+    [yearFrom, yearTo],
+  );
+  const { data, isLoading } = useGrainsOverview(filters);
   const byGrain = data || {};
 
   const rows = GRAIN_TYPES.map((g) => {
@@ -47,11 +57,18 @@ export function GrainsOverview() {
   );
 
   const activeGrains = rows.filter((r) => r.production > 0 || r.imports > 0).length;
+  const hasFilter = yearFrom != null || yearTo != null;
+  const rangeLabel = hasFilter ? `${yearFrom ?? '…'} – ${yearTo ?? '…'}` : 'Todos os anos';
+
+  const clearFilters = () => {
+    setYearFrom(null);
+    setYearTo(null);
+  };
 
   return (
     <div className="card-elevated overflow-hidden">
       <div className="gradient-primary p-5">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div className="flex items-center gap-3">
             <div className="rounded-lg bg-primary-foreground/10 p-2">
               <Wheat className="h-5 w-5 text-primary-foreground" />
@@ -61,7 +78,7 @@ export function GrainsOverview() {
                 Visão Multi-Grão
               </h3>
               <p className="mt-0.5 text-sm text-primary-foreground/80">
-                Comparativo agregado por tipo de cereal — {activeGrains}/{GRAIN_TYPES.length} grãos com dados
+                {rangeLabel} · {activeGrains}/{GRAIN_TYPES.length} grãos com dados
               </p>
             </div>
           </div>
@@ -69,6 +86,41 @@ export function GrainsOverview() {
             <Metric label="Produção total" value={`${fmt(totals.production)} t`} icon={Package} />
             <Metric label="Importações totais" value={`${fmt(totals.imports)} t`} icon={ShoppingCart} />
           </div>
+        </div>
+
+        <div className="mt-4 flex flex-wrap items-center gap-2">
+          <div className="flex items-center gap-1.5 text-xs text-primary-foreground/80">
+            <Filter className="h-3.5 w-3.5" />
+            <span>Período:</span>
+          </div>
+          <YearSelect
+            label="De"
+            value={yearFrom}
+            onChange={(v) => {
+              setYearFrom(v);
+              if (v != null && yearTo != null && v > yearTo) setYearTo(v);
+            }}
+          />
+          <YearSelect
+            label="Até"
+            value={yearTo}
+            onChange={(v) => {
+              setYearTo(v);
+              if (v != null && yearFrom != null && v < yearFrom) setYearFrom(v);
+            }}
+            minYear={yearFrom ?? undefined}
+          />
+          {hasFilter && (
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={clearFilters}
+              className="h-7 gap-1 text-xs text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground"
+            >
+              <X className="h-3.5 w-3.5" />
+              Limpar
+            </Button>
+          )}
         </div>
       </div>
 
