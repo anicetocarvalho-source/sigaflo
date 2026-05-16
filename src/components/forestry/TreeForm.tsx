@@ -283,15 +283,65 @@ export function TreeForm({ open, onClose, tree, preselectedLicenseId }: TreeForm
   const species = form.watch('species');
 
   return (
-    <Dialog open={open} onOpenChange={onClose}>
+    <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <TreePine className="h-5 w-5" />
-            {tree ? 'Editar Árvore' : 'Registar Nova Árvore'}
+            {savedTree
+              ? 'Árvore Registada — QR Pronto'
+              : tree
+                ? 'Editar Árvore'
+                : 'Registar Nova Árvore'}
           </DialogTitle>
         </DialogHeader>
 
+        {savedTree ? (
+          <div className="space-y-4">
+            <div
+              ref={qrPreviewRef}
+              className="flex flex-col items-center gap-3 rounded-lg border-2 border-primary/30 bg-white p-6"
+            >
+              <QRCodeSVG
+                value={JSON.stringify({
+                  type: 'tree',
+                  code: savedTree.tree_code,
+                  species: savedTree.species,
+                  lat: savedTree.latitude,
+                  lng: savedTree.longitude,
+                  class: savedTree.wood_class,
+                })}
+                size={220}
+                level="H"
+                includeMargin
+              />
+              <div className="text-center">
+                <p className="font-mono text-lg font-bold tracking-wider">
+                  {savedTree.tree_code}
+                </p>
+                <p className="text-sm text-muted-foreground">{savedTree.species}</p>
+                <p className="text-xs text-muted-foreground">
+                  {savedTree.latitude.toFixed(5)}, {savedTree.longitude.toFixed(5)}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap justify-end gap-2 pt-2">
+              <Button type="button" variant="outline" onClick={() => window.print()}>
+                Imprimir etiqueta
+              </Button>
+              <Button type="button" variant="outline" onClick={downloadQrPng}>
+                Baixar PNG
+              </Button>
+              <Button type="button" variant="secondary" onClick={handleNewTree}>
+                Registar outra
+              </Button>
+              <Button type="button" onClick={handleClose}>
+                Concluir
+              </Button>
+            </div>
+          </div>
+        ) : (
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <div className="grid gap-4 md:grid-cols-2">
