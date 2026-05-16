@@ -186,7 +186,7 @@ const NATIONAL_LEVEL: Array<'admin_national' | 'admin_provincial' | 'admin_munic
 const ALL_INTERNAL: Array<'admin_national' | 'admin_provincial' | 'admin_municipal' | 'technician_national' | 'technician_provincial' | 'technician_municipal' | 'private_entity' | 'viewer'> = [
   'admin_national', 'admin_provincial', 'admin_municipal',
   'technician_national', 'technician_provincial', 'technician_municipal',
-  'private_entity'
+  'private_entity', 'viewer'
 ];
 const FORESTRY_ROLES: Array<'admin_national' | 'admin_provincial' | 'admin_municipal' | 'technician_national' | 'technician_provincial' | 'technician_municipal' | 'private_entity' | 'viewer'> = [
   'admin_national', 'admin_provincial', 'admin_municipal',
