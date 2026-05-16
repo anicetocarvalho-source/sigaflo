@@ -46,7 +46,7 @@ export function getModuleForPath(pathname: string): AppModule | null {
   }
   if (pathname.startsWith('/florestal')) return 'forestry';
   if (pathname.startsWith('/cafe')) return 'coffee';
-  if (pathname.startsWith('/arroz')) return 'rice';
+  if (pathname.startsWith('/arroz') || pathname.startsWith('/graos')) return 'rice';
   if (pathname.startsWith('/pos') || pathname.startsWith('/faturas') ||
       pathname.startsWith('/compras') || pathname.startsWith('/pacotes-compras')) return 'pos';
   if (pathname.startsWith('/mecanizacao')) return 'mechanization';
