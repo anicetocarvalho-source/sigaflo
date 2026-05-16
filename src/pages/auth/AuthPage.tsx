@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -41,10 +41,9 @@ const AuthPage = () => {
   const [activeTab, setActiveTab] = useState('login');
   const [loadingDemoAccount, setLoadingDemoAccount] = useState<string | null>(null);
 
-  if (user) {
-    navigate('/');
-    return null;
-  }
+  useEffect(() => {
+    if (user) navigate('/', { replace: true });
+  }, [user, navigate]);
 
   const loginForm = useForm<LoginValues>({
     resolver: zodResolver(loginSchema),
