@@ -189,7 +189,12 @@ export function TreeForm({ open, onClose, tree, preselectedLicenseId }: TreeForm
       estimated_volume_m3: data.estimated_volume_m3 ?? null,
       plot_number: data.plot_number || null,
       health_status: data.health_status || null,
-      notes: data.notes || null,
+      notes: [
+        gpsAccuracyM != null ? `[GPS ±${gpsAccuracyM}m @ ${new Date().toISOString()}]` : null,
+        data.notes?.trim() || null,
+      ]
+        .filter(Boolean)
+        .join('\n') || null,
       status: 'logged',
     });
     
