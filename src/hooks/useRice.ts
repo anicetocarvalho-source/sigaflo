@@ -88,22 +88,21 @@ export interface RiceParameter {
 
 type GrainFilter = GrainType | 'all' | undefined;
 
-const applyGrain = <T extends { eq: (col: string, v: any) => T }>(q: T, grainType: GrainFilter): T => {
-  if (grainType && grainType !== 'all') return q.eq('grain_type', grainType);
-  return q;
-};
+const grainFilterValue = (g: GrainFilter): GrainType | null =>
+  g && g !== 'all' ? g : null;
 
 export const useRiceProduction = (year?: number, grainType?: GrainFilter) => {
   return useQuery({
     queryKey: ['rice-production', year, grainType],
     queryFn: async () => {
+      const g = grainFilterValue(grainType);
       let query = supabase
         .from('rice_production')
         .select('*, provinces(name)')
         .order('year', { ascending: false });
 
       if (year) query = query.eq('year', year);
-      query = applyGrain(query, grainType);
+      if (g) query = query.eq('grain_type', g);
 
       const { data, error } = await query;
       if (error) throw error;
@@ -116,6 +115,7 @@ export const useRiceImports = (year?: number, grainType?: GrainFilter) => {
   return useQuery({
     queryKey: ['rice-imports', year, grainType],
     queryFn: async () => {
+      const g = grainFilterValue(grainType);
       let query = supabase
         .from('rice_imports')
         .select('*')
@@ -123,7 +123,7 @@ export const useRiceImports = (year?: number, grainType?: GrainFilter) => {
         .order('month', { ascending: false });
 
       if (year) query = query.eq('year', year);
-      query = applyGrain(query, grainType);
+      if (g) query = query.eq('grain_type', g);
 
       const { data, error } = await query;
       if (error) throw error;
@@ -136,13 +136,14 @@ export const useRicePrices = (limit?: number, grainType?: GrainFilter) => {
   return useQuery({
     queryKey: ['rice-prices', limit, grainType],
     queryFn: async () => {
+      const g = grainFilterValue(grainType);
       let query = supabase
         .from('rice_prices')
         .select('*, provinces(name)')
         .order('recorded_date', { ascending: false });
 
       if (limit) query = query.limit(limit);
-      query = applyGrain(query, grainType);
+      if (g) query = query.eq('grain_type', g);
 
       const { data, error } = await query;
       if (error) throw error;
@@ -155,12 +156,13 @@ export const useRiceConsumption = (grainType?: GrainFilter) => {
   return useQuery({
     queryKey: ['rice-consumption', grainType],
     queryFn: async () => {
+      const g = grainFilterValue(grainType);
       let query = supabase
         .from('rice_consumption')
         .select('*, provinces(name)')
         .order('year', { ascending: false });
 
-      query = applyGrain(query, grainType);
+      if (g) query = query.eq('grain_type', g);
 
       const { data, error } = await query;
       if (error) throw error;
@@ -173,13 +175,14 @@ export const useRiceAlerts = (unreadOnly = false, grainType?: GrainFilter) => {
   return useQuery({
     queryKey: ['rice-alerts', unreadOnly, grainType],
     queryFn: async () => {
+      const g = grainFilterValue(grainType);
       let query = supabase
         .from('rice_alerts')
         .select('*, provinces(name)')
         .order('created_at', { ascending: false });
 
       if (unreadOnly) query = query.eq('is_read', false);
-      query = applyGrain(query, grainType);
+      if (g) query = query.eq('grain_type', g);
 
       const { data, error } = await query;
       if (error) throw error;
