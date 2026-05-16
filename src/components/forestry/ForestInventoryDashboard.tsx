@@ -205,8 +205,16 @@ export function ForestInventoryDashboard() {
   );
   const createInventory = useCreateInventory();
 
+  // Auto-generated concession code (CONC-YYYY-NNNN)
+  const generateConcessionCode = () => {
+    const year = new Date().getFullYear();
+    const seq = ((inventory?.length ?? 0) + 1).toString().padStart(4, '0');
+    return `CONC-${year}-${seq}`;
+  };
+
   // Form state
   const [formData, setFormData] = useState({
+    concession_code: '',
     concession_name: '',
     province_id: '',
     municipality_id: '',
