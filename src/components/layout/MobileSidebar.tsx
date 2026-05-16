@@ -346,7 +346,11 @@ export function MobileSidebar({ open, onOpenChange }: MobileSidebarProps) {
               Sair
             </button>
           </div>
+          <div className="mt-2">
+            <ForceUpdateButton />
+          </div>
         </div>
+
       </SheetContent>
     </Sheet>
   );
