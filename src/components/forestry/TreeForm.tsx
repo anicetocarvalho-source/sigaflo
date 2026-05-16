@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -101,6 +101,14 @@ const speciesOptions = [
 export function TreeForm({ open, onClose, tree, preselectedLicenseId }: TreeFormProps) {
   const [gettingLocation, setGettingLocation] = useState(false);
   const [gpsAccuracyM, setGpsAccuracyM] = useState<number | undefined>(undefined);
+  const [savedTree, setSavedTree] = useState<{
+    tree_code: string;
+    species: string;
+    latitude: number;
+    longitude: number;
+    wood_class: string;
+  } | null>(null);
+  const qrPreviewRef = useRef<HTMLDivElement>(null);
   const { data: licenses = [] } = useForestLicenses({ status: 'active' });
   const createTree = useCreateTree();
 
@@ -142,6 +150,19 @@ export function TreeForm({ open, onClose, tree, preselectedLicenseId }: TreeForm
       form.setValue('license_id', preselectedLicenseId);
     }
   }, [tree, preselectedLicenseId, form]);
+
+  // Auto-gerar código RFID/QR ao abrir o formulário para nova árvore
+  useEffect(() => {
+    if (open && !tree && !form.getValues('tree_code')) {
+      const timestamp = Date.now().toString(36).toUpperCase();
+      const random = Math.random().toString(36).substring(2, 6).toUpperCase();
+      form.setValue('tree_code', `ARV-${timestamp}-${random}`);
+    }
+    if (!open) {
+      setSavedTree(null);
+      setGpsAccuracyM(undefined);
+    }
+  }, [open, tree, form]);
 
   const getCurrentLocation = () => {
     if (!navigator.geolocation) {
@@ -197,24 +218,130 @@ export function TreeForm({ open, onClose, tree, preselectedLicenseId }: TreeForm
         .join('\n') || null,
       status: 'logged',
     });
-    
+
+    setSavedTree({
+      tree_code: data.tree_code,
+      species: data.species,
+      latitude: data.latitude,
+      longitude: data.longitude,
+      wood_class: data.wood_class,
+    });
+  };
+
+  const handleNewTree = () => {
+    setSavedTree(null);
+    setGpsAccuracyM(undefined);
+    const timestamp = Date.now().toString(36).toUpperCase();
+    const random = Math.random().toString(36).substring(2, 6).toUpperCase();
+    form.reset({
+      license_id: preselectedLicenseId || '',
+      tree_code: `ARV-${timestamp}-${random}`,
+      species: '',
+      wood_class: 'second_class',
+      latitude: 0,
+      longitude: 0,
+      diameter_cm: undefined,
+      height_m: undefined,
+      estimated_volume_m3: undefined,
+      plot_number: '',
+      health_status: 'bom',
+      notes: '',
+    });
+  };
+
+  const handleClose = () => {
     form.reset();
+    setSavedTree(null);
     onClose();
+  };
+
+  const downloadQrPng = () => {
+    if (!savedTree) return;
+    const svg = qrPreviewRef.current?.querySelector('svg');
+    if (!svg) return;
+    const xml = new XMLSerializer().serializeToString(svg);
+    const img = new Image();
+    img.onload = () => {
+      const size = 512;
+      const canvas = document.createElement('canvas');
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+      ctx.fillStyle = '#fff';
+      ctx.fillRect(0, 0, size, size);
+      ctx.drawImage(img, 0, 0, size, size);
+      const link = document.createElement('a');
+      link.download = `${savedTree.tree_code}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    };
+    img.src = `data:image/svg+xml;base64,${btoa(unescape(encodeURIComponent(xml)))}`;
   };
 
   const treeCode = form.watch('tree_code');
   const species = form.watch('species');
 
   return (
-    <Dialog open={open} onOpenChange={onClose}>
+    <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <TreePine className="h-5 w-5" />
-            {tree ? 'Editar Árvore' : 'Registar Nova Árvore'}
+            {savedTree
+              ? 'Árvore Registada — QR Pronto'
+              : tree
+                ? 'Editar Árvore'
+                : 'Registar Nova Árvore'}
           </DialogTitle>
         </DialogHeader>
 
+        {savedTree ? (
+          <div className="space-y-4">
+            <div
+              ref={qrPreviewRef}
+              className="flex flex-col items-center gap-3 rounded-lg border-2 border-primary/30 bg-white p-6"
+            >
+              <QRCodeSVG
+                value={JSON.stringify({
+                  type: 'tree',
+                  code: savedTree.tree_code,
+                  species: savedTree.species,
+                  lat: savedTree.latitude,
+                  lng: savedTree.longitude,
+                  class: savedTree.wood_class,
+                })}
+                size={220}
+                level="H"
+                includeMargin
+              />
+              <div className="text-center">
+                <p className="font-mono text-lg font-bold tracking-wider">
+                  {savedTree.tree_code}
+                </p>
+                <p className="text-sm text-muted-foreground">{savedTree.species}</p>
+                <p className="text-xs text-muted-foreground">
+                  {savedTree.latitude.toFixed(5)}, {savedTree.longitude.toFixed(5)}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap justify-end gap-2 pt-2">
+              <Button type="button" variant="outline" onClick={() => window.print()}>
+                Imprimir etiqueta
+              </Button>
+              <Button type="button" variant="outline" onClick={downloadQrPng}>
+                Baixar PNG
+              </Button>
+              <Button type="button" variant="secondary" onClick={handleNewTree}>
+                Registar outra
+              </Button>
+              <Button type="button" onClick={handleClose}>
+                Concluir
+              </Button>
+            </div>
+          </div>
+        ) : (
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <div className="grid gap-4 md:grid-cols-2">
@@ -472,7 +599,7 @@ export function TreeForm({ open, onClose, tree, preselectedLicenseId }: TreeForm
             )}
 
             <div className="flex justify-end gap-3 pt-4">
-              <Button type="button" variant="outline" onClick={onClose}>
+              <Button type="button" variant="outline" onClick={handleClose}>
                 Cancelar
               </Button>
               <Button type="submit" disabled={createTree.isPending}>
@@ -491,6 +618,7 @@ export function TreeForm({ open, onClose, tree, preselectedLicenseId }: TreeForm
             </div>
           </form>
         </Form>
+        )}
       </DialogContent>
     </Dialog>
   );
