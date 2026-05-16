@@ -30,6 +30,7 @@ import {
 import { useCreateTree, useForestLicenses, type ForestTree } from '@/hooks/useForestry';
 import { MapPin, TreePine, Save, Loader2 } from 'lucide-react';
 import { TreeLocationPicker } from './TreeLocationPicker';
+import { TreePhotoUploader } from './TreePhotoUploader';
 
 const treeSchema = z.object({
   license_id: z.string().min(1, 'Licença é obrigatória'),
@@ -109,6 +110,7 @@ export function TreeForm({ open, onClose, tree, preselectedLicenseId }: TreeForm
     wood_class: string;
   } | null>(null);
   const qrPreviewRef = useRef<HTMLDivElement>(null);
+  const [photos, setPhotos] = useState<string[]>([]);
   const { data: licenses = [] } = useForestLicenses({ status: 'active' });
   const createTree = useCreateTree();
 
@@ -146,6 +148,7 @@ export function TreeForm({ open, onClose, tree, preselectedLicenseId }: TreeForm
         health_status: tree.health_status ?? 'bom',
         notes: tree.notes ?? '',
       });
+      setPhotos(Array.isArray(tree.photos) ? (tree.photos as string[]) : []);
     } else if (preselectedLicenseId) {
       form.setValue('license_id', preselectedLicenseId);
     }
@@ -161,6 +164,7 @@ export function TreeForm({ open, onClose, tree, preselectedLicenseId }: TreeForm
     if (!open) {
       setSavedTree(null);
       setGpsAccuracyM(undefined);
+      setPhotos([]);
     }
   }, [open, tree, form]);
 
@@ -217,6 +221,7 @@ export function TreeForm({ open, onClose, tree, preselectedLicenseId }: TreeForm
         .filter(Boolean)
         .join('\n') || null,
       status: 'logged',
+      photos: photos as unknown as never,
     });
 
     setSavedTree({
@@ -231,6 +236,7 @@ export function TreeForm({ open, onClose, tree, preselectedLicenseId }: TreeForm
   const handleNewTree = () => {
     setSavedTree(null);
     setGpsAccuracyM(undefined);
+    setPhotos([]);
     const timestamp = Date.now().toString(36).toUpperCase();
     const random = Math.random().toString(36).substring(2, 6).toUpperCase();
     form.reset({
@@ -576,6 +582,16 @@ export function TreeForm({ open, onClose, tree, preselectedLicenseId }: TreeForm
                 </FormItem>
               )}
             />
+
+            {/* Fotos da árvore — apoio a identificação e fiscalização */}
+            <div className="space-y-2">
+              <FormLabel>Fotos da Árvore</FormLabel>
+              <TreePhotoUploader
+                treeCode={form.watch('tree_code') || 'sem-codigo'}
+                photos={photos}
+                onChange={setPhotos}
+              />
+            </div>
 
             {/* QR Code Preview */}
             {treeCode && species && (
