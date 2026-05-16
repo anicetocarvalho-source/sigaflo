@@ -143,7 +143,7 @@ export const cardCss = `
     letter-spacing: 0.4px;
   }
   .sigaflo-card.front .title {
-    position: absolute; top: 11mm; left: 8mm; right: 8mm; height: 4mm;
+    position: absolute; top: 11mm; left: 2.5mm; right: 2.5mm; height: 4mm;
     background: ${CARD_COLORS.green}; color: #fff;
     display: flex; align-items: center; justify-content: center;
     border-radius: 0.6mm;
