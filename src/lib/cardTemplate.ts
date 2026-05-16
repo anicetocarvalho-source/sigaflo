@@ -6,8 +6,9 @@
 
 import type { Farmer } from '@/hooks/useFarmers';
 import insigniaAngolaUrl from '@/assets/insignia-angola.png';
+import sigafloMarkUrl from '@/assets/sigaflo-card-logo.png';
 
-export { insigniaAngolaUrl };
+export { insigniaAngolaUrl, sigafloMarkUrl };
 
 export interface CardTemplateCtx {
   farmer: Farmer;
@@ -55,17 +56,14 @@ const addYears = (iso: string, n: number) => {
 // Insígnia oficial da República de Angola (PNG importado como asset Vite).
 // Substitui o brasão SVG estilizado anterior.
 
-const sigafloLogoSvg = `
-<svg viewBox="0 0 200 60" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-  <g transform="translate(4,8)">
-    <circle cx="22" cy="22" r="20" fill="#1f6b34"/>
-    <path d="M22 8 q-8 6 -8 14 q0 6 4 10 q-2 -4 0 -8 q3 -6 4 -10" fill="#fff"/>
-    <path d="M22 10 q8 4 9 14 q0 5 -3 8" fill="none" stroke="#fff" stroke-width="1.5"/>
-    <path d="M14 28 q8 4 16 0" fill="none" stroke="#fff" stroke-width="1.2"/>
-  </g>
-  <text x="56" y="32" font-family="Inter, Arial, sans-serif" font-size="26" font-weight="800" fill="#1f6b34" letter-spacing="1">SIGAFLO</text>
-  <text x="56" y="44" font-family="Inter, Arial, sans-serif" font-size="6" font-weight="600" fill="#0c3d1a" letter-spacing="1.4">SISTEMA INTEGRADO DE GESTÃO AGRO FLORESTAL</text>
-</svg>`.trim();
+const sigafloLogoHtml = `
+<div class="logo-mark">
+  <img src="${sigafloMarkUrl}" alt="SIGAFLO" crossorigin="anonymous" />
+  <div class="logo-text">
+    <div class="logo-title">SIGAFLO</div>
+    <div class="logo-sub">SISTEMA INTEGRADO DE GESTÃO AGRO FLORESTAL</div>
+  </div>
+</div>`.trim();
 
 const mapaAngolaSvg = `
 <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -129,6 +127,11 @@ export const cardCss = `
     flex: 1; display: flex; justify-content: center;
   }
   .sigaflo-card.front .header .logo svg { height: 9mm; width: auto; }
+  .sigaflo-card.front .header .logo .logo-mark { display: flex; align-items: center; gap: 1.2mm; }
+  .sigaflo-card.front .header .logo .logo-mark img { height: 9mm; width: 9mm; object-fit: contain; display: block; }
+  .sigaflo-card.front .header .logo .logo-text { display: flex; flex-direction: column; line-height: 1; }
+  .sigaflo-card.front .header .logo .logo-title { font-size: 11pt; font-weight: 800; color: ${CARD_COLORS.green}; letter-spacing: 0.6px; }
+  .sigaflo-card.front .header .logo .logo-sub { font-size: 3.4pt; font-weight: 600; color: ${CARD_COLORS.greenDark}; letter-spacing: 0.5px; margin-top: 0.6mm; }
   .sigaflo-card.front .header .gov-badge {
     width: 22%; display: flex; align-items: center; justify-content: flex-end; gap: 0.8mm;
   }
@@ -328,7 +331,7 @@ export function renderCardFrontHtml(ctx: CardTemplateCtx, qrSrc: string): string
           <span>e Florestas</span>
         </div>
       </div>
-      <div class="logo">${sigafloLogoSvg}</div>
+      <div class="logo">${sigafloLogoHtml}</div>
       <div class="gov-badge">
         <div class="map">${mapaAngolaSvg}</div>
         <div class="gov-tag">GOVERNO DE<br/>ANGOLA</div>
