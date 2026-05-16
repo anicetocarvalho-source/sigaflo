@@ -3,6 +3,7 @@ import QRCode from 'qrcode';
 import JSZip from 'jszip';
 import type { Farmer } from '@/hooks/useFarmers';
 import insigniaAngolaUrl from '@/assets/insignia-angola.png';
+import sigafloMarkUrl from '@/assets/sigaflo-card-logo.png';
 
 // ===== Cache da insígnia (carregamento único + dedupe + retry) =====
 let _insigniaDataUrlCache: string | null = null;
@@ -55,6 +56,38 @@ async function getInsigniaDataUrl(): Promise<string | null> {
 /** Pré-carrega a insígnia uma vez antes da geração em lote. */
 export async function preloadInsignia(): Promise<void> {
   await getInsigniaDataUrl();
+  await getSigafloMarkDataUrl();
+}
+
+// ===== Cache do logo SIGAFLO =====
+let _markCache: string | null = null;
+let _markInflight: Promise<string | null> | null = null;
+let _markFailed = false;
+async function getSigafloMarkDataUrl(): Promise<string | null> {
+  if (_markCache) return _markCache;
+  if (_markFailed) return null;
+  if (_markInflight) return _markInflight;
+  _markInflight = (async () => {
+    try {
+      const res = await fetch(sigafloMarkUrl, { cache: 'force-cache' });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const blob = await res.blob();
+      const dataUrl = await new Promise<string>((resolve, reject) => {
+        const r = new FileReader();
+        r.onload = () => resolve(r.result as string);
+        r.onerror = () => reject(r.error ?? new Error('FileReader error'));
+        r.readAsDataURL(blob);
+      });
+      _markCache = dataUrl;
+      return dataUrl;
+    } catch {
+      _markFailed = true;
+      return null;
+    } finally {
+      _markInflight = null;
+    }
+  })();
+  return _markInflight;
 }
 
 export type BatchFormat = 'a4_grid' | 'cr80_individual';
@@ -159,9 +192,13 @@ async function drawCardFront(pdf: jsPDF, x: number, y: number, ctx: CardCtx) {
   pdf.text('Ministério da Agricultura', x + 7.6, y + 4.4);
   pdf.text('e Florestas', x + 7.6, y + 5.6);
 
-  // Logo SIGAFLO centro
+  // Logo SIGAFLO centro (mark + texto)
+  const mark = await getSigafloMarkDataUrl();
+  if (mark) {
+    try { pdf.addImage(mark, 'PNG', x + CARD_W / 2 - 12, y + 1.6, 6, 6, undefined, 'FAST'); } catch { /* ignore */ }
+  }
   pdf.setTextColor(31, 107, 52).setFont('helvetica', 'bold').setFontSize(13);
-  pdf.text('SIGAFLO', x + CARD_W / 2, y + 4.6, { align: 'center' });
+  pdf.text('SIGAFLO', x + CARD_W / 2 - 5, y + 4.6, { align: 'left' });
   pdf.setFont('helvetica', 'bold').setFontSize(3.5).setTextColor(12, 61, 26);
   pdf.text('SISTEMA INTEGRADO DE GESTÃO AGRO FLORESTAL', x + CARD_W / 2, y + 7.2, { align: 'center' });
 
