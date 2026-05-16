@@ -205,8 +205,16 @@ export function ForestInventoryDashboard() {
   );
   const createInventory = useCreateInventory();
 
+  // Auto-generated concession code (CONC-YYYY-NNNN)
+  const generateConcessionCode = () => {
+    const year = new Date().getFullYear();
+    const seq = ((inventory?.length ?? 0) + 1).toString().padStart(4, '0');
+    return `CONC-${year}-${seq}`;
+  };
+
   // Form state
   const [formData, setFormData] = useState({
+    concession_code: '',
     concession_name: '',
     province_id: '',
     municipality_id: '',
@@ -414,7 +422,7 @@ export function ForestInventoryDashboard() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    const code = `INV-${Date.now().toString(36).toUpperCase()}`;
+    const code = formData.concession_code || generateConcessionCode();
     
     createInventory.mutate({
       inventory_code: code,
@@ -434,6 +442,7 @@ export function ForestInventoryDashboard() {
     
     setShowAddDialog(false);
     setFormData({
+      concession_code: '',
       concession_name: '',
       province_id: '',
       municipality_id: '',
@@ -681,7 +690,12 @@ export function ForestInventoryDashboard() {
                 <FileSpreadsheet className="mr-2 h-4 w-4" />
                 Exportar
               </Button>
-              <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
+              <Dialog open={showAddDialog} onOpenChange={(open) => {
+                setShowAddDialog(open);
+                if (open && !formData.concession_code) {
+                  setFormData((prev) => ({ ...prev, concession_code: generateConcessionCode() }));
+                }
+              }}>
                 <DialogTrigger asChild>
                   <Button>
                     <Plus className="mr-2 h-4 w-4" />
@@ -697,6 +711,18 @@ export function ForestInventoryDashboard() {
                   </DialogHeader>
                   <form onSubmit={handleSubmit} className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
+                      <div className="col-span-2">
+                        <Label htmlFor="concession_code">Código da Concessão *</Label>
+                        <Input
+                          id="concession_code"
+                          value={formData.concession_code}
+                          readOnly
+                          className="bg-muted font-mono"
+                        />
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Gerado automaticamente
+                        </p>
+                      </div>
                       <div className="col-span-2">
                         <Label htmlFor="concession_name">Nome da Concessão *</Label>
                         <Input
