@@ -148,6 +148,7 @@ export function TreeForm({ open, onClose, tree, preselectedLicenseId }: TreeForm
         health_status: tree.health_status ?? 'bom',
         notes: tree.notes ?? '',
       });
+      setPhotos(Array.isArray(tree.photos) ? (tree.photos as string[]) : []);
     } else if (preselectedLicenseId) {
       form.setValue('license_id', preselectedLicenseId);
     }
