@@ -14,6 +14,7 @@ import {
   normalizeName,
   normalizeBI,
   normalizeNIF,
+  normalizeBiOrNif,
   collapseSpaces,
 } from './primitives';
 
