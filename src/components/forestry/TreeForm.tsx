@@ -218,9 +218,65 @@ export function TreeForm({ open, onClose, tree, preselectedLicenseId }: TreeForm
         .join('\n') || null,
       status: 'logged',
     });
-    
+
+    setSavedTree({
+      tree_code: data.tree_code,
+      species: data.species,
+      latitude: data.latitude,
+      longitude: data.longitude,
+      wood_class: data.wood_class,
+    });
+  };
+
+  const handleNewTree = () => {
+    setSavedTree(null);
+    setGpsAccuracyM(undefined);
+    const timestamp = Date.now().toString(36).toUpperCase();
+    const random = Math.random().toString(36).substring(2, 6).toUpperCase();
+    form.reset({
+      license_id: preselectedLicenseId || '',
+      tree_code: `ARV-${timestamp}-${random}`,
+      species: '',
+      wood_class: 'second_class',
+      latitude: 0,
+      longitude: 0,
+      diameter_cm: undefined,
+      height_m: undefined,
+      estimated_volume_m3: undefined,
+      plot_number: '',
+      health_status: 'bom',
+      notes: '',
+    });
+  };
+
+  const handleClose = () => {
     form.reset();
+    setSavedTree(null);
     onClose();
+  };
+
+  const downloadQrPng = () => {
+    if (!savedTree) return;
+    const svg = qrPreviewRef.current?.querySelector('svg');
+    if (!svg) return;
+    const xml = new XMLSerializer().serializeToString(svg);
+    const img = new Image();
+    img.onload = () => {
+      const size = 512;
+      const canvas = document.createElement('canvas');
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+      ctx.fillStyle = '#fff';
+      ctx.fillRect(0, 0, size, size);
+      ctx.drawImage(img, 0, 0, size, size);
+      const link = document.createElement('a');
+      link.download = `${savedTree.tree_code}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    };
+    img.src = `data:image/svg+xml;base64,${btoa(unescape(encodeURIComponent(xml)))}`;
   };
 
   const treeCode = form.watch('tree_code');
