@@ -54,6 +54,13 @@ const farmerSchema = z.object({
   cultivated_area_ha: z.number().min(0, 'O valor deve ser positivo').optional().nullable(),
   main_crops: z.array(z.string()).optional().nullable(),
   irrigation_type: z.string().max(50, 'Máximo de 50 caracteres').optional().nullable(),
+  // PFNL — Produtos Florestais Não-Lenhosos
+  activity_category: z.enum(['agricultural', 'pfnl', 'mixed']).default('agricultural'),
+  pfnl_products: z.array(z.string()).optional().nullable(),
+  pfnl_collection_area_ha: z.number().min(0, 'O valor deve ser positivo').optional().nullable(),
+  pfnl_target_species: z.array(z.string()).optional().nullable(),
+  pfnl_seasonality: z.string().max(255, 'Máximo de 255 caracteres').optional().nullable(),
+  pfnl_forest_authorization_ref: z.string().max(100, 'Máximo de 100 caracteres').optional().nullable(),
   parent_cooperative_id: z.string().uuid().optional().nullable(),
   field_school_id: z.string().uuid().optional().nullable(),
   // Fields for individual/family farmers
