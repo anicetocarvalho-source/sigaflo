@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Loader2, Wheat, ArrowRight, Package, ShoppingCart, DollarSign, Filter, X } from 'lucide-react';
+import { Area, AreaChart, Line, LineChart, ResponsiveContainer, Tooltip } from 'recharts';
 import { useGrainsOverview } from '@/hooks/useRice';
 import { GRAIN_TYPES, getGrainLabel, type GrainType } from '@/lib/grains';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
