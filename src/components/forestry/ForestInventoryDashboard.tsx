@@ -442,6 +442,7 @@ export function ForestInventoryDashboard() {
     
     setShowAddDialog(false);
     setFormData({
+      concession_code: '',
       concession_name: '',
       province_id: '',
       municipality_id: '',
