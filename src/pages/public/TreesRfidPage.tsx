@@ -494,6 +494,12 @@ export default function TreesRfidPage() {
                 <Button variant="outline" onClick={exportCSV}>
                   <Download className="h-4 w-4 mr-1" /> Exportar CSV
                 </Button>
+                <Button variant="outline" onClick={() => exportQrPDF('trees')}>
+                  <FileDown className="h-4 w-4 mr-1" /> QRs Árvores (PDF)
+                </Button>
+                <Button variant="outline" onClick={() => exportQrPDF('access')}>
+                  <QrCode className="h-4 w-4 mr-1" /> QR Leitor (PDF)
+                </Button>
               </div>
             </div>
           </CardHeader>
