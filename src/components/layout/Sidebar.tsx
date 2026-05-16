@@ -151,9 +151,9 @@ const navigationSections: NavSection[] = [
         ],
       },
       {
-        label: 'Produção de Grãos',
+        label: 'Cadeia de Grãos',
         icon: Wheat,
-        allowedRoles: TECH_AND_ADMIN,
+        allowedRoles: ALL_INTERNAL,
         module: 'rice',
         children: [
           { label: 'Visão Geral', href: '/arroz' },
