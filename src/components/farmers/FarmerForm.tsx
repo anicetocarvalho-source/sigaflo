@@ -33,6 +33,8 @@ import { toast } from 'sonner';
 import { optionalEmailSchema, optionalPhoneAOSchema, optionalBiOrNifSchema, normalizeBiOrNif } from '@/lib/validation';
 import { PhoneInputAO } from '@/components/ui/phone-input-ao';
 import { EmailInput } from '@/components/ui/email-input';
+import { Textarea } from '@/components/ui/textarea';
+import { ACTIVITY_CATEGORIES, PFNL_PRODUCTS, type ActivityCategory } from '@/lib/pfnl';
 
 const farmerSchema = z.object({
   farmer_type: z.enum(['individual', 'family', 'cooperative', 'field_school', 'company']),
