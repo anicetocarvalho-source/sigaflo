@@ -1,8 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import type { GrainType } from '@/lib/grains';
 
 export interface RiceProduction {
   id: string;
+  grain_type: GrainType;
   province_id: string | null;
   municipality_id: string | null;
   year: number;
@@ -20,6 +22,7 @@ export interface RiceProduction {
 
 export interface RiceImport {
   id: string;
+  grain_type: GrainType;
   year: number;
   month: number;
   origin_country: string;
@@ -35,6 +38,7 @@ export interface RiceImport {
 
 export interface RicePrice {
   id: string;
+  grain_type: GrainType;
   province_id: string | null;
   recorded_date: string;
   retail_price_aoa: number;
@@ -47,6 +51,7 @@ export interface RicePrice {
 
 export interface RiceConsumption {
   id: string;
+  grain_type: GrainType;
   year: number;
   province_id: string | null;
   population: number;
@@ -58,6 +63,7 @@ export interface RiceConsumption {
 
 export interface RiceAlert {
   id: string;
+  grain_type: GrainType;
   alert_type: string;
   severity: string;
   title: string;
@@ -80,19 +86,25 @@ export interface RiceParameter {
   description: string | null;
 }
 
-export const useRiceProduction = (year?: number) => {
+type GrainFilter = GrainType | 'all' | undefined;
+
+const applyGrain = <T extends { eq: (col: string, v: any) => T }>(q: T, grainType: GrainFilter): T => {
+  if (grainType && grainType !== 'all') return q.eq('grain_type', grainType);
+  return q;
+};
+
+export const useRiceProduction = (year?: number, grainType?: GrainFilter) => {
   return useQuery({
-    queryKey: ['rice-production', year],
+    queryKey: ['rice-production', year, grainType],
     queryFn: async () => {
       let query = supabase
         .from('rice_production')
         .select('*, provinces(name)')
         .order('year', { ascending: false });
-      
-      if (year) {
-        query = query.eq('year', year);
-      }
-      
+
+      if (year) query = query.eq('year', year);
+      query = applyGrain(query, grainType);
+
       const { data, error } = await query;
       if (error) throw error;
       return data as RiceProduction[];
@@ -100,20 +112,19 @@ export const useRiceProduction = (year?: number) => {
   });
 };
 
-export const useRiceImports = (year?: number) => {
+export const useRiceImports = (year?: number, grainType?: GrainFilter) => {
   return useQuery({
-    queryKey: ['rice-imports', year],
+    queryKey: ['rice-imports', year, grainType],
     queryFn: async () => {
       let query = supabase
         .from('rice_imports')
         .select('*')
         .order('year', { ascending: false })
         .order('month', { ascending: false });
-      
-      if (year) {
-        query = query.eq('year', year);
-      }
-      
+
+      if (year) query = query.eq('year', year);
+      query = applyGrain(query, grainType);
+
       const { data, error } = await query;
       if (error) throw error;
       return data as RiceImport[];
@@ -121,19 +132,18 @@ export const useRiceImports = (year?: number) => {
   });
 };
 
-export const useRicePrices = (limit?: number) => {
+export const useRicePrices = (limit?: number, grainType?: GrainFilter) => {
   return useQuery({
-    queryKey: ['rice-prices', limit],
+    queryKey: ['rice-prices', limit, grainType],
     queryFn: async () => {
       let query = supabase
         .from('rice_prices')
         .select('*, provinces(name)')
         .order('recorded_date', { ascending: false });
-      
-      if (limit) {
-        query = query.limit(limit);
-      }
-      
+
+      if (limit) query = query.limit(limit);
+      query = applyGrain(query, grainType);
+
       const { data, error } = await query;
       if (error) throw error;
       return data as RicePrice[];
@@ -141,34 +151,36 @@ export const useRicePrices = (limit?: number) => {
   });
 };
 
-export const useRiceConsumption = () => {
+export const useRiceConsumption = (grainType?: GrainFilter) => {
   return useQuery({
-    queryKey: ['rice-consumption'],
+    queryKey: ['rice-consumption', grainType],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('rice_consumption')
         .select('*, provinces(name)')
         .order('year', { ascending: false });
-      
+
+      query = applyGrain(query, grainType);
+
+      const { data, error } = await query;
       if (error) throw error;
       return data as RiceConsumption[];
     },
   });
 };
 
-export const useRiceAlerts = (unreadOnly = false) => {
+export const useRiceAlerts = (unreadOnly = false, grainType?: GrainFilter) => {
   return useQuery({
-    queryKey: ['rice-alerts', unreadOnly],
+    queryKey: ['rice-alerts', unreadOnly, grainType],
     queryFn: async () => {
       let query = supabase
         .from('rice_alerts')
         .select('*, provinces(name)')
         .order('created_at', { ascending: false });
-      
-      if (unreadOnly) {
-        query = query.eq('is_read', false);
-      }
-      
+
+      if (unreadOnly) query = query.eq('is_read', false);
+      query = applyGrain(query, grainType);
+
       const { data, error } = await query;
       if (error) throw error;
       return data as RiceAlert[];
@@ -183,82 +195,125 @@ export const useRiceParameters = () => {
       const { data, error } = await supabase
         .from('rice_parameters')
         .select('*');
-      
+
       if (error) throw error;
       return data as RiceParameter[];
     },
   });
 };
 
-// Aggregated statistics
-export const useRiceStats = () => {
+// Convenience aliases to encourage migration to "grains" terminology
+export const useGrainProduction = useRiceProduction;
+export const useGrainImports = useRiceImports;
+export const useGrainPrices = useRicePrices;
+export const useGrainConsumption = useRiceConsumption;
+export const useGrainAlerts = useRiceAlerts;
+
+// Breakdown agregado por tipo de grão (todos os anos)
+export const useGrainsOverview = () => {
   return useQuery({
-    queryKey: ['rice-stats'],
+    queryKey: ['grains-overview'],
+    queryFn: async () => {
+      const [{ data: production }, { data: imports }, { data: prices }] = await Promise.all([
+        supabase.from('rice_production').select('grain_type, production_tonnes, cultivated_area_ha, year'),
+        supabase.from('rice_imports').select('grain_type, volume_tonnes, total_value_usd, year'),
+        supabase.from('rice_prices').select('grain_type, retail_price_aoa, recorded_date').order('recorded_date', { ascending: false }).limit(200),
+      ]);
+
+      const byGrain: Record<string, { production: number; area: number; imports: number; importValue: number; avgPrice: number; priceSamples: number }> = {};
+      const ensure = (g: string) => {
+        if (!byGrain[g]) byGrain[g] = { production: 0, area: 0, imports: 0, importValue: 0, avgPrice: 0, priceSamples: 0 };
+        return byGrain[g];
+      };
+      (production || []).forEach((p: any) => {
+        const b = ensure(p.grain_type || 'arroz');
+        b.production += Number(p.production_tonnes || 0);
+        b.area += Number(p.cultivated_area_ha || 0);
+      });
+      (imports || []).forEach((i: any) => {
+        const b = ensure(i.grain_type || 'arroz');
+        b.imports += Number(i.volume_tonnes || 0);
+        b.importValue += Number(i.total_value_usd || 0);
+      });
+      (prices || []).forEach((p: any) => {
+        const b = ensure(p.grain_type || 'arroz');
+        b.avgPrice = (b.avgPrice * b.priceSamples + Number(p.retail_price_aoa || 0)) / (b.priceSamples + 1);
+        b.priceSamples += 1;
+      });
+
+      return byGrain;
+    },
+  });
+};
+
+// Aggregated statistics
+export const useRiceStats = (grainType?: GrainFilter) => {
+  return useQuery({
+    queryKey: ['rice-stats', grainType],
     queryFn: async () => {
       const currentYear = new Date().getFullYear();
-      
-      // Get production totals
-      const { data: production } = await supabase
+      const g = grainType && grainType !== 'all' ? grainType : null;
+
+      let prodQ = supabase
         .from('rice_production')
-        .select('year, production_tonnes, cultivated_area_ha, harvested_area_ha')
+        .select('year, production_tonnes, cultivated_area_ha, harvested_area_ha, grain_type')
         .gte('year', currentYear - 5);
-      
-      // Get import totals
-      const { data: imports } = await supabase
+      if (g) prodQ = prodQ.eq('grain_type', g);
+      const { data: production } = await prodQ;
+
+      let impQ = supabase
         .from('rice_imports')
-        .select('year, volume_tonnes, total_value_usd')
+        .select('year, volume_tonnes, total_value_usd, grain_type')
         .gte('year', currentYear - 5);
-      
-      // Get latest prices
-      const { data: prices } = await supabase
+      if (g) impQ = impQ.eq('grain_type', g);
+      const { data: imports } = await impQ;
+
+      let pricesQ = supabase
         .from('rice_prices')
-        .select('retail_price_aoa, wholesale_price_aoa, recorded_date')
+        .select('retail_price_aoa, wholesale_price_aoa, recorded_date, grain_type')
         .order('recorded_date', { ascending: false })
         .limit(10);
-      
-      // Get consumption data
-      const { data: consumption } = await supabase
+      if (g) pricesQ = pricesQ.eq('grain_type', g);
+      const { data: prices } = await pricesQ;
+
+      let consQ = supabase
         .from('rice_consumption')
         .select('*')
         .is('province_id', null)
         .order('year', { ascending: false })
         .limit(1);
-      
-      // Get parameters
+      if (g) consQ = consQ.eq('grain_type', g);
+      const { data: consumption } = await consQ;
+
       const { data: parameters } = await supabase
         .from('rice_parameters')
         .select('*');
-      
-      // Calculate aggregates
+
       const productionByYear = production?.reduce((acc: Record<number, any>, p) => {
-        if (!acc[p.year]) {
-          acc[p.year] = { production: 0, area: 0, harvested: 0 };
-        }
+        if (!acc[p.year]) acc[p.year] = { production: 0, area: 0, harvested: 0 };
         acc[p.year].production += Number(p.production_tonnes);
         acc[p.year].area += Number(p.cultivated_area_ha);
         acc[p.year].harvested += Number(p.harvested_area_ha);
         return acc;
       }, {});
-      
+
       const importsByYear = imports?.reduce((acc: Record<number, any>, i) => {
-        if (!acc[i.year]) {
-          acc[i.year] = { volume: 0, value: 0 };
-        }
+        if (!acc[i.year]) acc[i.year] = { volume: 0, value: 0 };
         acc[i.year].volume += Number(i.volume_tonnes);
         acc[i.year].value += Number(i.total_value_usd || 0);
         return acc;
       }, {});
-      
-      const avgRetailPrice = prices?.length 
-        ? prices.reduce((sum, p) => sum + Number(p.retail_price_aoa), 0) / prices.length 
+
+      const avgRetailPrice = prices?.length
+        ? prices.reduce((sum, p) => sum + Number(p.retail_price_aoa), 0) / prices.length
         : 0;
-      
+
       const latestConsumption = consumption?.[0];
       const paramsMap = parameters?.reduce((acc: Record<string, number>, p) => {
         acc[p.parameter_name] = p.parameter_value;
         return acc;
       }, {});
-      
+
       return {
         productionByYear,
         importsByYear,
