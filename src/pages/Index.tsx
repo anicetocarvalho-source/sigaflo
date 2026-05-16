@@ -5,6 +5,7 @@ import { ModuleCard } from '@/components/dashboard/ModuleCard';
 import { QuickStats } from '@/components/dashboard/QuickStats';
 import { AlertsPanel } from '@/components/dashboard/AlertsPanel';
 import { RiceOverview } from '@/components/dashboard/RiceOverview';
+import { GrainsOverview } from '@/components/dashboard/GrainsOverview';
 import { RecentActivity } from '@/components/dashboard/RecentActivity';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -389,9 +390,10 @@ export default function Index() {
           />
         </section>
 
-        {/* Rice Strategic Module */}
-        <section className="animate-fade-in stagger-5">
+        {/* Grains Strategic Module */}
+        <section className="animate-fade-in stagger-5 space-y-6">
           <RiceOverview />
+          <GrainsOverview />
         </section>
 
         {/* Main Content Grid */}
