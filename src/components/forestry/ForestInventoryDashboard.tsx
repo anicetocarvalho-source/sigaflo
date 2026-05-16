@@ -978,7 +978,7 @@ export function ForestInventoryDashboard() {
                       <TableRow 
                         key={item.id} 
                         className="cursor-pointer hover:bg-muted/50"
-                        onClick={() => setSelectedInventory(item)}
+                        onClick={() => navigate(`/florestal/inventario/${item.id}`)}
                       >
                         <TableCell className="font-mono text-sm">
                           {item.inventory_code}
