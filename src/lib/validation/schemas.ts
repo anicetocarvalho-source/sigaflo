@@ -119,6 +119,31 @@ export const optionalNifSchema = z
   .optional();
 
 // -----------------------------------------------------------------------------
+// BI OU NIF (campo combinado usado em `farmers.bi_nif`)
+// -----------------------------------------------------------------------------
+export const biOrNifSchema = z
+  .string({ required_error: MSG.required })
+  .trim()
+  .min(1, MSG.required)
+  .transform(normalizeBiOrNif)
+  .refine(
+    (v) => BI_AO_REGEX.test(v) || NIF_AO_REGEX.test(v),
+    { message: 'Documento inválido. Use BI (9 dígitos + 2 letras + 3 dígitos) ou NIF (10 dígitos).' },
+  );
+
+export const optionalBiOrNifSchema = z
+  .string()
+  .trim()
+  .transform((v) => (v ? normalizeBiOrNif(v) : ''))
+  .refine(
+    (v) => v === '' || BI_AO_REGEX.test(v) || NIF_AO_REGEX.test(v),
+    { message: 'Documento inválido. Use BI (9 dígitos + 2 letras + 3 dígitos) ou NIF (10 dígitos).' },
+  )
+  .transform((v) => (v === '' ? null : v))
+  .nullable()
+  .optional();
+
+// -----------------------------------------------------------------------------
 // Data
 // -----------------------------------------------------------------------------
 export const pastDateSchema = z
