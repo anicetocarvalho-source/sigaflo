@@ -49,8 +49,10 @@ import {
   TrendingDown,
   BarChart3,
   X,
-  Radio
+  Radio,
+  QrCode
 } from 'lucide-react';
+import { QRCodeSVG } from 'qrcode.react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useProvinces, useMunicipalities } from '@/hooks/useFarmers';
@@ -198,6 +200,7 @@ export function ForestInventoryDashboard() {
   const [mapboxToken, setMapboxToken] = useState<string | null>(null);
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [selectedInventory, setSelectedInventory] = useState<ForestInventory | null>(null);
+  const [showRfidQrDialog, setShowRfidQrDialog] = useState(false);
   const [formProvinceId, setFormProvinceId] = useState<string>('');
 
   const { data: provinces } = useProvinces();
@@ -695,6 +698,45 @@ export function ForestInventoryDashboard() {
                   App RFID Árvores
                 </a>
               </Button>
+              <Dialog open={showRfidQrDialog} onOpenChange={setShowRfidQrDialog}>
+                <DialogTrigger asChild>
+                  <Button variant="outline">
+                    <QrCode className="mr-2 h-4 w-4" />
+                    QR Acesso RFID
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-sm">
+                  <DialogHeader>
+                    <DialogTitle>QR Code — Leitor RFID</DialogTitle>
+                    <DialogDescription>
+                      Aponte a câmara do telemóvel para abrir o leitor RFID de árvores.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="flex flex-col items-center gap-4 py-4">
+                    <div className="bg-white p-4 rounded-lg border">
+                      <QRCodeSVG
+                        value={`${window.location.origin}/rfid-arvores`}
+                        size={240}
+                        level="H"
+                        includeMargin={false}
+                      />
+                    </div>
+                    <p className="text-xs text-muted-foreground break-all text-center">
+                      {`${window.location.origin}/rfid-arvores`}
+                    </p>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        navigator.clipboard.writeText(`${window.location.origin}/rfid-arvores`);
+                        toast.success('Link copiado');
+                      }}
+                    >
+                      Copiar link
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
               <Button variant="outline" onClick={handleExport}>
                 <FileSpreadsheet className="mr-2 h-4 w-4" />
                 Exportar
