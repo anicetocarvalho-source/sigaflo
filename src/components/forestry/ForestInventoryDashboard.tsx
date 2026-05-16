@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -184,6 +185,7 @@ function useCreateInventory() {
 }
 
 export function ForestInventoryDashboard() {
+  const navigate = useNavigate();
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const markersRef = useRef<mapboxgl.Marker[]>([]);
@@ -550,7 +552,7 @@ export function ForestInventoryDashboard() {
                 <div 
                   key={item.id} 
                   className="flex items-center gap-3 p-3 bg-background rounded-lg border cursor-pointer hover:shadow-md transition-shadow"
-                  onClick={() => setSelectedInventory(item)}
+                  onClick={() => navigate(`/florestal/inventario/${item.id}`)}
                 >
                   <div className="p-2 bg-destructive/10 rounded-lg">
                     <TrendingDown className="h-4 w-4 text-destructive" />
@@ -976,7 +978,7 @@ export function ForestInventoryDashboard() {
                       <TableRow 
                         key={item.id} 
                         className="cursor-pointer hover:bg-muted/50"
-                        onClick={() => setSelectedInventory(item)}
+                        onClick={() => navigate(`/florestal/inventario/${item.id}`)}
                       >
                         <TableCell className="font-mono text-sm">
                           {item.inventory_code}
@@ -1030,7 +1032,7 @@ export function ForestInventoryDashboard() {
                             size="sm"
                             onClick={(e) => {
                               e.stopPropagation();
-                              setSelectedInventory(item);
+                              navigate(`/florestal/inventario/${item.id}`);
                             }}
                           >
                             <Eye className="h-4 w-4" />

@@ -65,6 +65,7 @@ import ForestryEnforcementPage from "./pages/forestry/ForestryEnforcementPage";
 import ForestryReforestationPage from "./pages/forestry/ForestryReforestationPage";
 import ForestryComplaintsPage from "./pages/forestry/ForestryComplaintsPage";
 import ConcessionDetailPage from "./pages/forestry/ConcessionDetailPage";
+import InventoryProfilePage from "./pages/forestry/InventoryProfilePage";
 import ManagementPlansPage from "./pages/forestry/ManagementPlansPage";
 import PaymentsPage from "./pages/forestry/PaymentsPage";
 import GreenCertificationPage from "./pages/forestry/GreenCertificationPage";
@@ -275,6 +276,7 @@ const App = () => {
             {/* Forestry Module */}
             <Route path="/florestal" element={<ProtectedRoute requiredRoles={FORESTRY_ROLES}><ForestryPage /></ProtectedRoute>} />
             <Route path="/florestal/inventario" element={<ProtectedRoute requiredRoles={FORESTRY_ROLES}><ForestInventoryPage /></ProtectedRoute>} />
+            <Route path="/florestal/inventario/:id" element={<ProtectedRoute requiredRoles={FORESTRY_ROLES}><InventoryProfilePage /></ProtectedRoute>} />
             <Route path="/florestal/licenciamento" element={<ProtectedRoute requiredRoles={FORESTRY_ROLES}><ForestryPage /></ProtectedRoute>} />
             <Route path="/florestal/rastreabilidade" element={<ProtectedRoute requiredRoles={FORESTRY_ROLES}><ForestryTraceabilityPage /></ProtectedRoute>} />
             <Route path="/florestal/fiscalizacao" element={<ProtectedRoute requiredRoles={TECHNICIAN_AND_ADMIN}><ForestryEnforcementPage /></ProtectedRoute>} />
