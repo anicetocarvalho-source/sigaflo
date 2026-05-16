@@ -458,6 +458,11 @@ export default function TreesRfidPage() {
               <Button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-700" disabled={loadingConcession}>
                 {loadingConcession ? 'A pesquisar...' : 'Entrar'}
               </Button>
+              {!isInstalled && (
+                <Button type="button" variant="outline" className="w-full" onClick={handleInstall}>
+                  <Download className="h-4 w-4 mr-1" /> Instalar como aplicação
+                </Button>
+              )}
             </form>
           </CardContent>
         </Card>
