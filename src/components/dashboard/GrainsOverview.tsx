@@ -255,3 +255,102 @@ function YearSelect({
     </Select>
   );
 }
+
+type TrendPoint = { year: number; production: number; imports: number; price: number | null };
+
+function TrendChart({
+  data,
+  field,
+  colorVar,
+  unit,
+  variant = 'area',
+}: {
+  data: TrendPoint[];
+  field: 'production' | 'imports' | 'price';
+  colorVar: string;
+  unit: string;
+  variant?: 'area' | 'line';
+}) {
+  const series = useMemo(
+    () =>
+      data
+        .map((d) => ({ year: d.year, value: d[field] }))
+        .filter((d) => d.value != null && !Number.isNaN(Number(d.value))) as Array<{ year: number; value: number }>,
+    [data, field],
+  );
+
+  if (series.length < 2) {
+    return (
+      <div className="flex h-10 w-[120px] items-center justify-center text-[10px] text-muted-foreground">
+        sem série
+      </div>
+    );
+  }
+
+  const stroke = `hsl(var(${colorVar}))`;
+  const gradId = `grad-${field}-${colorVar.replace(/[^a-z]/gi, '')}`;
+  const first = series[0].value;
+  const last = series[series.length - 1].value;
+  const deltaPct = first > 0 ? ((last - first) / first) * 100 : null;
+
+  return (
+    <div className="flex items-center gap-2">
+      <div className="h-10 w-[110px]">
+        <ResponsiveContainer width="100%" height="100%">
+          {variant === 'area' ? (
+            <AreaChart data={series} margin={{ top: 2, right: 2, bottom: 2, left: 2 }}>
+              <defs>
+                <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor={stroke} stopOpacity={0.45} />
+                  <stop offset="100%" stopColor={stroke} stopOpacity={0.02} />
+                </linearGradient>
+              </defs>
+              <Tooltip
+                cursor={{ stroke: 'hsl(var(--border))', strokeWidth: 1 }}
+                contentStyle={{
+                  background: 'hsl(var(--popover))',
+                  border: '1px solid hsl(var(--border))',
+                  borderRadius: 6,
+                  fontSize: 11,
+                  padding: '4px 8px',
+                }}
+                labelStyle={{ color: 'hsl(var(--muted-foreground))' }}
+                formatter={(v: number) => [`${fmt(v)} ${unit}`, '']}
+                labelFormatter={(l) => `Ano ${l}`}
+              />
+              <Area type="monotone" dataKey="value" stroke={stroke} strokeWidth={1.5} fill={`url(#${gradId})`} />
+            </AreaChart>
+          ) : (
+            <LineChart data={series} margin={{ top: 2, right: 2, bottom: 2, left: 2 }}>
+              <Tooltip
+                cursor={{ stroke: 'hsl(var(--border))', strokeWidth: 1 }}
+                contentStyle={{
+                  background: 'hsl(var(--popover))',
+                  border: '1px solid hsl(var(--border))',
+                  borderRadius: 6,
+                  fontSize: 11,
+                  padding: '4px 8px',
+                }}
+                labelStyle={{ color: 'hsl(var(--muted-foreground))' }}
+                formatter={(v: number) => [`${Number(v).toFixed(0)} ${unit}`, '']}
+                labelFormatter={(l) => `Ano ${l}`}
+              />
+              <Line type="monotone" dataKey="value" stroke={stroke} strokeWidth={1.5} dot={false} />
+            </LineChart>
+          )}
+        </ResponsiveContainer>
+      </div>
+      {deltaPct != null && (
+        <span
+          className={cn(
+            'min-w-[42px] text-right text-[10px] font-medium tabular-nums',
+            deltaPct > 0 ? 'text-success' : deltaPct < 0 ? 'text-destructive' : 'text-muted-foreground',
+          )}
+        >
+          {deltaPct > 0 ? '+' : ''}
+          {deltaPct.toFixed(0)}%
+        </span>
+      )}
+    </div>
+  );
+}
