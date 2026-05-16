@@ -695,6 +695,45 @@ export function ForestInventoryDashboard() {
                   App RFID Árvores
                 </a>
               </Button>
+              <Dialog open={showRfidQrDialog} onOpenChange={setShowRfidQrDialog}>
+                <DialogTrigger asChild>
+                  <Button variant="outline">
+                    <QrCode className="mr-2 h-4 w-4" />
+                    QR Acesso RFID
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-sm">
+                  <DialogHeader>
+                    <DialogTitle>QR Code — Leitor RFID</DialogTitle>
+                    <DialogDescription>
+                      Aponte a câmara do telemóvel para abrir o leitor RFID de árvores.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="flex flex-col items-center gap-4 py-4">
+                    <div className="bg-white p-4 rounded-lg border">
+                      <QRCodeSVG
+                        value={`${window.location.origin}/rfid-arvores`}
+                        size={240}
+                        level="H"
+                        includeMargin={false}
+                      />
+                    </div>
+                    <p className="text-xs text-muted-foreground break-all text-center">
+                      {`${window.location.origin}/rfid-arvores`}
+                    </p>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        navigator.clipboard.writeText(`${window.location.origin}/rfid-arvores`);
+                        toast({ title: 'Link copiado' });
+                      }}
+                    >
+                      Copiar link
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
               <Button variant="outline" onClick={handleExport}>
                 <FileSpreadsheet className="mr-2 h-4 w-4" />
                 Exportar
