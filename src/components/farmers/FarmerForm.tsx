@@ -56,11 +56,25 @@ const farmerSchema = z.object({
   irrigation_type: z.string().max(50, 'Máximo de 50 caracteres').optional().nullable(),
   // PFNL — Produtos Florestais Não-Lenhosos
   activity_category: z.enum(['agricultural', 'pfnl', 'mixed']).default('agricultural'),
-  pfnl_products: z.array(z.string()).optional().nullable(),
-  pfnl_collection_area_ha: z.number().min(0, 'O valor deve ser positivo').optional().nullable(),
-  pfnl_target_species: z.array(z.string()).optional().nullable(),
+  pfnl_products: z.array(z.string()).max(15, 'Máximo de 15 produtos').optional().nullable(),
+  pfnl_collection_area_ha: z
+    .number()
+    .min(0.01, 'A área de coleta deve ser superior a 0')
+    .max(100000, 'Área de coleta irrealista (máx. 100.000 ha)')
+    .optional()
+    .nullable(),
+  pfnl_target_species: z
+    .array(z.string().trim().min(2, 'Cada espécie deve ter pelo menos 2 caracteres').max(80, 'Máximo de 80 caracteres por espécie'))
+    .max(20, 'Máximo de 20 espécies')
+    .optional()
+    .nullable(),
   pfnl_seasonality: z.string().max(255, 'Máximo de 255 caracteres').optional().nullable(),
-  pfnl_forest_authorization_ref: z.string().max(100, 'Máximo de 100 caracteres').optional().nullable(),
+  pfnl_forest_authorization_ref: z
+    .string()
+    .trim()
+    .max(100, 'Máximo de 100 caracteres')
+    .optional()
+    .nullable(),
   parent_cooperative_id: z.string().uuid().optional().nullable(),
   field_school_id: z.string().uuid().optional().nullable(),
   // Fields for individual/family farmers
@@ -90,6 +104,38 @@ const farmerSchema = z.object({
         code: z.ZodIssueCode.custom,
         path: ['pfnl_products'],
         message: 'Selecione pelo menos um produto PFNL.',
+      });
+    }
+    if (
+      data.pfnl_collection_area_ha === null ||
+      data.pfnl_collection_area_ha === undefined ||
+      Number.isNaN(data.pfnl_collection_area_ha)
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['pfnl_collection_area_ha'],
+        message: 'Indique a área (em hectares) da zona de coleta.',
+      });
+    }
+    if (!data.pfnl_target_species || data.pfnl_target_species.length === 0) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['pfnl_target_species'],
+        message: 'Indique pelo menos uma espécie-alvo.',
+      });
+    }
+    const ref = (data.pfnl_forest_authorization_ref ?? '').trim();
+    if (ref.length === 0) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['pfnl_forest_authorization_ref'],
+        message: 'Referência da autorização florestal é obrigatória para PFNL.',
+      });
+    } else if (ref.length < 4) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['pfnl_forest_authorization_ref'],
+        message: 'Referência demasiado curta (mínimo 4 caracteres).',
       });
     }
   }
@@ -1227,7 +1273,7 @@ export const FarmerForm = ({ farmer, onSubmit, isLoading, defaultCooperativeId, 
                             name="pfnl_products"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>Produtos PFNL recolhidos</FormLabel>
+                                <FormLabel>Produtos PFNL recolhidos <span className="text-destructive">*</span></FormLabel>
                                 <div className="flex flex-wrap gap-2">
                                   {PFNL_PRODUCTS.map((p) => (
                                     <Button
@@ -1259,7 +1305,7 @@ export const FarmerForm = ({ farmer, onSubmit, isLoading, defaultCooperativeId, 
                               name="pfnl_collection_area_ha"
                               render={({ field }) => (
                                 <FormItem>
-                                  <FormLabel>Área / Zona de Coleta (hectares)</FormLabel>
+                                  <FormLabel>Área / Zona de Coleta (hectares) <span className="text-destructive">*</span></FormLabel>
                                   <FormControl>
                                     <Input
                                       {...field}
@@ -1280,7 +1326,7 @@ export const FarmerForm = ({ farmer, onSubmit, isLoading, defaultCooperativeId, 
                               name="pfnl_forest_authorization_ref"
                               render={({ field }) => (
                                 <FormItem>
-                                  <FormLabel>Ref.ª Autorização Florestal</FormLabel>
+                                  <FormLabel>Ref.ª Autorização Florestal <span className="text-destructive">*</span></FormLabel>
                                   <FormControl>
                                     <Input
                                       {...field}
@@ -1301,7 +1347,7 @@ export const FarmerForm = ({ farmer, onSubmit, isLoading, defaultCooperativeId, 
                               const value: string[] = Array.isArray(field.value) ? field.value : [];
                               return (
                                 <FormItem>
-                                  <FormLabel>Espécies-alvo</FormLabel>
+                                  <FormLabel>Espécies-alvo <span className="text-destructive">*</span></FormLabel>
                                   <FormControl>
                                     <Input
                                       placeholder="Separe por vírgula (ex.: Adansonia digitata, Brachystegia spp.)"
