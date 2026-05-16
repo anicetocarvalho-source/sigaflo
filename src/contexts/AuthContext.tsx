@@ -134,6 +134,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const tryRefresh = async (reason: string) => {
+    // Não tenta refresh quando offline — evita invalidar a sessão guardada
+    if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+      return;
+    }
+    try {
+      const { error } = await supabase.auth.refreshSession();
+      if (error) {
+        // Erros de rede não devem deslogar; apenas log
+        console.warn(`[auth] refresh (${reason}) falhou:`, error.message);
+      }
+    } catch (err) {
+      console.warn(`[auth] refresh (${reason}) exception:`, err);
+    }
+  };
+
   const scheduleRefresh = (newSession: Session | null) => {
     clearRefreshTimer();
 
@@ -145,11 +161,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         : getTokenTtlSeconds(newSession.access_token) ?? FALLBACK_TOKEN_TTL_SECONDS;
     const refreshDelayMs = Math.max((ttlSeconds - REFRESH_EARLY_SECONDS) * 1000, MIN_REFRESH_DELAY_MS);
 
-    refreshTimerRef.current = setTimeout(async () => {
-      const { error } = await supabase.auth.refreshSession();
-      if (error) {
-        console.error('Error refreshing auth session:', error);
-      }
+    refreshTimerRef.current = setTimeout(() => {
+      tryRefresh('scheduled');
     }, refreshDelayMs);
   };
 
