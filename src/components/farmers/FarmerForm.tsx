@@ -114,8 +114,9 @@ export const FarmerForm = ({ farmer, onSubmit, isLoading, defaultCooperativeId, 
   const [biDuplicateWarning, setBiDuplicateWarning] = useState<string | null>(null);
   const [checkingBi, setCheckingBi] = useState(false);
 
-  const checkBiDuplicate = useCallback(async (bi: string) => {
-    if (!bi || bi.length < 5) {
+  const checkBiDuplicate = useCallback(async (rawBi: string) => {
+    const normalized = normalizeBiOrNif(rawBi || '');
+    if (!normalized) {
       setBiDuplicateWarning(null);
       return;
     }
@@ -124,7 +125,7 @@ export const FarmerForm = ({ farmer, onSubmit, isLoading, defaultCooperativeId, 
       const { data } = await supabase
         .from('farmers')
         .select('id, name')
-        .eq('bi_nif', bi)
+        .eq('bi_nif', normalized)
         .neq('id', farmer?.id || '00000000-0000-0000-0000-000000000000')
         .limit(1);
       if (data && data.length > 0) {
