@@ -583,6 +583,16 @@ export function TreeForm({ open, onClose, tree, preselectedLicenseId }: TreeForm
               )}
             />
 
+            {/* Fotos da árvore — apoio a identificação e fiscalização */}
+            <div className="space-y-2">
+              <FormLabel>Fotos da Árvore</FormLabel>
+              <TreePhotoUploader
+                treeCode={form.watch('tree_code') || 'sem-codigo'}
+                photos={photos}
+                onChange={setPhotos}
+              />
+            </div>
+
             {/* QR Code Preview */}
             {treeCode && species && (
               <div className="flex items-center gap-4 p-4 rounded-lg bg-muted/50">
