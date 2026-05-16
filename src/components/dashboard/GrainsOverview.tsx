@@ -1,7 +1,10 @@
+import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Loader2, Wheat, ArrowRight, Package, ShoppingCart, DollarSign } from 'lucide-react';
+import { Loader2, Wheat, ArrowRight, Package, ShoppingCart, DollarSign, Filter, X } from 'lucide-react';
 import { useGrainsOverview } from '@/hooks/useRice';
 import { GRAIN_TYPES, getGrainLabel, type GrainType } from '@/lib/grains';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 // Todos os valores de produção/importação vêm da base em TONELADAS (unidade padronizada).
