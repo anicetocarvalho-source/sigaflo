@@ -100,6 +100,7 @@ const speciesOptions = [
 
 export function TreeForm({ open, onClose, tree, preselectedLicenseId }: TreeFormProps) {
   const [gettingLocation, setGettingLocation] = useState(false);
+  const [gpsAccuracyM, setGpsAccuracyM] = useState<number | undefined>(undefined);
   const { data: licenses = [] } = useForestLicenses({ status: 'active' });
   const createTree = useCreateTree();
 
