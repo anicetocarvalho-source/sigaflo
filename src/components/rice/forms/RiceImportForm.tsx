@@ -135,14 +135,35 @@ export function RiceImportForm({ open, onOpenChange, defaultGrainType }: Props) 
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle>Registar Importação de Arroz</DialogTitle>
+          <DialogTitle>Registar Importação de Grãos</DialogTitle>
           <DialogDescription>
-            Adicione dados de importação por país de origem
+            Adicione dados de importação por tipo de grão e país de origem
           </DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="grain_type"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Tipo de Grão *</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                    </FormControl>
+                    <SelectContent className="z-50 bg-popover">
+                      {GRAIN_TYPES.map((g) => (
+                        <SelectItem key={g.value} value={g.value}>{g.emoji} {g.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
             <div className="grid grid-cols-3 gap-4">
               <FormField
                 control={form.control}
