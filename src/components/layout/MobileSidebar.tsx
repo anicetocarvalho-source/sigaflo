@@ -108,7 +108,7 @@ const navigation: NavItem[] = [
     ],
   },
   {
-    label: 'Produção de Arroz', icon: Wheat, allowedRoles: TECH_AND_ADMIN,
+    label: 'Produção de Grãos', icon: Wheat, allowedRoles: TECH_AND_ADMIN,
     children: [
       { label: 'Visão Geral', href: '/arroz' },
       { label: 'Produção Nacional', href: '/arroz/producao' },

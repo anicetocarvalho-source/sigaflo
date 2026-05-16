@@ -241,8 +241,8 @@ export default function RiceDashboard() {
 
   return (
     <MainLayout
-      title="Produção de Arroz"
-      subtitle="Módulo Estratégico de Soberania Alimentar"
+      title="Produção de Grãos"
+      subtitle="Módulo Estratégico de Soberania Alimentar — Arroz, Milho, Trigo, Sorgo e outros cereais"
     >
       <div className="space-y-6">
         {/* Header Actions */}
