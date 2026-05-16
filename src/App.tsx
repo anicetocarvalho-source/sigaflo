@@ -17,6 +17,7 @@ import InstallPage from "./pages/InstallPage";
 import SyncStatusPage from "./pages/SyncStatusPage";
 import OfflinePage from "./pages/OfflinePage";
 import DiagnosticPage from "./pages/DiagnosticPage";
+import TreesRfidPage from "./pages/public/TreesRfidPage";
 
 const CooperativeAliasRedirect = () => {
   const { id } = useParams();
@@ -394,6 +395,9 @@ const App = () => {
             
             {/* Dev / QA — sem auth para testes cross-browser */}
             <Route path="/dev/print-test" element={<PrintTestPage />} />
+
+            {/* RFID Trees App — público, acesso por link externo */}
+            <Route path="/rfid-arvores" element={<TreesRfidPage />} />
 
             {/* Catch-all */}
             <Route path="*" element={<NotFound />} />
