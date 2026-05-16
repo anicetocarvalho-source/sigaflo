@@ -52,7 +52,7 @@ interface Props {
   defaultGrainType?: GrainType;
 }
 
-export function RicePriceForm({ open, onOpenChange }: Props) {
+export function RicePriceForm({ open, onOpenChange, defaultGrainType }: Props) {
   const queryClient = useQueryClient();
 
   const { data: provinces } = useQuery({
@@ -70,6 +70,7 @@ export function RicePriceForm({ open, onOpenChange }: Props) {
   const form = useForm<PriceFormData>({
     resolver: zodResolver(priceSchema),
     defaultValues: {
+      grain_type: defaultGrainType ?? 'arroz',
       recorded_date: new Date().toISOString().split('T')[0],
       retail_price_aoa: 0,
       rice_type: 'branco',
@@ -79,6 +80,7 @@ export function RicePriceForm({ open, onOpenChange }: Props) {
   const mutation = useMutation({
     mutationFn: async (values: PriceFormData) => {
       const { error } = await supabase.from('rice_prices').insert({
+        grain_type: values.grain_type,
         province_id: values.province_id,
         recorded_date: values.recorded_date,
         retail_price_aoa: values.retail_price_aoa,
@@ -110,7 +112,7 @@ export function RicePriceForm({ open, onOpenChange }: Props) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle>Registar Preço de Arroz</DialogTitle>
+          <DialogTitle>Registar Preço de Grãos</DialogTitle>
           <DialogDescription>
             Adicione preços de retalho e atacado por província
           </DialogDescription>
