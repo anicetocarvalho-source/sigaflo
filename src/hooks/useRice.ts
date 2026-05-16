@@ -238,60 +238,25 @@ export const useGrainsOverview = (filters: GrainsOverviewFilters = {}) => {
       }
       const [{ data: production }, { data: imports }, { data: prices }] = await Promise.all([prodQ, impQ, priceQ]);
 
-      type YearAgg = { production: number; imports: number; priceSum: number; priceCount: number };
-      const yearMap: Record<string, Record<number, YearAgg>> = {};
-      const ensureYear = (g: string, y: number) => {
-        if (!yearMap[g]) yearMap[g] = {};
-        if (!yearMap[g][y]) yearMap[g][y] = { production: 0, imports: 0, priceSum: 0, priceCount: 0 };
-        return yearMap[g][y];
-      };
-
-      const byGrain: Record<string, { production: number; area: number; imports: number; importValue: number; avgPrice: number; priceSamples: number; trend: Array<{ year: number; production: number; imports: number; price: number | null }> }> = {};
+      const byGrain: Record<string, { production: number; area: number; imports: number; importValue: number; avgPrice: number; priceSamples: number }> = {};
       const ensure = (g: string) => {
-        if (!byGrain[g]) byGrain[g] = { production: 0, area: 0, imports: 0, importValue: 0, avgPrice: 0, priceSamples: 0, trend: [] };
+        if (!byGrain[g]) byGrain[g] = { production: 0, area: 0, imports: 0, importValue: 0, avgPrice: 0, priceSamples: 0 };
         return byGrain[g];
       };
       (production || []).forEach((p: any) => {
-        const g = p.grain_type || 'arroz';
-        const b = ensure(g);
+        const b = ensure(p.grain_type || 'arroz');
         b.production += Number(p.production_tonnes || 0);
         b.area += Number(p.cultivated_area_ha || 0);
-        if (p.year != null) ensureYear(g, Number(p.year)).production += Number(p.production_tonnes || 0);
       });
       (imports || []).forEach((i: any) => {
-        const g = i.grain_type || 'arroz';
-        const b = ensure(g);
+        const b = ensure(i.grain_type || 'arroz');
         b.imports += Number(i.volume_tonnes || 0);
         b.importValue += Number(i.total_value_usd || 0);
-        if (i.year != null) ensureYear(g, Number(i.year)).imports += Number(i.volume_tonnes || 0);
       });
       (prices || []).forEach((p: any) => {
-        const g = p.grain_type || 'arroz';
-        const b = ensure(g);
+        const b = ensure(p.grain_type || 'arroz');
         b.avgPrice = (b.avgPrice * b.priceSamples + Number(p.retail_price_aoa || 0)) / (b.priceSamples + 1);
         b.priceSamples += 1;
-        const y = p.recorded_date ? Number(String(p.recorded_date).slice(0, 4)) : null;
-        if (y) {
-          const ya = ensureYear(g, y);
-          ya.priceSum += Number(p.retail_price_aoa || 0);
-          ya.priceCount += 1;
-        }
-      });
-
-      Object.entries(yearMap).forEach(([g, years]) => {
-        const b = ensure(g);
-        b.trend = Object.keys(years)
-          .map(Number)
-          .sort((a, z) => a - z)
-          .map((y) => {
-            const ya = years[y];
-            return {
-              year: y,
-              production: ya.production,
-              imports: ya.imports,
-              price: ya.priceCount > 0 ? ya.priceSum / ya.priceCount : null,
-            };
-          });
       });
 
       return byGrain;
