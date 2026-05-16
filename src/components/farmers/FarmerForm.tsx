@@ -1273,7 +1273,7 @@ export const FarmerForm = ({ farmer, onSubmit, isLoading, defaultCooperativeId, 
                             name="pfnl_products"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>Produtos PFNL recolhidos</FormLabel>
+                                <FormLabel>Produtos PFNL recolhidos <span className="text-destructive">*</span></FormLabel>
                                 <div className="flex flex-wrap gap-2">
                                   {PFNL_PRODUCTS.map((p) => (
                                     <Button
@@ -1305,7 +1305,7 @@ export const FarmerForm = ({ farmer, onSubmit, isLoading, defaultCooperativeId, 
                               name="pfnl_collection_area_ha"
                               render={({ field }) => (
                                 <FormItem>
-                                  <FormLabel>Área / Zona de Coleta (hectares)</FormLabel>
+                                  <FormLabel>Área / Zona de Coleta (hectares) <span className="text-destructive">*</span></FormLabel>
                                   <FormControl>
                                     <Input
                                       {...field}
@@ -1326,7 +1326,7 @@ export const FarmerForm = ({ farmer, onSubmit, isLoading, defaultCooperativeId, 
                               name="pfnl_forest_authorization_ref"
                               render={({ field }) => (
                                 <FormItem>
-                                  <FormLabel>Ref.ª Autorização Florestal</FormLabel>
+                                  <FormLabel>Ref.ª Autorização Florestal <span className="text-destructive">*</span></FormLabel>
                                   <FormControl>
                                     <Input
                                       {...field}
@@ -1347,7 +1347,7 @@ export const FarmerForm = ({ farmer, onSubmit, isLoading, defaultCooperativeId, 
                               const value: string[] = Array.isArray(field.value) ? field.value : [];
                               return (
                                 <FormItem>
-                                  <FormLabel>Espécies-alvo</FormLabel>
+                                  <FormLabel>Espécies-alvo <span className="text-destructive">*</span></FormLabel>
                                   <FormControl>
                                     <Input
                                       placeholder="Separe por vírgula (ex.: Adansonia digitata, Brachystegia spp.)"
