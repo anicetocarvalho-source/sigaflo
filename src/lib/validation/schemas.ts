@@ -131,16 +131,16 @@ export const biOrNifSchema = z
     { message: 'Documento inválido. Use BI (9 dígitos + 2 letras + 3 dígitos) ou NIF (10 dígitos).' },
   );
 
+const BI_OR_NIF_MSG = 'Documento inválido. Use BI (9 dígitos + 2 letras + 3 dígitos) ou NIF (10 dígitos).';
+
 export const optionalBiOrNifSchema = z
   .string()
-  .nullable()
-  .optional()
+  .trim()
   .transform((v) => (v ? normalizeBiOrNif(v) : ''))
-  .refine(
-    (v) => v === '' || BI_AO_REGEX.test(v) || NIF_AO_REGEX.test(v),
-    { message: 'Documento inválido. Use BI (9 dígitos + 2 letras + 3 dígitos) ou NIF (10 dígitos).' },
-  )
-  .transform<string | null>((v) => (v === '' ? null : v));
+  .refine((v) => v === '' || BI_AO_REGEX.test(v) || NIF_AO_REGEX.test(v), BI_OR_NIF_MSG)
+  .transform((v) => (v === '' ? null : v))
+  .nullable()
+  .optional();
 
 // -----------------------------------------------------------------------------
 // Data
