@@ -112,11 +112,6 @@ const AuthPage = () => {
     navigate('/');
   };
 
-  const features = [
-    { icon: Shield, label: 'Segurança institucional com RBAC jurisdicional' },
-    { icon: BarChart3, label: 'Analytics e inteligência agro-florestal' },
-    { icon: Globe, label: 'Cobertura nacional — 18 províncias' },
-  ];
 
   return (
     <div className="min-h-screen flex">
