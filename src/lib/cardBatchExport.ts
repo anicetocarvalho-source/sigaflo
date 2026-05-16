@@ -233,14 +233,19 @@ async function drawCardFront(pdf: jsPDF, x: number, y: number, ctx: CardCtx) {
   pdf.text(nameLines.slice(0, 2), z2X, bodyTop + 5);
 
   pdf.setTextColor(107, 114, 128).setFont('helvetica', 'bold').setFontSize(4.2);
-  pdf.text('ID SIGAFLO', z2X, bodyTop + 11);
+  pdf.text('ID SIGAFLO', z2X, bodyTop + 10);
   pdf.setTextColor(31, 107, 52).setFont('courier', 'bold').setFontSize(7);
-  pdf.text(card?.serial || farmer.registration_number || '—', z2X, bodyTop + 14.2);
+  pdf.text(card?.serial || farmer.registration_number || '—', z2X, bodyTop + 13);
 
   pdf.setTextColor(107, 114, 128).setFont('helvetica', 'bold').setFontSize(4.2);
-  pdf.text('TIPO DE PRODUTOR', z2X, bodyTop + 18.5);
-  pdf.setTextColor(26, 32, 48).setFont('helvetica', 'bold').setFontSize(6);
-  pdf.text(farmerTypeLabel(farmer.farmer_type), z2X, bodyTop + 21.5);
+  pdf.text('BI / NIF', z2X, bodyTop + 16);
+  pdf.setTextColor(31, 107, 52).setFont('courier', 'bold').setFontSize(6.5);
+  pdf.text(((farmer as any).bi_nif ?? '—').toString(), z2X, bodyTop + 19);
+
+  pdf.setTextColor(107, 114, 128).setFont('helvetica', 'bold').setFontSize(4.2);
+  pdf.text('TIPO DE PRODUTOR', z2X, bodyTop + 21.5);
+  pdf.setTextColor(26, 32, 48).setFont('helvetica', 'bold').setFontSize(5.5);
+  pdf.text(farmerTypeLabel(farmer.farmer_type), z2X, bodyTop + 24.2);
 
   // Localização (col direita superior)
   const locItems = [
