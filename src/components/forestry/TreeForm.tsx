@@ -37,9 +37,21 @@ const treeSchema = z.object({
   wood_class: z.enum(['precious', 'first_class', 'second_class', 'common']),
   latitude: z.coerce.number().min(-90).max(90),
   longitude: z.coerce.number().min(-180).max(180),
-  diameter_cm: z.coerce.number().min(0, 'Diâmetro deve ser positivo').optional(),
-  height_m: z.coerce.number().min(0, 'Altura deve ser positiva').optional(),
-  estimated_volume_m3: z.coerce.number().min(0, 'Volume deve ser positivo').optional(),
+  diameter_cm: z.coerce
+    .number({ invalid_type_error: 'Diâmetro inválido' })
+    .min(5, 'Diâmetro mínimo é 5 cm (DAP)')
+    .max(400, 'Diâmetro máximo é 400 cm. Confirme a unidade (cm)')
+    .optional(),
+  height_m: z.coerce
+    .number({ invalid_type_error: 'Altura inválida' })
+    .min(1, 'Altura mínima é 1 m')
+    .max(80, 'Altura máxima é 80 m. Confirme a unidade (metros)')
+    .optional(),
+  estimated_volume_m3: z.coerce
+    .number({ invalid_type_error: 'Volume inválido' })
+    .min(0, 'Volume deve ser positivo')
+    .max(100, 'Volume máximo é 100 m³ por árvore')
+    .optional(),
   plot_number: z.string().optional(),
   health_status: z.string().optional(),
   notes: z.string().optional(),
