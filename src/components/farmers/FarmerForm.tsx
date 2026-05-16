@@ -38,7 +38,7 @@ const farmerSchema = z.object({
   farmer_type: z.enum(['individual', 'family', 'cooperative', 'field_school', 'company']),
   name: z.string().trim().min(3, 'Nome deve ter pelo menos 3 caracteres').max(100, 'Máximo de 100 caracteres'),
   trade_name: z.string().max(100, 'Máximo de 100 caracteres').optional().nullable(),
-  bi_nif: optionalBiSchema,
+  bi_nif: optionalBiOrNifSchema,
   phone: optionalPhoneAOSchema,
   email: optionalEmailSchema,
   province_id: z.string().uuid().optional().nullable(),
