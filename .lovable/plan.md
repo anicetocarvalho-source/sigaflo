@@ -1,98 +1,89 @@
-## Objectivo
 
-Substituir o ícone genérico `Leaf` (lucide) usado actualmente como marca SIGAFLO pelos logotipos oficiais anexados, em todas as superfícies do produto (portal público, app interna, autenticação, favicon, PWA, social).
+# Plano: Módulo Arroz → Módulo Grãos
 
-## Inventário dos 5 ficheiros recebidos
+Transformar o módulo "Arroz" num módulo "Grãos" abrangente, suportando vários tipos de cereais relevantes para a soberania alimentar de Angola, mantendo todos os dados históricos de arroz intactos.
 
-| Ficheiro | Variante | Uso recomendado |
-|---|---|---|
-| `1.png` | Horizontal a cores (ícone + "SIGAFLO" + tagline + tira de pictogramas) | Header desktop largo, rodapé |
-| `2.png` | Vertical/empilhada a cores | Splash, ecrã de login, cartões institucionais |
-| `3.png` | Horizontal monocromática verde escuro | Documentos, e-mails, fundos claros institucionais |
-| `4.png` | Vertical monocromática verde escuro | Versões impressas, exportações PDF |
-| `icone.png` | Só o emblema circular (sem texto) | Favicon, ícones PWA, avatar, header mobile |
+## Tipos de grão suportados
+Arroz, Milho, Trigo, Sorgo, Massambala, Massango, Cevada, Aveia. Enum extensível.
 
-## Onde a marca aparece hoje (a substituir)
+## Abordagem
+Adicionar coluna `grain_type` (com default `'arroz'`) às tabelas existentes em vez de renomear — preserva dados, RLS e referências. UI passa a apresentar-se como "Grãos" com selector global de tipo de grão (persistido em URL/localStorage) e dashboard consolidado com drill-down.
+
+## Mudanças
+
+### 1. Base de dados (migração)
+- Criar enum `grain_type`: `arroz | milho | trigo | sorgo | massambala | massango | cevada | aveia`.
+- Adicionar coluna `grain_type grain_type NOT NULL DEFAULT 'arroz'` em:
+  - `rice_production`
+  - `rice_imports`
+  - `rice_prices`
+  - `rice_consumption`
+  - `rice_alerts`
+  - `rice_policies` (se aplicável)
+- Backfill: dados existentes ficam como `'arroz'`.
+- Índices: `CREATE INDEX ... ON rice_* (grain_type, year)`.
+- Manter nomes de tabelas `rice_*` (refactor de nomes fica para fase futura, sem impacto funcional).
+
+### 2. Camada de dados (`src/hooks/useRice.ts` → `useGrains.ts`)
+- Renomear hook e tipos: `RiceProduction` → `GrainProduction`, etc. (adicionar campo `grain_type`).
+- Manter export alias `useRice*` para não quebrar imports temporariamente.
+- Todos os hooks aceitam parâmetro opcional `grainType?: GrainType` para filtrar.
+- Novo hook `useGrainsOverview()` que agrega todos os tipos.
+
+### 3. UI / Rotas
+- Nova rota canónica `/graos/*` com redirect 301-style de `/arroz/*` para `/graos/*?type=arroz`.
+- Páginas renomeadas: `GrainsDashboard`, `GrainProductionPage`, `GrainImportsPage`, `GrainPricesPage`, `GrainConsumptionPage`, `GrainPoliciesPage`.
+- Novo componente `<GrainTypeSelector />` no header do módulo (dropdown com ícone por grão; opção "Todos os grãos" para vista agregada).
+- Dashboard: vista consolidada (totais agregados) + tabs por tipo de grão com KPIs específicos. Comparativos cross-grão (ex.: produção arroz vs milho).
+- Formulários (`RiceProductionForm`, `RiceImportForm`, `RicePriceForm`) → adicionar campo obrigatório "Tipo de grão" no topo.
+- `RiceOverview` no dashboard principal → `GrainsOverview` mostrando soma de todos os grãos + breakdown.
+
+### 4. Sidebar / navegação
+- Item "Arroz" → "Grãos" (ícone `Wheat` do lucide).
+- Submenus: Dashboard, Produção, Importações, Preços, Consumo, Políticas.
+- `src/lib/modules.ts` e permissões: rename do módulo `rice` → `grains` (migração SQL no enum `app_module` com backfill).
+
+### 5. Portal público
+- `PortalRice` → `PortalGrains` com tabs por grão. Rota `/portal/arroz` mantém-se com redirect para `/portal/graos`.
+
+### 6. Textos & i18n
+- Substituir "Arroz" por "Grãos" em títulos genéricos do módulo.
+- Manter "Arroz" onde se refere especificamente ao tipo (KPIs, séries por grão).
+- Recomendação no `RiceOverview` torna-se contextual ao grão seleccionado.
+
+## Detalhes técnicos
 
 ```text
-src/components/public/PublicLayout.tsx   header + footer + dropdowns (3 × <Leaf />)
-src/components/layout/Sidebar.tsx        marca da app interna (texto só, falta ícone)
-src/pages/auth/AuthPage.tsx              split-screen login (2 × <Leaf />)
-public/favicon.ico                       favicon antigo
-public/icons/icon-192.png, icon-512.png  ícones PWA antigos
-index.html                               sem og:image — passa a usar logo social
+src/
+├── hooks/useGrains.ts                 (renomeado de useRice.ts)
+├── pages/grains/                      (renomeado de rice/)
+│   ├── GrainsDashboard.tsx
+│   ├── GrainProductionPage.tsx
+│   ├── GrainImportsPage.tsx
+│   ├── GrainPricesPage.tsx
+│   ├── GrainConsumptionPage.tsx
+│   └── GrainPoliciesPage.tsx
+├── components/grains/
+│   ├── GrainTypeSelector.tsx          (novo)
+│   ├── GrainsOverview.tsx             (substitui RiceOverview no dashboard)
+│   ├── GrainProductionSection.tsx
+│   ├── GrainImportsSection.tsx
+│   ├── GrainPricesSection.tsx
+│   ├── GrainAlertsPanel.tsx
+│   ├── GrainKPICard.tsx
+│   ├── GrainSimulator.tsx
+│   └── forms/ (campo grain_type adicionado)
+└── lib/grains.ts                      (constantes: GRAIN_TYPES, labels, ícones, cores)
 ```
 
-## Plano de execução
+`GRAIN_TYPES` define ordem, label PT, cor e ícone para cada tipo, usado em selectores, badges e gráficos comparativos.
 
-### 1. Importar e organizar assets
+Redirects React Router: `/arroz/*` → `<Navigate to="/graos/..." replace />` preservando subpath e adicionando `?type=arroz` quando aplicável.
 
-Copiar as 5 imagens para `src/assets/brand/` com nomes semânticos:
+## Migração de dados
+Não há perda: todos os registos existentes ficam classificados como `'arroz'` via DEFAULT. Utilizadores podem reclassificar/adicionar novos tipos via UI.
 
-```text
-src/assets/brand/
-├── sigaflo-horizontal-color.png   (1.png)
-├── sigaflo-stacked-color.png      (2.png)
-├── sigaflo-horizontal-mono.png    (3.png)
-├── sigaflo-stacked-mono.png       (4.png)
-└── sigaflo-mark.png               (icone.png — só emblema)
-```
-
-E para `public/` (referenciados por HTML/manifest, não bundled):
-
-```text
-public/
-├── favicon.png            (32×32 derivado de icone.png)
-├── apple-touch-icon.png   (180×180 derivado de icone.png)
-└── og-image.png           (1200×630, baseado no horizontal a cores)
-```
-
-### 2. Componente único `<BrandLogo>`
-
-Criar `src/components/brand/BrandLogo.tsx` com API:
-
-```tsx
-<BrandLogo variant="horizontal" tone="color" className="h-10" />
-<BrandLogo variant="stacked"    tone="mono"  />
-<BrandLogo variant="mark"       /> {/* só emblema */}
-```
-
-Vantagens: um único ponto para futuras substituições; alt-text consistente ("SIGAFLO — Sistema Integrado de Gestão Agro-Florestal"); aspect-ratio garantido.
-
-### 3. Substituir placements
-
-| Local | Antes | Depois |
-|---|---|---|
-| Portal header (desktop) | caixa 36×36 com `<Leaf />` + texto | `<BrandLogo variant="horizontal" />` (~ h-10) |
-| Portal header (mobile) | mesmo | `<BrandLogo variant="mark" className="h-9" />` |
-| Portal footer | `<Leaf />` + texto | `<BrandLogo variant="horizontal" tone="mono" />` |
-| Portal dropdown ícone | `<Leaf />` | manter `<Leaf />` (ícone funcional, não marca) |
-| Sidebar app interna | só texto | `<BrandLogo variant="mark" />` + texto "SIGAFLO" |
-| AuthPage (split-screen) | `<Leaf />` em caixa | `<BrandLogo variant="stacked" tone="color" />` no painel esquerdo, `<BrandLogo variant="mark" />` no painel direito |
-
-### 4. Favicon, PWA e social
-
-- Substituir `public/favicon.ico` por `public/favicon.png` (32×32 baseado em `icone.png`).
-- Regenerar `public/icons/icon-192.png` e `icon-512.png` a partir de `icone.png` (mantendo padding interior para evitar corte em ícones maskable).
-- Adicionar em `index.html`:
-  - `<link rel="icon" href="/favicon.png" type="image/png" />`
-  - `<link rel="apple-touch-icon" href="/apple-touch-icon.png" />`
-  - `<meta property="og:image" content="https://sigaflo.lovable.app/og-image.png" />` (1200×630 com horizontal color centrado em fundo branco/verde institucional).
-
-### 5. SeoHead — image fallback
-
-`SeoHead` já aceita `image` por página. Adicionar fallback global para `/og-image.png` quando a página não passar imagem própria, garantindo que partilhas no LinkedIn/WhatsApp mostrem sempre o logo oficial.
-
-## Notas técnicas
-
-- Os PNGs anexados têm fundo transparente — funcionam sobre qualquer fundo.
-- A tira de pictogramas dentro do logotipo horizontal é pequena demais para ler abaixo de h-10; em mobile (h-7/h-8) usar sempre `variant="mark"`.
-- O Sidebar interno usa fundo escuro — usar `tone="color"` (o verde-claro do "FLO" mantém contraste) ou `mark` se o texto já existir.
-- Não tocar em `<Leaf />` quando este é usado como **ícone funcional** de menu (ex.: item "Início" no portal) — só substituir nas 6 instâncias que representam a marca.
-
-## Entregáveis
-
-1. 5 ficheiros em `src/assets/brand/` + 3 em `public/`.
-2. `src/components/brand/BrandLogo.tsx` (novo).
-3. Edits em `PublicLayout.tsx`, `Sidebar.tsx`, `AuthPage.tsx`, `SeoHead.tsx`, `index.html`, `manifest.webmanifest`.
-4. Memória `mem://ui/brand-logo-system` a documentar a regra "usar `<BrandLogo>`, nunca `<Leaf />` como marca".
+## Fora do âmbito (esta iteração)
+- Renomear fisicamente tabelas `rice_*` → `grain_*` (pode ser feito depois, sem urgência).
+- Importação massiva de dados históricos de outros grãos (utilizador adiciona manualmente ou via seed posterior).
+- Alteração das tabelas `rice_*` para outras estruturas — apenas adicionamos coluna.

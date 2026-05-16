@@ -30,8 +30,10 @@ import {
 } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
+import { GRAIN_TYPES, type GrainType } from '@/lib/grains';
 
 const priceSchema = z.object({
+  grain_type: z.enum(['arroz','milho','trigo','sorgo','massambala','massango','cevada','aveia']),
   province_id: z.string().min(1, 'Seleccione uma província'),
   recorded_date: z.string().min(1, 'Data é obrigatória'),
   retail_price_aoa: z.coerce.number().min(0, 'Valor deve ser positivo'),
@@ -47,9 +49,10 @@ type PriceFormData = z.infer<typeof priceSchema>;
 interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  defaultGrainType?: GrainType;
 }
 
-export function RicePriceForm({ open, onOpenChange }: Props) {
+export function RicePriceForm({ open, onOpenChange, defaultGrainType }: Props) {
   const queryClient = useQueryClient();
 
   const { data: provinces } = useQuery({
@@ -67,6 +70,7 @@ export function RicePriceForm({ open, onOpenChange }: Props) {
   const form = useForm<PriceFormData>({
     resolver: zodResolver(priceSchema),
     defaultValues: {
+      grain_type: defaultGrainType ?? 'arroz',
       recorded_date: new Date().toISOString().split('T')[0],
       retail_price_aoa: 0,
       rice_type: 'branco',
@@ -76,6 +80,7 @@ export function RicePriceForm({ open, onOpenChange }: Props) {
   const mutation = useMutation({
     mutationFn: async (values: PriceFormData) => {
       const { error } = await supabase.from('rice_prices').insert({
+        grain_type: values.grain_type,
         province_id: values.province_id,
         recorded_date: values.recorded_date,
         retail_price_aoa: values.retail_price_aoa,
@@ -107,7 +112,7 @@ export function RicePriceForm({ open, onOpenChange }: Props) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle>Registar Preço de Arroz</DialogTitle>
+          <DialogTitle>Registar Preço de Grãos</DialogTitle>
           <DialogDescription>
             Adicione preços de retalho e atacado por província
           </DialogDescription>
@@ -115,6 +120,24 @@ export function RicePriceForm({ open, onOpenChange }: Props) {
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="grain_type"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Tipo de Grão *</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
+                    <SelectContent className="z-50 bg-popover">
+                      {GRAIN_TYPES.map((g) => (
+                        <SelectItem key={g.value} value={g.value}>{g.emoji} {g.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             <div className="grid grid-cols-2 gap-4">
               <FormField
                 control={form.control}

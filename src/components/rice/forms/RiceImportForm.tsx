@@ -30,8 +30,10 @@ import {
 } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
+import { GRAIN_TYPES, type GrainType } from '@/lib/grains';
 
 const importSchema = z.object({
+  grain_type: z.enum(['arroz','milho','trigo','sorgo','massambala','massango','cevada','aveia']),
   year: z.coerce.number().min(2000).max(2100),
   month: z.coerce.number().min(1).max(12),
   origin_country: z.string().min(1, 'Seleccione o país de origem').max(100),
@@ -49,6 +51,7 @@ type ImportFormData = z.infer<typeof importSchema>;
 interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  defaultGrainType?: GrainType;
 }
 
 const originCountries = [
@@ -77,12 +80,13 @@ const months = [
   { value: 12, label: 'Dezembro' },
 ];
 
-export function RiceImportForm({ open, onOpenChange }: Props) {
+export function RiceImportForm({ open, onOpenChange, defaultGrainType }: Props) {
   const queryClient = useQueryClient();
 
   const form = useForm<ImportFormData>({
     resolver: zodResolver(importSchema),
     defaultValues: {
+      grain_type: defaultGrainType ?? 'arroz',
       year: new Date().getFullYear(),
       month: new Date().getMonth() + 1,
       volume_tonnes: 0,
@@ -96,6 +100,7 @@ export function RiceImportForm({ open, onOpenChange }: Props) {
         : null;
 
       const { error } = await supabase.from('rice_imports').insert({
+        grain_type: values.grain_type,
         year: values.year,
         month: values.month,
         origin_country: values.origin_country,
@@ -130,14 +135,35 @@ export function RiceImportForm({ open, onOpenChange }: Props) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle>Registar Importação de Arroz</DialogTitle>
+          <DialogTitle>Registar Importação de Grãos</DialogTitle>
           <DialogDescription>
-            Adicione dados de importação por país de origem
+            Adicione dados de importação por tipo de grão e país de origem
           </DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="grain_type"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Tipo de Grão *</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                    </FormControl>
+                    <SelectContent className="z-50 bg-popover">
+                      {GRAIN_TYPES.map((g) => (
+                        <SelectItem key={g.value} value={g.value}>{g.emoji} {g.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
             <div className="grid grid-cols-3 gap-4">
               <FormField
                 control={form.control}

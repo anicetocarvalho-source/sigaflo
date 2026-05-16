@@ -19,7 +19,7 @@ export const MODULE_LABELS: Record<AppModule, string> = {
   farmers: 'Cadastro de Produtores',
   forestry: 'Gestão Florestal',
   coffee: 'Cadeia do Café',
-  rice: 'Produção de Arroz',
+  rice: 'Produção de Grãos',
   pos: 'Vendas & POS',
   mechanization: 'Mecanização Agrícola',
   credit_insurance: 'Crédito & Seguros',

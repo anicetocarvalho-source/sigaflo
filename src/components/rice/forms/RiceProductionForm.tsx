@@ -30,13 +30,18 @@ import {
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
 import { riceProductionFormSchema, type RiceProductionFormValues } from '@/lib/validations';
+import { GRAIN_TYPES, type GrainType } from '@/lib/grains';
+
+interface FormProps {
+  defaultGrainType?: GrainType;
+}
 
 interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
-export function RiceProductionForm({ open, onOpenChange }: Props) {
+export function RiceProductionForm({ open, onOpenChange, defaultGrainType }: Props & FormProps) {
   const queryClient = useQueryClient();
 
   const { data: provinces } = useQuery({
@@ -54,6 +59,7 @@ export function RiceProductionForm({ open, onOpenChange }: Props) {
   const form = useForm<RiceProductionFormValues>({
     resolver: zodResolver(riceProductionFormSchema),
     defaultValues: {
+      grain_type: defaultGrainType ?? 'arroz',
       year: new Date().getFullYear(),
       season: 'principal',
       cultivated_area_ha: 0,
@@ -69,6 +75,7 @@ export function RiceProductionForm({ open, onOpenChange }: Props) {
         : null;
 
       const { error } = await supabase.from('rice_production').insert({
+        grain_type: values.grain_type,
         province_id: values.province_id,
         year: values.year,
         season: values.season,
@@ -102,14 +109,39 @@ export function RiceProductionForm({ open, onOpenChange }: Props) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle>Registar Produção de Arroz</DialogTitle>
+          <DialogTitle>Registar Produção de Grãos</DialogTitle>
           <DialogDescription>
-            Adicione dados de produção por província e época
+            Adicione dados de produção por província, época e tipo de grão
           </DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="grain_type"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Tipo de Grão *</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent className="z-50 bg-popover">
+                      {GRAIN_TYPES.map((g) => (
+                        <SelectItem key={g.value} value={g.value}>
+                          {g.emoji} {g.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
             <div className="grid grid-cols-2 gap-4">
               <FormField
                 control={form.control}

@@ -206,8 +206,14 @@ export const farmerFormSchema = z.object({
   field_school_id: optionalUuidSchema,
 });
 
-// Produção de Arroz
+// Tipo de Grão (enum sincronizado com Supabase)
+const grainTypeSchema = z.enum([
+  'arroz', 'milho', 'trigo', 'sorgo', 'massambala', 'massango', 'cevada', 'aveia',
+], { errorMap: () => ({ message: 'Tipo de grão inválido' }) });
+
+// Produção de Grãos
 export const riceProductionFormSchema = z.object({
+  grain_type: grainTypeSchema,
   province_id: requiredSelectSchema,
   year: yearSchema,
   season: requiredSelectSchema,
@@ -219,8 +225,9 @@ export const riceProductionFormSchema = z.object({
   notes: notesSchema,
 });
 
-// Importação de Arroz
+// Importação de Grãos
 export const riceImportFormSchema = z.object({
+  grain_type: grainTypeSchema,
   year: yearSchema,
   month: z.coerce.number().int().min(1, 'Mês inválido').max(12, 'Mês inválido'),
   volume_tons: positiveNumberSchema,
@@ -232,8 +239,9 @@ export const riceImportFormSchema = z.object({
   notes: notesSchema,
 });
 
-// Preço de Arroz
+// Preço de Grãos
 export const ricePriceFormSchema = z.object({
+  grain_type: grainTypeSchema,
   province_id: requiredSelectSchema,
   recorded_date: z.string().min(1, errorMessages.required),
   retail_price_aoa: positiveNumberSchema,
