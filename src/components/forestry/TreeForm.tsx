@@ -151,6 +151,19 @@ export function TreeForm({ open, onClose, tree, preselectedLicenseId }: TreeForm
     }
   }, [tree, preselectedLicenseId, form]);
 
+  // Auto-gerar código RFID/QR ao abrir o formulário para nova árvore
+  useEffect(() => {
+    if (open && !tree && !form.getValues('tree_code')) {
+      const timestamp = Date.now().toString(36).toUpperCase();
+      const random = Math.random().toString(36).substring(2, 6).toUpperCase();
+      form.setValue('tree_code', `ARV-${timestamp}-${random}`);
+    }
+    if (!open) {
+      setSavedTree(null);
+      setGpsAccuracyM(undefined);
+    }
+  }, [open, tree, form]);
+
   const getCurrentLocation = () => {
     if (!navigator.geolocation) {
       return;
