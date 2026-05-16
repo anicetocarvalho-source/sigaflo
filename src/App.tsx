@@ -395,6 +395,9 @@ const App = () => {
             {/* Dev / QA — sem auth para testes cross-browser */}
             <Route path="/dev/print-test" element={<PrintTestPage />} />
 
+            {/* RFID Trees App — público, acesso por link externo */}
+            <Route path="/rfid-arvores" element={<TreesRfidPage />} />
+
             {/* Catch-all */}
             <Route path="*" element={<NotFound />} />
           </Routes>
