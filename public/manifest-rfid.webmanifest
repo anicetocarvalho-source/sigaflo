@@ -1,0 +1,46 @@
+{
+  "name": "SIGAFLO — Leitor RFID Árvores",
+  "short_name": "RFID Árvores",
+  "description": "Leitor RFID/QR para inventário e gestão de árvores em concessões florestais",
+  "id": "/rfid-arvores",
+  "start_url": "/rfid-arvores",
+  "scope": "/rfid-arvores",
+  "display": "standalone",
+  "background_color": "#ecfdf5",
+  "theme_color": "#047857",
+  "orientation": "portrait",
+  "lang": "pt-AO",
+  "categories": ["productivity", "utilities", "business"],
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-192-maskable.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icons/icon-512-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
