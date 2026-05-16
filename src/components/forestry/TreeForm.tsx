@@ -599,7 +599,7 @@ export function TreeForm({ open, onClose, tree, preselectedLicenseId }: TreeForm
             )}
 
             <div className="flex justify-end gap-3 pt-4">
-              <Button type="button" variant="outline" onClick={onClose}>
+              <Button type="button" variant="outline" onClick={handleClose}>
                 Cancelar
               </Button>
               <Button type="submit" disabled={createTree.isPending}>
@@ -618,6 +618,7 @@ export function TreeForm({ open, onClose, tree, preselectedLicenseId }: TreeForm
             </div>
           </form>
         </Form>
+        )}
       </DialogContent>
     </Dialog>
   );
