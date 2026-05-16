@@ -37,9 +37,21 @@ const treeSchema = z.object({
   wood_class: z.enum(['precious', 'first_class', 'second_class', 'common']),
   latitude: z.coerce.number().min(-90).max(90),
   longitude: z.coerce.number().min(-180).max(180),
-  diameter_cm: z.coerce.number().min(0, 'Diâmetro deve ser positivo').optional(),
-  height_m: z.coerce.number().min(0, 'Altura deve ser positiva').optional(),
-  estimated_volume_m3: z.coerce.number().min(0, 'Volume deve ser positivo').optional(),
+  diameter_cm: z.coerce
+    .number({ invalid_type_error: 'Diâmetro inválido' })
+    .min(5, 'Diâmetro mínimo é 5 cm (DAP)')
+    .max(400, 'Diâmetro máximo é 400 cm. Confirme a unidade (cm)')
+    .optional(),
+  height_m: z.coerce
+    .number({ invalid_type_error: 'Altura inválida' })
+    .min(1, 'Altura mínima é 1 m')
+    .max(80, 'Altura máxima é 80 m. Confirme a unidade (metros)')
+    .optional(),
+  estimated_volume_m3: z.coerce
+    .number({ invalid_type_error: 'Volume inválido' })
+    .min(0, 'Volume deve ser positivo')
+    .max(100, 'Volume máximo é 100 m³ por árvore')
+    .optional(),
   plot_number: z.string().optional(),
   health_status: z.string().optional(),
   notes: z.string().optional(),
@@ -337,9 +349,9 @@ export function TreeForm({ open, onClose, tree, preselectedLicenseId }: TreeForm
                 name="diameter_cm"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Diâmetro (cm)</FormLabel>
+                    <FormLabel>Diâmetro DAP (cm)</FormLabel>
                     <FormControl>
-                      <Input type="number" step="0.1" {...field} />
+                      <Input type="number" step="0.1" min={5} max={400} placeholder="Ex: 45.5" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -353,7 +365,7 @@ export function TreeForm({ open, onClose, tree, preselectedLicenseId }: TreeForm
                   <FormItem>
                     <FormLabel>Altura (m)</FormLabel>
                     <FormControl>
-                      <Input type="number" step="0.1" {...field} />
+                      <Input type="number" step="0.1" min={1} max={80} placeholder="Ex: 18.0" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -367,7 +379,7 @@ export function TreeForm({ open, onClose, tree, preselectedLicenseId }: TreeForm
                   <FormItem>
                     <FormLabel>Volume Estimado (m³)</FormLabel>
                     <FormControl>
-                      <Input type="number" step="0.01" {...field} />
+                      <Input type="number" step="0.01" min={0} max={100} placeholder="Ex: 2.35" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
