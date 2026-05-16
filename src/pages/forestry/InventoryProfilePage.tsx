@@ -149,7 +149,7 @@ export default function InventoryProfilePage() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-muted/50 rounded-lg">
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4 p-4 bg-muted/50 rounded-lg">
                   <div className="text-center">
                     <p className="text-3xl font-bold">{item.total_area_ha?.toLocaleString() || '—'}</p>
                     <p className="text-sm text-muted-foreground">Área Total (ha)</p>
@@ -165,6 +165,24 @@ export default function InventoryProfilePage() {
                       {item.harvestable_volume_m3?.toLocaleString() || '—'}
                     </p>
                     <p className="text-sm text-muted-foreground">Volume Explorável (m³)</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-3xl font-bold">
+                      {item.harvested_volume_m3?.toLocaleString() || '—'}
+                    </p>
+                    <p className="text-sm text-muted-foreground">Volume Colhido (m³)</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-3xl font-bold">
+                      {item.annual_allowable_cut_m3?.toLocaleString() || '—'}
+                    </p>
+                    <p className="text-sm text-muted-foreground">Corte Anual Permitido (m³)</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-3xl font-bold">
+                      {item.reposition_rate_pct?.toFixed(1) || '—'}%
+                    </p>
+                    <p className="text-sm text-muted-foreground">Taxa de Reposição</p>
                   </div>
                 </div>
 
