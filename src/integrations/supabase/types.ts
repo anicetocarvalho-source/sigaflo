@@ -2443,6 +2443,7 @@ export type Database = {
       }
       farmers: {
         Row: {
+          activity_category: string
           address: string | null
           bi_nif: string | null
           card_generated_at: string | null
@@ -2478,6 +2479,11 @@ export type Database = {
           municipality_id: string | null
           name: string
           parent_cooperative_id: string | null
+          pfnl_collection_area_ha: number | null
+          pfnl_forest_authorization_ref: string | null
+          pfnl_products: string[] | null
+          pfnl_seasonality: string | null
+          pfnl_target_species: string[] | null
           phone: string | null
           photo_url: string | null
           province_id: string | null
@@ -2495,6 +2501,7 @@ export type Database = {
           village: string | null
         }
         Insert: {
+          activity_category?: string
           address?: string | null
           bi_nif?: string | null
           card_generated_at?: string | null
@@ -2530,6 +2537,11 @@ export type Database = {
           municipality_id?: string | null
           name: string
           parent_cooperative_id?: string | null
+          pfnl_collection_area_ha?: number | null
+          pfnl_forest_authorization_ref?: string | null
+          pfnl_products?: string[] | null
+          pfnl_seasonality?: string | null
+          pfnl_target_species?: string[] | null
           phone?: string | null
           photo_url?: string | null
           province_id?: string | null
@@ -2547,6 +2559,7 @@ export type Database = {
           village?: string | null
         }
         Update: {
+          activity_category?: string
           address?: string | null
           bi_nif?: string | null
           card_generated_at?: string | null
@@ -2582,6 +2595,11 @@ export type Database = {
           municipality_id?: string | null
           name?: string
           parent_cooperative_id?: string | null
+          pfnl_collection_area_ha?: number | null
+          pfnl_forest_authorization_ref?: string | null
+          pfnl_products?: string[] | null
+          pfnl_seasonality?: string | null
+          pfnl_target_species?: string[] | null
           phone?: string | null
           photo_url?: string | null
           province_id?: string | null
