@@ -349,9 +349,9 @@ export function TreeForm({ open, onClose, tree, preselectedLicenseId }: TreeForm
                 name="diameter_cm"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Diâmetro (cm)</FormLabel>
+                    <FormLabel>Diâmetro DAP (cm)</FormLabel>
                     <FormControl>
-                      <Input type="number" step="0.1" {...field} />
+                      <Input type="number" step="0.1" min={5} max={400} placeholder="Ex: 45.5" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -365,7 +365,7 @@ export function TreeForm({ open, onClose, tree, preselectedLicenseId }: TreeForm
                   <FormItem>
                     <FormLabel>Altura (m)</FormLabel>
                     <FormControl>
-                      <Input type="number" step="0.1" {...field} />
+                      <Input type="number" step="0.1" min={1} max={80} placeholder="Ex: 18.0" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -379,7 +379,7 @@ export function TreeForm({ open, onClose, tree, preselectedLicenseId }: TreeForm
                   <FormItem>
                     <FormLabel>Volume Estimado (m³)</FormLabel>
                     <FormControl>
-                      <Input type="number" step="0.01" {...field} />
+                      <Input type="number" step="0.01" min={0} max={100} placeholder="Ex: 2.35" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
