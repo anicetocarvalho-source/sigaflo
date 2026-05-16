@@ -331,7 +331,7 @@ export function renderCardFrontHtml(ctx: CardTemplateCtx, qrSrc: string): string
           <span>e Florestas</span>
         </div>
       </div>
-      <div class="logo">${sigafloLogoSvg}</div>
+      <div class="logo">${sigafloLogoHtml}</div>
       <div class="gov-badge">
         <div class="map">${mapaAngolaSvg}</div>
         <div class="gov-tag">GOVERNO DE<br/>ANGOLA</div>
