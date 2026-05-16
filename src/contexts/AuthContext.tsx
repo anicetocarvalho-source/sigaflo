@@ -53,6 +53,30 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+const REFRESH_EARLY_SECONDS = 5 * 60;
+const MIN_REFRESH_DELAY_MS = 60 * 1000;
+const FALLBACK_TOKEN_TTL_SECONDS = 60 * 60;
+
+const getTokenTtlSeconds = (accessToken?: string): number | null => {
+  if (!accessToken) return null;
+
+  try {
+    const [, payload] = accessToken.split('.');
+    if (!payload) return null;
+
+    const normalizedPayload = payload.replace(/-/g, '+').replace(/_/g, '/');
+    const decoded = JSON.parse(atob(normalizedPayload));
+
+    if (typeof decoded.exp === 'number' && typeof decoded.iat === 'number') {
+      return Math.max(decoded.exp - decoded.iat, MIN_REFRESH_DELAY_MS / 1000);
+    }
+  } catch {
+    return null;
+  }
+
+  return null;
+};
+
 const ROLE_LABELS: Record<UserRole, string> = {
   admin_national: 'Administrador Nacional',
   admin_provincial: 'Administrador Provincial',
@@ -72,6 +96,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [roles, setRoles] = useState<UserRole[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const refreshTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const fetchUserData = async (userId: string) => {
     try {
@@ -102,10 +127,41 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const lastFetchedUserIdRef = useRef<string | null>(null);
 
+  const clearRefreshTimer = () => {
+    if (refreshTimerRef.current) {
+      clearTimeout(refreshTimerRef.current);
+      refreshTimerRef.current = null;
+    }
+  };
+
+  const scheduleRefresh = (newSession: Session | null) => {
+    clearRefreshTimer();
+
+    if (!newSession?.refresh_token) return;
+
+    const ttlSeconds =
+      typeof newSession.expires_in === 'number'
+        ? newSession.expires_in
+        : getTokenTtlSeconds(newSession.access_token) ?? FALLBACK_TOKEN_TTL_SECONDS;
+    const refreshDelayMs = Math.max((ttlSeconds - REFRESH_EARLY_SECONDS) * 1000, MIN_REFRESH_DELAY_MS);
+
+    refreshTimerRef.current = setTimeout(async () => {
+      const { error } = await supabase.auth.refreshSession();
+      if (error) {
+        console.error('Error refreshing auth session:', error);
+      }
+    }, refreshDelayMs);
+  };
+
   useEffect(() => {
+    supabase.auth.stopAutoRefresh().catch((error) => {
+      console.error('Error stopping auth auto refresh:', error);
+    });
+
     const handleSession = (newSession: Session | null, event?: string) => {
       setSession(newSession);
       setUser(newSession?.user ?? null);
+      scheduleRefresh(newSession);
 
       const newUserId = newSession?.user?.id ?? null;
 
@@ -141,7 +197,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setIsLoading(false);
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      clearRefreshTimer();
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signIn = async (email: string, password: string) => {
@@ -163,6 +222,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const signOut = async () => {
+    clearRefreshTimer();
     await supabase.auth.signOut();
   };
 
