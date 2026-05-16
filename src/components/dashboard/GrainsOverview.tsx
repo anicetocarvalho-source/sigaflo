@@ -211,3 +211,34 @@ function Metric({ label, value, icon: Icon }: { label: string; value: string; ic
     </div>
   );
 }
+
+function YearSelect({
+  label,
+  value,
+  onChange,
+  minYear,
+}: {
+  label: string;
+  value: number | null;
+  onChange: (v: number | null) => void;
+  minYear?: number;
+}) {
+  return (
+    <Select
+      value={value == null ? 'all' : String(value)}
+      onValueChange={(v) => onChange(v === 'all' ? null : Number(v))}
+    >
+      <SelectTrigger className="h-7 w-[110px] border-primary-foreground/20 bg-primary-foreground/10 text-xs text-primary-foreground hover:bg-primary-foreground/20">
+        <SelectValue placeholder={label} />
+      </SelectTrigger>
+      <SelectContent className="z-50 bg-popover">
+        <SelectItem value="all">{label}: todos</SelectItem>
+        {YEAR_OPTIONS.filter((y) => minYear == null || y >= minYear).map((y) => (
+          <SelectItem key={y} value={String(y)}>
+            {label}: {y}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+}
