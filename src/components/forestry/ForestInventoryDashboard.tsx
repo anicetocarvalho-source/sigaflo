@@ -1032,7 +1032,7 @@ export function ForestInventoryDashboard() {
                             size="sm"
                             onClick={(e) => {
                               e.stopPropagation();
-                              setSelectedInventory(item);
+                              navigate(`/florestal/inventario/${item.id}`);
                             }}
                           >
                             <Eye className="h-4 w-4" />
