@@ -49,8 +49,10 @@ import {
   TrendingDown,
   BarChart3,
   X,
-  Radio
+  Radio,
+  QrCode
 } from 'lucide-react';
+import { QRCodeSVG } from 'qrcode.react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useProvinces, useMunicipalities } from '@/hooks/useFarmers';
