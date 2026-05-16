@@ -340,8 +340,17 @@ export const FarmerForm = ({ farmer, onSubmit, isLoading, defaultCooperativeId, 
                           <Input
                             {...field}
                             value={field.value || ''}
-                            placeholder="Número de identificação"
+                            placeholder={
+                              farmerType === 'company' || farmerType === 'cooperative'
+                                ? 'Ex.: 5417654321 (10 dígitos)'
+                                : 'Ex.: 004567890LA041 ou 5417654321'
+                            }
+                            maxLength={20}
                             onBlur={(e) => {
+                              const normalized = normalizeBiOrNif(e.target.value);
+                              if (normalized && normalized !== e.target.value) {
+                                field.onChange(normalized);
+                              }
                               field.onBlur();
                               checkBiDuplicate(e.target.value);
                             }}
