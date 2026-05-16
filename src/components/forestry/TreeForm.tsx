@@ -30,6 +30,7 @@ import {
 import { useCreateTree, useForestLicenses, type ForestTree } from '@/hooks/useForestry';
 import { MapPin, TreePine, Save, Loader2 } from 'lucide-react';
 import { TreeLocationPicker } from './TreeLocationPicker';
+import { TreePhotoUploader } from './TreePhotoUploader';
 
 const treeSchema = z.object({
   license_id: z.string().min(1, 'Licença é obrigatória'),
