@@ -101,11 +101,70 @@ export default function TreesRfidPage() {
     }
   }, [concession, formOpen, detailTree]);
 
+  // Install prompt (PWA)
+  const [installEvent, setInstallEvent] = useState<any>(null);
+  const [isInstalled, setIsInstalled] = useState(false);
+
   useEffect(() => {
-    document.title = 'Cadastro de Árvores por RFID | SIGAFLO';
+    document.title = 'Leitor RFID Árvores | SIGAFLO';
     const meta = document.querySelector('meta[name="description"]');
-    if (meta) meta.setAttribute('content', 'Aplicação RFID para cadastro e gestão de árvores em concessões florestais.');
+    if (meta) meta.setAttribute('content', 'Leitor RFID/QR para cadastro e gestão de árvores em concessões florestais.');
+
+    // Swap manifest to the dedicated RFID PWA manifest while on this page
+    const link = document.querySelector('link[rel="manifest"]') as HTMLLinkElement | null;
+    const original = link?.getAttribute('href') ?? '/manifest.webmanifest';
+    if (link) link.setAttribute('href', '/manifest-rfid.webmanifest');
+
+    // theme-color for the RFID app
+    let themeMeta = document.querySelector('meta[name="theme-color"]') as HTMLMetaElement | null;
+    const originalTheme = themeMeta?.getAttribute('content') ?? '';
+    if (!themeMeta) {
+      themeMeta = document.createElement('meta');
+      themeMeta.name = 'theme-color';
+      document.head.appendChild(themeMeta);
+    }
+    themeMeta.setAttribute('content', '#047857');
+
+    const onBip = (e: Event) => {
+      e.preventDefault();
+      setInstallEvent(e);
+    };
+    const onInstalled = () => {
+      setIsInstalled(true);
+      setInstallEvent(null);
+    };
+    window.addEventListener('beforeinstallprompt', onBip);
+    window.addEventListener('appinstalled', onInstalled);
+
+    // Detect if already running as installed PWA
+    const standalone =
+      window.matchMedia('(display-mode: standalone)').matches ||
+      (window.navigator as any).standalone === true;
+    setIsInstalled(standalone);
+
+    return () => {
+      if (link) link.setAttribute('href', original);
+      if (themeMeta) themeMeta.setAttribute('content', originalTheme);
+      window.removeEventListener('beforeinstallprompt', onBip);
+      window.removeEventListener('appinstalled', onInstalled);
+    };
   }, []);
+
+  const handleInstall = async () => {
+    if (!installEvent) {
+      toast.message('Instalação', {
+        description:
+          'No iPhone: toque em Partilhar → "Adicionar ao ecrã principal". No Android: menu do navegador → "Instalar aplicação".',
+      });
+      return;
+    }
+    installEvent.prompt();
+    const choice = await installEvent.userChoice;
+    if (choice?.outcome === 'accepted') {
+      toast.success('Aplicação instalada');
+    }
+    setInstallEvent(null);
+  };
 
   const loadTrees = async (concessionId: string) => {
     setLoadingTrees(true);
@@ -399,6 +458,11 @@ export default function TreesRfidPage() {
               <Button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-700" disabled={loadingConcession}>
                 {loadingConcession ? 'A pesquisar...' : 'Entrar'}
               </Button>
+              {!isInstalled && (
+                <Button type="button" variant="outline" className="w-full" onClick={handleInstall}>
+                  <Download className="h-4 w-4 mr-1" /> Instalar como aplicação
+                </Button>
+              )}
             </form>
           </CardContent>
         </Card>
@@ -419,9 +483,16 @@ export default function TreesRfidPage() {
               </p>
             </div>
           </div>
-          <Button variant="secondary" size="sm" onClick={resetConcession}>
-            <LogOut className="h-4 w-4 mr-1" /> Trocar concessão
-          </Button>
+          <div className="flex items-center gap-2">
+            {!isInstalled && (
+              <Button variant="secondary" size="sm" onClick={handleInstall}>
+                <Download className="h-4 w-4 mr-1" /> Instalar app
+              </Button>
+            )}
+            <Button variant="secondary" size="sm" onClick={resetConcession}>
+              <LogOut className="h-4 w-4 mr-1" /> Trocar concessão
+            </Button>
+          </div>
         </div>
       </header>
 
