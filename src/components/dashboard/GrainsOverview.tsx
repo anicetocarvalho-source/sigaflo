@@ -137,9 +137,12 @@ export function GrainsOverview() {
               <tr>
                 <th className="px-4 py-2 text-left font-medium">Grão</th>
                 <th className="px-4 py-2 text-right font-medium">Produção (t)</th>
+                <th className="px-3 py-2 text-center font-medium">Tendência produção</th>
                 <th className="px-4 py-2 text-right font-medium">Área (ha)</th>
                 <th className="px-4 py-2 text-right font-medium">Importações (t)</th>
+                <th className="px-3 py-2 text-center font-medium">Tendência importações</th>
                 <th className="px-4 py-2 text-right font-medium">Preço médio (AOA/kg)</th>
+                <th className="px-3 py-2 text-center font-medium">Tendência preço</th>
                 <th className="px-4 py-2 text-right font-medium">Balanço</th>
               </tr>
             </thead>
@@ -155,10 +158,19 @@ export function GrainsOverview() {
                       </span>
                     </td>
                     <td className="px-4 py-2.5 text-right tabular-nums">{fmt(r.production)}</td>
+                    <td className="px-3 py-2.5">
+                      <TrendChart data={r.trend} field="production" colorVar="--primary" unit="t" />
+                    </td>
                     <td className="px-4 py-2.5 text-right tabular-nums text-muted-foreground">{fmt(r.area)}</td>
                     <td className="px-4 py-2.5 text-right tabular-nums">{fmt(r.imports)}</td>
+                    <td className="px-3 py-2.5">
+                      <TrendChart data={r.trend} field="imports" colorVar="--accent" unit="t" />
+                    </td>
                     <td className="px-4 py-2.5 text-right tabular-nums text-muted-foreground">
                       {r.avgPrice > 0 ? r.avgPrice.toFixed(0) : '—'}
+                    </td>
+                    <td className="px-3 py-2.5">
+                      <TrendChart data={r.trend} field="price" colorVar="--success" unit="AOA/kg" variant="line" />
                     </td>
                     <td
                       className={cn(
