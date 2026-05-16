@@ -15,6 +15,8 @@ import {
   RiceImportForm,
   RicePriceForm,
 } from '@/components/rice/forms';
+import { GrainTypeSelector } from '@/components/grains/GrainTypeSelector';
+import { getGrainLabel, type GrainType } from '@/lib/grains';
 import {
   useRiceProduction,
   useRiceImports,
@@ -77,13 +79,16 @@ export default function RiceDashboard() {
   const [showImportForm, setShowImportForm] = useState(false);
   const [showPriceForm, setShowPriceForm] = useState(false);
   const [selectedYear] = useState(new Date().getFullYear());
+  const [grainType, setGrainType] = useState<GrainType | 'all'>('all');
 
-  const { data: production, isLoading: loadingProduction } = useRiceProduction();
-  const { data: imports, isLoading: loadingImports } = useRiceImports();
-  const { data: prices, isLoading: loadingPrices } = useRicePrices();
-  const { data: consumption, isLoading: loadingConsumption } = useRiceConsumption();
+  const { data: production, isLoading: loadingProduction } = useRiceProduction(undefined, grainType);
+  const { data: imports, isLoading: loadingImports } = useRiceImports(undefined, grainType);
+  const { data: prices, isLoading: loadingPrices } = useRicePrices(undefined, grainType);
+  const { data: consumption, isLoading: loadingConsumption } = useRiceConsumption(grainType);
   const { data: parameters } = useRiceParameters();
-  const { data: alerts } = useRiceAlerts();
+  const { data: alerts } = useRiceAlerts(false, grainType);
+
+  const grainLabel = grainType === 'all' ? 'Todos os Grãos' : getGrainLabel(grainType);
 
   const isLoading = loadingProduction || loadingImports || loadingPrices || loadingConsumption;
 
@@ -242,7 +247,7 @@ export default function RiceDashboard() {
   return (
     <MainLayout
       title="Produção de Grãos"
-      subtitle="Módulo Estratégico de Soberania Alimentar — Arroz, Milho, Trigo, Sorgo e outros cereais"
+      subtitle={`Módulo Estratégico de Soberania Alimentar — ${grainLabel}`}
     >
       <div className="space-y-6">
         {/* Header Actions */}
