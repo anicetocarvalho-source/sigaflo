@@ -285,7 +285,84 @@ export default function TreesRfidPage() {
     URL.revokeObjectURL(url);
   };
 
-  const resetConcession = () => {
+  const exportQrPDF = async (mode: 'trees' | 'access') => {
+    try {
+      const items: { code: string; label: string; sub?: string }[] =
+        mode === 'access'
+          ? Array.from({ length: 12 }).map(() => ({
+              code: `${window.location.origin}/rfid-arvores`,
+              label: 'Leitor RFID Árvores',
+              sub: concession?.inventory_code ?? '',
+            }))
+          : filteredTrees.map((t) => ({
+              code: t.rfid_code,
+              label: t.common_name || t.species || 'Árvore',
+              sub: t.rfid_code,
+            }));
+
+      if (items.length === 0) {
+        toast.error('Sem dados para exportar');
+        return;
+      }
+
+      // A4 portrait, 3 cols x 4 rows = 12 etiquetas por página
+      const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+      const pageW = 210;
+      const pageH = 297;
+      const cols = 3;
+      const rows = 4;
+      const marginX = 10;
+      const marginY = 12;
+      const cellW = (pageW - marginX * 2) / cols;
+      const cellH = (pageH - marginY * 2) / rows;
+      const qrSize = 38;
+
+      for (let i = 0; i < items.length; i++) {
+        const it = items[i];
+        const posInPage = i % (cols * rows);
+        if (i > 0 && posInPage === 0) doc.addPage();
+
+        const col = posInPage % cols;
+        const row = Math.floor(posInPage / cols);
+        const x = marginX + col * cellW;
+        const y = marginY + row * cellH;
+
+        // borda tracejada (corte)
+        doc.setDrawColor(180);
+        doc.setLineDashPattern([1, 1], 0);
+        doc.rect(x + 1, y + 1, cellW - 2, cellH - 2);
+        doc.setLineDashPattern([], 0);
+
+        const qrDataUrl = await QRCode.toDataURL(it.code, {
+          margin: 0,
+          width: 400,
+          errorCorrectionLevel: 'H',
+        });
+        const qrX = x + (cellW - qrSize) / 2;
+        const qrY = y + 4;
+        doc.addImage(qrDataUrl, 'PNG', qrX, qrY, qrSize, qrSize);
+
+        doc.setFontSize(9);
+        doc.setFont('helvetica', 'bold');
+        doc.text(it.label.slice(0, 28), x + cellW / 2, qrY + qrSize + 5, { align: 'center' });
+        if (it.sub) {
+          doc.setFont('helvetica', 'normal');
+          doc.setFontSize(7);
+          doc.text(it.sub.slice(0, 32), x + cellW / 2, qrY + qrSize + 10, { align: 'center' });
+        }
+      }
+
+      const name =
+        mode === 'access'
+          ? `qr_leitor_rfid_${concession?.inventory_code ?? 'sigaflo'}.pdf`
+          : `qr_arvores_${concession?.inventory_code ?? 'export'}_${Date.now()}.pdf`;
+      doc.save(name);
+      toast.success('PDF gerado com sucesso');
+    } catch (err) {
+      console.error(err);
+      toast.error('Erro ao gerar PDF');
+    }
+  };
     setConcession(null);
     setConcessionCodeInput('');
     setTrees([]);
