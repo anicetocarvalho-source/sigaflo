@@ -478,9 +478,16 @@ export default function TreesRfidPage() {
               </p>
             </div>
           </div>
-          <Button variant="secondary" size="sm" onClick={resetConcession}>
-            <LogOut className="h-4 w-4 mr-1" /> Trocar concessão
-          </Button>
+          <div className="flex items-center gap-2">
+            {!isInstalled && (
+              <Button variant="secondary" size="sm" onClick={handleInstall}>
+                <Download className="h-4 w-4 mr-1" /> Instalar app
+              </Button>
+            )}
+            <Button variant="secondary" size="sm" onClick={resetConcession}>
+              <LogOut className="h-4 w-4 mr-1" /> Trocar concessão
+            </Button>
+          </div>
         </div>
       </header>
 
