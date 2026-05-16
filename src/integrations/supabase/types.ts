@@ -7692,6 +7692,77 @@ export type Database = {
         }
         Relationships: []
       }
+      trees: {
+        Row: {
+          common_name: string | null
+          concession_id: string | null
+          created_at: string
+          created_by: string | null
+          height: number | null
+          id: string
+          latitude: number | null
+          location: string | null
+          longitude: number | null
+          notes: string | null
+          photo_url: string | null
+          planting_date: string | null
+          rfid_code: string
+          scientific_name: string | null
+          species: string | null
+          status: Database["public"]["Enums"]["tree_health_status"]
+          trunk_diameter: number | null
+          updated_at: string
+        }
+        Insert: {
+          common_name?: string | null
+          concession_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          height?: number | null
+          id?: string
+          latitude?: number | null
+          location?: string | null
+          longitude?: number | null
+          notes?: string | null
+          photo_url?: string | null
+          planting_date?: string | null
+          rfid_code: string
+          scientific_name?: string | null
+          species?: string | null
+          status?: Database["public"]["Enums"]["tree_health_status"]
+          trunk_diameter?: number | null
+          updated_at?: string
+        }
+        Update: {
+          common_name?: string | null
+          concession_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          height?: number | null
+          id?: string
+          latitude?: number | null
+          location?: string | null
+          longitude?: number | null
+          notes?: string | null
+          photo_url?: string | null
+          planting_date?: string | null
+          rfid_code?: string
+          scientific_name?: string | null
+          species?: string | null
+          status?: Database["public"]["Enums"]["tree_health_status"]
+          trunk_diameter?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trees_concession_id_fkey"
+            columns: ["concession_id"]
+            isOneToOne: false
+            referencedRelation: "forest_inventory"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_preferences: {
         Row: {
           created_at: string
@@ -8363,6 +8434,7 @@ export type Database = {
         | "in_storage"
         | "exported"
         | "at_destination"
+      tree_health_status: "saudavel" | "em_risco" | "doente" | "removida"
       user_role:
         | "admin_national"
         | "admin_provincial"
@@ -8637,6 +8709,7 @@ export const Constants = {
         "exported",
         "at_destination",
       ],
+      tree_health_status: ["saudavel", "em_risco", "doente", "removida"],
       user_role: [
         "admin_national",
         "admin_provincial",
