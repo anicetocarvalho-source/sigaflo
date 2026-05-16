@@ -236,6 +236,7 @@ export function TreeForm({ open, onClose, tree, preselectedLicenseId }: TreeForm
   const handleNewTree = () => {
     setSavedTree(null);
     setGpsAccuracyM(undefined);
+    setPhotos([]);
     const timestamp = Date.now().toString(36).toUpperCase();
     const random = Math.random().toString(36).substring(2, 6).toUpperCase();
     form.reset({
