@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Loader2, Wheat, ArrowRight, Package, ShoppingCart, DollarSign, Filter, X } from 'lucide-react';
+import { Area, AreaChart, Line, LineChart, ResponsiveContainer, Tooltip } from 'recharts';
 import { useGrainsOverview } from '@/hooks/useRice';
 import { GRAIN_TYPES, getGrainLabel, type GrainType } from '@/lib/grains';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -42,7 +43,7 @@ export function GrainsOverview() {
   const byGrain = data || {};
 
   const rows = GRAIN_TYPES.map((g) => {
-    const b = byGrain[g.value] || { production: 0, area: 0, imports: 0, importValue: 0, avgPrice: 0, priceSamples: 0 };
+    const b = byGrain[g.value] || { production: 0, area: 0, imports: 0, importValue: 0, avgPrice: 0, priceSamples: 0, trend: [] as Array<{ year: number; production: number; imports: number; price: number | null }> };
     const balance = b.production - b.imports;
     return { ...g, ...b, balance };
   });
@@ -136,9 +137,12 @@ export function GrainsOverview() {
               <tr>
                 <th className="px-4 py-2 text-left font-medium">Grão</th>
                 <th className="px-4 py-2 text-right font-medium">Produção (t)</th>
+                <th className="px-3 py-2 text-center font-medium">Tendência produção</th>
                 <th className="px-4 py-2 text-right font-medium">Área (ha)</th>
                 <th className="px-4 py-2 text-right font-medium">Importações (t)</th>
+                <th className="px-3 py-2 text-center font-medium">Tendência importações</th>
                 <th className="px-4 py-2 text-right font-medium">Preço médio (AOA/kg)</th>
+                <th className="px-3 py-2 text-center font-medium">Tendência preço</th>
                 <th className="px-4 py-2 text-right font-medium">Balanço</th>
               </tr>
             </thead>
@@ -154,10 +158,19 @@ export function GrainsOverview() {
                       </span>
                     </td>
                     <td className="px-4 py-2.5 text-right tabular-nums">{fmt(r.production)}</td>
+                    <td className="px-3 py-2.5">
+                      <TrendChart data={r.trend} field="production" colorVar="--primary" unit="t" />
+                    </td>
                     <td className="px-4 py-2.5 text-right tabular-nums text-muted-foreground">{fmt(r.area)}</td>
                     <td className="px-4 py-2.5 text-right tabular-nums">{fmt(r.imports)}</td>
+                    <td className="px-3 py-2.5">
+                      <TrendChart data={r.trend} field="imports" colorVar="--accent" unit="t" />
+                    </td>
                     <td className="px-4 py-2.5 text-right tabular-nums text-muted-foreground">
                       {r.avgPrice > 0 ? r.avgPrice.toFixed(0) : '—'}
+                    </td>
+                    <td className="px-3 py-2.5">
+                      <TrendChart data={r.trend} field="price" colorVar="--success" unit="AOA/kg" variant="line" />
                     </td>
                     <td
                       className={cn(
@@ -240,5 +253,104 @@ function YearSelect({
         ))}
       </SelectContent>
     </Select>
+  );
+}
+
+type TrendPoint = { year: number; production: number; imports: number; price: number | null };
+
+function TrendChart({
+  data,
+  field,
+  colorVar,
+  unit,
+  variant = 'area',
+}: {
+  data: TrendPoint[];
+  field: 'production' | 'imports' | 'price';
+  colorVar: string;
+  unit: string;
+  variant?: 'area' | 'line';
+}) {
+  const series = useMemo(
+    () =>
+      data
+        .map((d) => ({ year: d.year, value: d[field] }))
+        .filter((d) => d.value != null && !Number.isNaN(Number(d.value))) as Array<{ year: number; value: number }>,
+    [data, field],
+  );
+
+  if (series.length < 2) {
+    return (
+      <div className="flex h-10 w-[120px] items-center justify-center text-[10px] text-muted-foreground">
+        sem série
+      </div>
+    );
+  }
+
+  const stroke = `hsl(var(${colorVar}))`;
+  const gradId = `grad-${field}-${colorVar.replace(/[^a-z]/gi, '')}`;
+  const first = series[0].value;
+  const last = series[series.length - 1].value;
+  const deltaPct = first > 0 ? ((last - first) / first) * 100 : null;
+
+  return (
+    <div className="flex items-center gap-2">
+      <div className="h-10 w-[110px]">
+        <ResponsiveContainer width="100%" height="100%">
+          {variant === 'area' ? (
+            <AreaChart data={series} margin={{ top: 2, right: 2, bottom: 2, left: 2 }}>
+              <defs>
+                <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor={stroke} stopOpacity={0.45} />
+                  <stop offset="100%" stopColor={stroke} stopOpacity={0.02} />
+                </linearGradient>
+              </defs>
+              <Tooltip
+                cursor={{ stroke: 'hsl(var(--border))', strokeWidth: 1 }}
+                contentStyle={{
+                  background: 'hsl(var(--popover))',
+                  border: '1px solid hsl(var(--border))',
+                  borderRadius: 6,
+                  fontSize: 11,
+                  padding: '4px 8px',
+                }}
+                labelStyle={{ color: 'hsl(var(--muted-foreground))' }}
+                formatter={(v: number) => [`${fmt(v)} ${unit}`, '']}
+                labelFormatter={(l) => `Ano ${l}`}
+              />
+              <Area type="monotone" dataKey="value" stroke={stroke} strokeWidth={1.5} fill={`url(#${gradId})`} />
+            </AreaChart>
+          ) : (
+            <LineChart data={series} margin={{ top: 2, right: 2, bottom: 2, left: 2 }}>
+              <Tooltip
+                cursor={{ stroke: 'hsl(var(--border))', strokeWidth: 1 }}
+                contentStyle={{
+                  background: 'hsl(var(--popover))',
+                  border: '1px solid hsl(var(--border))',
+                  borderRadius: 6,
+                  fontSize: 11,
+                  padding: '4px 8px',
+                }}
+                labelStyle={{ color: 'hsl(var(--muted-foreground))' }}
+                formatter={(v: number) => [`${Number(v).toFixed(0)} ${unit}`, '']}
+                labelFormatter={(l) => `Ano ${l}`}
+              />
+              <Line type="monotone" dataKey="value" stroke={stroke} strokeWidth={1.5} dot={false} />
+            </LineChart>
+          )}
+        </ResponsiveContainer>
+      </div>
+      {deltaPct != null && (
+        <span
+          className={cn(
+            'min-w-[42px] text-right text-[10px] font-medium tabular-nums',
+            deltaPct > 0 ? 'text-success' : deltaPct < 0 ? 'text-destructive' : 'text-muted-foreground',
+          )}
+        >
+          {deltaPct > 0 ? '+' : ''}
+          {deltaPct.toFixed(0)}%
+        </span>
+      )}
+    </div>
   );
 }
