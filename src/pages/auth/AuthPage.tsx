@@ -10,7 +10,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
-import { Loader2, LogIn, UserPlus, Leaf, Shield, BarChart3, Globe } from 'lucide-react';
+import { Loader2, LogIn, UserPlus } from 'lucide-react';
 import { DemoLogin } from '@/components/auth/DemoLogin';
 import authBg from '@/assets/auth-bg.jpg';
 import { BrandLogo } from '@/components/brand/BrandLogo';
