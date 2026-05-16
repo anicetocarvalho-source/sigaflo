@@ -206,6 +206,7 @@ const App = () => {
         <Sonner />
         <BrowserRouter>
           <ScrollToTop />
+          <RfidSubdomainRedirect />
           <Routes>
             {/* Auth Routes */}
             <Route path="/auth" element={<AuthPage />} />
