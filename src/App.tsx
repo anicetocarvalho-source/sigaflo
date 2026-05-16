@@ -65,6 +65,7 @@ import ForestryEnforcementPage from "./pages/forestry/ForestryEnforcementPage";
 import ForestryReforestationPage from "./pages/forestry/ForestryReforestationPage";
 import ForestryComplaintsPage from "./pages/forestry/ForestryComplaintsPage";
 import ConcessionDetailPage from "./pages/forestry/ConcessionDetailPage";
+import InventoryProfilePage from "./pages/forestry/InventoryProfilePage";
 import ManagementPlansPage from "./pages/forestry/ManagementPlansPage";
 import PaymentsPage from "./pages/forestry/PaymentsPage";
 import GreenCertificationPage from "./pages/forestry/GreenCertificationPage";
