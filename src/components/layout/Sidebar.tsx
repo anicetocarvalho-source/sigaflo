@@ -516,6 +516,10 @@ export function Sidebar() {
             Sair
           </button>
         </div>
+        <div className="mt-2">
+          <ForceUpdateButton />
+        </div>
+
       </div>
     </aside>
   );
