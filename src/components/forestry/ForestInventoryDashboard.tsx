@@ -552,7 +552,7 @@ export function ForestInventoryDashboard() {
                 <div 
                   key={item.id} 
                   className="flex items-center gap-3 p-3 bg-background rounded-lg border cursor-pointer hover:shadow-md transition-shadow"
-                  onClick={() => setSelectedInventory(item)}
+                  onClick={() => navigate(`/florestal/inventario/${item.id}`)}
                 >
                   <div className="p-2 bg-destructive/10 rounded-lg">
                     <TrendingDown className="h-4 w-4 text-destructive" />
