@@ -151,7 +151,7 @@ const navigationSections: NavSection[] = [
         ],
       },
       {
-        label: 'Produção de Arroz',
+        label: 'Produção de Grãos',
         icon: Wheat,
         allowedRoles: TECH_AND_ADMIN,
         module: 'rice',
