@@ -43,7 +43,7 @@ export function GrainsOverview() {
   const byGrain = data || {};
 
   const rows = GRAIN_TYPES.map((g) => {
-    const b = byGrain[g.value] || { production: 0, area: 0, imports: 0, importValue: 0, avgPrice: 0, priceSamples: 0 };
+    const b = byGrain[g.value] || { production: 0, area: 0, imports: 0, importValue: 0, avgPrice: 0, priceSamples: 0, trend: [] as Array<{ year: number; production: number; imports: number; price: number | null }> };
     const balance = b.production - b.imports;
     return { ...g, ...b, balance };
   });
