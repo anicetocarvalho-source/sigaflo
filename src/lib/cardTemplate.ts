@@ -348,6 +348,10 @@ export function renderCardFrontHtml(ctx: CardTemplateCtx, qrSrc: string): string
           <div class="id">${id}</div>
         </div>
         <div class="field">
+          <div class="label">BI / NIF</div>
+          <div class="id">${(farmer as any).bi_nif ?? '—'}</div>
+        </div>
+        <div class="field">
           <div class="label">Tipo de Produtor</div>
           <div class="type">${farmerType}</div>
         </div>
