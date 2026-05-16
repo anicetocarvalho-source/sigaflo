@@ -1272,32 +1272,115 @@ export const FarmerForm = ({ farmer, onSubmit, isLoading, defaultCooperativeId, 
                           <FormField
                             control={form.control}
                             name="pfnl_products"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Produtos PFNL recolhidos <span className="text-destructive">*</span></FormLabel>
-                                <div className="flex flex-wrap gap-2">
-                                  {PFNL_PRODUCTS.map((p) => (
-                                    <Button
-                                      key={p}
-                                      type="button"
-                                      variant={field.value?.includes(p) ? 'default' : 'outline'}
-                                      size="sm"
-                                      onClick={() => {
-                                        const current = field.value || [];
-                                        if (current.includes(p)) {
-                                          field.onChange(current.filter((c: string) => c !== p));
-                                        } else {
-                                          field.onChange([...current, p]);
-                                        }
-                                      }}
-                                    >
-                                      {p}
-                                    </Button>
-                                  ))}
-                                </div>
-                                <FormMessage />
-                              </FormItem>
-                            )}
+                            render={({ field }) => {
+                              const selected: string[] = field.value || [];
+                              const filtered = PFNL_PRODUCTS.filter((p) =>
+                                p.toLowerCase().includes((pfnlSearch || '').toLowerCase())
+                              );
+                              const toggle = (p: string) => {
+                                if (selected.includes(p)) {
+                                  field.onChange(selected.filter((c) => c !== p));
+                                } else {
+                                  if (selected.length >= 15) {
+                                    toast.error('Máximo de 15 produtos PFNL');
+                                    return;
+                                  }
+                                  field.onChange([...selected, p]);
+                                }
+                              };
+                              return (
+                                <FormItem>
+                                  <div className="flex items-center justify-between gap-2">
+                                    <FormLabel className="mb-0">
+                                      Produtos PFNL recolhidos <span className="text-destructive">*</span>
+                                    </FormLabel>
+                                    <span className="text-xs text-muted-foreground">
+                                      {selected.length}/15 selecionados
+                                    </span>
+                                  </div>
+
+                                  {selected.length > 0 && (
+                                    <div className="flex flex-wrap gap-1.5 rounded-md border border-dashed bg-background/60 p-2">
+                                      {selected.map((p) => (
+                                        <Badge
+                                          key={p}
+                                          variant="secondary"
+                                          className="gap-1 pr-1"
+                                        >
+                                          {p}
+                                          <button
+                                            type="button"
+                                            onClick={() => toggle(p)}
+                                            className="rounded-sm hover:bg-muted-foreground/20 p-0.5"
+                                            aria-label={`Remover ${p}`}
+                                          >
+                                            <X className="h-3 w-3" />
+                                          </button>
+                                        </Badge>
+                                      ))}
+                                      <button
+                                        type="button"
+                                        onClick={() => field.onChange([])}
+                                        className="ml-auto text-xs text-muted-foreground hover:text-destructive underline-offset-2 hover:underline"
+                                      >
+                                        Limpar tudo
+                                      </button>
+                                    </div>
+                                  )}
+
+                                  <div className="relative">
+                                    <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                    <Input
+                                      type="text"
+                                      placeholder="Pesquisar produto (ex: mel, cogumelo, resina…)"
+                                      value={pfnlSearch}
+                                      onChange={(e) => setPfnlSearch(e.target.value)}
+                                      className="pl-8 pr-8"
+                                    />
+                                    {pfnlSearch && (
+                                      <button
+                                        type="button"
+                                        onClick={() => setPfnlSearch('')}
+                                        className="absolute right-2 top-1/2 -translate-y-1/2 rounded-sm p-0.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+                                        aria-label="Limpar pesquisa"
+                                      >
+                                        <X className="h-3.5 w-3.5" />
+                                      </button>
+                                    )}
+                                  </div>
+
+                                  <div className="max-h-56 overflow-y-auto rounded-md border bg-background/40 p-2">
+                                    {filtered.length === 0 ? (
+                                      <p className="text-xs text-muted-foreground text-center py-4">
+                                        Nenhum produto corresponde a "{pfnlSearch}".
+                                      </p>
+                                    ) : (
+                                      <div className="flex flex-wrap gap-1.5">
+                                        {filtered.map((p) => {
+                                          const isSel = selected.includes(p);
+                                          return (
+                                            <button
+                                              key={p}
+                                              type="button"
+                                              onClick={() => toggle(p)}
+                                              className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs transition-colors ${
+                                                isSel
+                                                  ? 'bg-primary text-primary-foreground border-primary'
+                                                  : 'bg-background hover:bg-muted border-border'
+                                              }`}
+                                            >
+                                              {isSel && <Check className="h-3 w-3" />}
+                                              {p}
+                                            </button>
+                                          );
+                                        })}
+                                      </div>
+                                    )}
+                                  </div>
+                                  <FormMessage />
+                                </FormItem>
+                              );
+                            }}
                           />
 
                           <div className="grid gap-4 md:grid-cols-2">
