@@ -10,7 +10,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
-import { Loader2, LogIn, UserPlus, Leaf, Shield, BarChart3, Globe } from 'lucide-react';
+import { Loader2, LogIn, UserPlus } from 'lucide-react';
 import { DemoLogin } from '@/components/auth/DemoLogin';
 import authBg from '@/assets/auth-bg.jpg';
 import { BrandLogo } from '@/components/brand/BrandLogo';
@@ -112,11 +112,6 @@ const AuthPage = () => {
     navigate('/');
   };
 
-  const features = [
-    { icon: Shield, label: 'Segurança institucional com RBAC jurisdicional' },
-    { icon: BarChart3, label: 'Analytics e inteligência agro-florestal' },
-    { icon: Globe, label: 'Cobertura nacional — 18 províncias' },
-  ];
 
   return (
     <div className="min-h-screen flex">
@@ -155,21 +150,9 @@ const AuthPage = () => {
             >
               Sistema Integrado de Gestão Agro-Florestal
             </h1>
-            <p className="text-white/70 text-lg leading-relaxed mb-10">
+            <p className="text-white/70 text-lg leading-relaxed">
               Plataforma institucional para a gestão, rastreabilidade e análise dos sectores agropecuário e florestal de Angola.
             </p>
-
-            {/* Feature pills */}
-            <div className="space-y-3">
-              {features.map((f, i) => (
-                <div key={i} className="flex items-center gap-3">
-                  <div className="h-9 w-9 rounded-lg bg-white/10 backdrop-blur-sm flex items-center justify-center flex-shrink-0">
-                    <f.icon className="h-4 w-4 text-[hsl(38,92%,55%)]" />
-                  </div>
-                  <span className="text-white/80 text-sm">{f.label}</span>
-                </div>
-              ))}
-            </div>
           </div>
 
           {/* Bottom — footer */}
