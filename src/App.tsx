@@ -17,6 +17,7 @@ import InstallPage from "./pages/InstallPage";
 import SyncStatusPage from "./pages/SyncStatusPage";
 import OfflinePage from "./pages/OfflinePage";
 import DiagnosticPage from "./pages/DiagnosticPage";
+import TreesRfidPage from "./pages/public/TreesRfidPage";
 
 const CooperativeAliasRedirect = () => {
   const { id } = useParams();
