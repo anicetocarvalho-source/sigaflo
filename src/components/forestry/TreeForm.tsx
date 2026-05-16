@@ -221,7 +221,7 @@ export function TreeForm({ open, onClose, tree, preselectedLicenseId }: TreeForm
         .filter(Boolean)
         .join('\n') || null,
       status: 'logged',
-      photos: photos as unknown as TablesInsert<'forest_trees'>['photos'],
+      photos: photos as unknown as never,
     });
 
     setSavedTree({
