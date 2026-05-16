@@ -316,7 +316,7 @@ const App = () => {
             <Route path="/cafe/rastreio" element={<ProtectedRoute requiredRoles={ALL_INTERNAL}><CoffeeTraceabilityPage /></ProtectedRoute>} />
             <Route path="/cafe/*" element={<ProtectedRoute requiredRoles={ALL_INTERNAL}><CoffeePage /></ProtectedRoute>} />
             
-            {/* Rice Strategic Module */}
+            {/* Grains Strategic Module (canonical: /graos, legacy alias: /arroz) */}
             <Route path="/arroz" element={<ProtectedRoute requiredRoles={TECHNICIAN_AND_ADMIN}><RiceDashboard /></ProtectedRoute>} />
             <Route path="/arroz/producao" element={<ProtectedRoute requiredRoles={TECHNICIAN_AND_ADMIN}><RiceProductionPage /></ProtectedRoute>} />
             <Route path="/arroz/importacoes" element={<ProtectedRoute requiredRoles={TECHNICIAN_AND_ADMIN}><RiceImportsPage /></ProtectedRoute>} />
@@ -324,6 +324,13 @@ const App = () => {
             <Route path="/arroz/consumo" element={<ProtectedRoute requiredRoles={TECHNICIAN_AND_ADMIN}><RiceConsumptionPage /></ProtectedRoute>} />
             <Route path="/arroz/politicas" element={<ProtectedRoute requiredRoles={NATIONAL_LEVEL}><RicePoliciesPage /></ProtectedRoute>} />
             <Route path="/arroz/*" element={<ProtectedRoute requiredRoles={TECHNICIAN_AND_ADMIN}><RiceDashboard /></ProtectedRoute>} />
+            <Route path="/graos" element={<ProtectedRoute requiredRoles={TECHNICIAN_AND_ADMIN}><RiceDashboard /></ProtectedRoute>} />
+            <Route path="/graos/producao" element={<ProtectedRoute requiredRoles={TECHNICIAN_AND_ADMIN}><RiceProductionPage /></ProtectedRoute>} />
+            <Route path="/graos/importacoes" element={<ProtectedRoute requiredRoles={TECHNICIAN_AND_ADMIN}><RiceImportsPage /></ProtectedRoute>} />
+            <Route path="/graos/precos" element={<ProtectedRoute requiredRoles={TECHNICIAN_AND_ADMIN}><RicePricesPage /></ProtectedRoute>} />
+            <Route path="/graos/consumo" element={<ProtectedRoute requiredRoles={TECHNICIAN_AND_ADMIN}><RiceConsumptionPage /></ProtectedRoute>} />
+            <Route path="/graos/politicas" element={<ProtectedRoute requiredRoles={NATIONAL_LEVEL}><RicePoliciesPage /></ProtectedRoute>} />
+            <Route path="/graos/*" element={<ProtectedRoute requiredRoles={TECHNICIAN_AND_ADMIN}><RiceDashboard /></ProtectedRoute>} />
             
             {/* ONAF Module - national level */}
             <Route path="/onaf/*" element={<ProtectedRoute requiredRoles={NATIONAL_LEVEL}><ONAFPage /></ProtectedRoute>} />
