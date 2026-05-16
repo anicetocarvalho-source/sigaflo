@@ -30,7 +30,7 @@ import { PhotoUpload } from './PhotoUpload';
 import { DocumentUpload } from './DocumentUpload';
 import { FingerprintCapture } from './FingerprintCapture';
 import { toast } from 'sonner';
-import { optionalEmailSchema, optionalPhoneAOSchema, optionalBiSchema } from '@/lib/validation';
+import { optionalEmailSchema, optionalPhoneAOSchema, optionalBiOrNifSchema, normalizeBiOrNif } from '@/lib/validation';
 import { PhoneInputAO } from '@/components/ui/phone-input-ao';
 import { EmailInput } from '@/components/ui/email-input';
 
@@ -38,7 +38,7 @@ const farmerSchema = z.object({
   farmer_type: z.enum(['individual', 'family', 'cooperative', 'field_school', 'company']),
   name: z.string().trim().min(3, 'Nome deve ter pelo menos 3 caracteres').max(100, 'Máximo de 100 caracteres'),
   trade_name: z.string().max(100, 'Máximo de 100 caracteres').optional().nullable(),
-  bi_nif: optionalBiSchema,
+  bi_nif: optionalBiOrNifSchema,
   phone: optionalPhoneAOSchema,
   email: optionalEmailSchema,
   province_id: z.string().uuid().optional().nullable(),
@@ -66,7 +66,7 @@ const farmerSchema = z.object({
   household_members_count: z.number().min(0, 'O valor deve ser positivo').optional().nullable(),
   dependents_count: z.number().min(0, 'O valor deve ser positivo').optional().nullable(),
   spouse_name: z.string().max(100, 'Máximo de 100 caracteres').optional().nullable(),
-  spouse_bi_nif: z.string().max(20, 'Máximo de 20 caracteres').optional().nullable(),
+  spouse_bi_nif: optionalBiOrNifSchema,
   children_count: z.number().min(0, 'O valor deve ser positivo').optional().nullable(),
   children_under_5: z.number().min(0, 'O valor deve ser positivo').optional().nullable(),
   children_5_to_14: z.number().min(0, 'O valor deve ser positivo').optional().nullable(),
@@ -114,8 +114,9 @@ export const FarmerForm = ({ farmer, onSubmit, isLoading, defaultCooperativeId, 
   const [biDuplicateWarning, setBiDuplicateWarning] = useState<string | null>(null);
   const [checkingBi, setCheckingBi] = useState(false);
 
-  const checkBiDuplicate = useCallback(async (bi: string) => {
-    if (!bi || bi.length < 5) {
+  const checkBiDuplicate = useCallback(async (rawBi: string) => {
+    const normalized = normalizeBiOrNif(rawBi || '');
+    if (!normalized) {
       setBiDuplicateWarning(null);
       return;
     }
@@ -124,7 +125,7 @@ export const FarmerForm = ({ farmer, onSubmit, isLoading, defaultCooperativeId, 
       const { data } = await supabase
         .from('farmers')
         .select('id, name')
-        .eq('bi_nif', bi)
+        .eq('bi_nif', normalized)
         .neq('id', farmer?.id || '00000000-0000-0000-0000-000000000000')
         .limit(1);
       if (data && data.length > 0) {
@@ -155,7 +156,7 @@ export const FarmerForm = ({ farmer, onSubmit, isLoading, defaultCooperativeId, 
       farmer_type: isAddingMember ? 'individual' : (farmer?.farmer_type || 'individual'),
       name: farmer?.name || '',
       trade_name: farmer?.trade_name || '',
-      bi_nif: farmer?.bi_nif || '',
+      bi_nif: farmer?.bi_nif ? normalizeBiOrNif(farmer.bi_nif) : '',
       phone: farmer?.phone || '',
       email: farmer?.email || '',
       province_id: farmer?.province_id || undefined,
@@ -181,7 +182,7 @@ export const FarmerForm = ({ farmer, onSubmit, isLoading, defaultCooperativeId, 
       household_members_count: (farmer as any)?.household_members_count || undefined,
       dependents_count: (farmer as any)?.dependents_count || undefined,
       spouse_name: (farmer as any)?.spouse_name || '',
-      spouse_bi_nif: (farmer as any)?.spouse_bi_nif || '',
+      spouse_bi_nif: (farmer as any)?.spouse_bi_nif ? normalizeBiOrNif((farmer as any).spouse_bi_nif) : '',
       children_count: (farmer as any)?.children_count || undefined,
       children_under_5: (farmer as any)?.children_under_5 || undefined,
       children_5_to_14: (farmer as any)?.children_5_to_14 || undefined,
@@ -339,8 +340,17 @@ export const FarmerForm = ({ farmer, onSubmit, isLoading, defaultCooperativeId, 
                           <Input
                             {...field}
                             value={field.value || ''}
-                            placeholder="Número de identificação"
+                            placeholder={
+                              farmerType === 'company' || farmerType === 'cooperative'
+                                ? 'Ex.: 5417654321 (10 dígitos)'
+                                : 'Ex.: 004567890LA041 ou 5417654321'
+                            }
+                            maxLength={20}
                             onBlur={(e) => {
+                              const normalized = normalizeBiOrNif(e.target.value);
+                              if (normalized && normalized !== e.target.value) {
+                                field.onChange(normalized);
+                              }
                               field.onBlur();
                               checkBiDuplicate(e.target.value);
                             }}

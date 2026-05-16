@@ -82,12 +82,36 @@ export const normalizeName = (s: string): string => {
     .join(' ');
 };
 
-/** BI → trim + uppercase. */
+/** BI → trim + uppercase + remove espaços. */
 export const normalizeBI = (s: string): string =>
   s.trim().toUpperCase().replace(/\s+/g, '');
 
 /** NIF → apenas dígitos. */
 export const normalizeNIF = (s: string): string => stripNonDigits(s);
+
+/**
+ * Normaliza um campo combinado BI/NIF.
+ * - Se for composto exclusivamente por 10 dígitos (após remover espaços/pontuação) → NIF.
+ * - Caso contrário → BI (uppercase, sem espaços).
+ * Devolve string vazia para entradas vazias.
+ */
+export const normalizeBiOrNif = (s: string): string => {
+  if (!s) return '';
+  const trimmed = s.trim();
+  if (!trimmed) return '';
+  const digitsOnly = stripNonDigits(trimmed);
+  // Se o utilizador escreveu apenas dígitos (com espaços/pontuação) e dá 10 → NIF.
+  if (digitsOnly.length === 10 && /^[\d\s\.\-]+$/.test(trimmed)) {
+    return digitsOnly;
+  }
+  return normalizeBI(trimmed);
+};
+
+/** Valida BI ou NIF (formato angolano). */
+export const isValidBiOrNif = (s: string): boolean => {
+  const n = normalizeBiOrNif(s);
+  return BI_AO_REGEX.test(n) || NIF_AO_REGEX.test(n);
+};
 
 // -----------------------------------------------------------------------------
 // VALIDADORES (boolean)
