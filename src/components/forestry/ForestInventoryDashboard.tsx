@@ -729,7 +729,7 @@ export function ForestInventoryDashboard() {
                       size="sm"
                       onClick={() => {
                         navigator.clipboard.writeText(`${window.location.origin}/rfid-arvores`);
-                        toast({ title: 'Link copiado' });
+                        toast.success('Link copiado');
                       }}
                     >
                       Copiar link
