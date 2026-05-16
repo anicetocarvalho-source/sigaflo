@@ -23,6 +23,9 @@ export default defineConfig(({ mode }) => ({
         navigateFallbackDenylist: [/^\/~oauth/, /^\/auth\/callback/, /^\/api\//],
         globPatterns: ["**/*.{js,css,html,png,svg,ico,woff2,webmanifest}"],
         maximumFileSizeToCacheInBytes: 10 * 1024 * 1024,
+        cleanupOutdatedCaches: true,
+        skipWaiting: true,
+        clientsClaim: true,
         runtimeCaching: [
           {
             urlPattern: ({ request }) => request.mode === "navigate",
