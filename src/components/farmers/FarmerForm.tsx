@@ -106,6 +106,38 @@ const farmerSchema = z.object({
         message: 'Selecione pelo menos um produto PFNL.',
       });
     }
+    if (
+      data.pfnl_collection_area_ha === null ||
+      data.pfnl_collection_area_ha === undefined ||
+      Number.isNaN(data.pfnl_collection_area_ha)
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['pfnl_collection_area_ha'],
+        message: 'Indique a área (em hectares) da zona de coleta.',
+      });
+    }
+    if (!data.pfnl_target_species || data.pfnl_target_species.length === 0) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['pfnl_target_species'],
+        message: 'Indique pelo menos uma espécie-alvo.',
+      });
+    }
+    const ref = (data.pfnl_forest_authorization_ref ?? '').trim();
+    if (ref.length === 0) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['pfnl_forest_authorization_ref'],
+        message: 'Referência da autorização florestal é obrigatória para PFNL.',
+      });
+    } else if (ref.length < 4) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['pfnl_forest_authorization_ref'],
+        message: 'Referência demasiado curta (mínimo 4 caracteres).',
+      });
+    }
   }
 });
 
