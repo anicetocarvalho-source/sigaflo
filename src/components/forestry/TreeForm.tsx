@@ -110,6 +110,7 @@ export function TreeForm({ open, onClose, tree, preselectedLicenseId }: TreeForm
     wood_class: string;
   } | null>(null);
   const qrPreviewRef = useRef<HTMLDivElement>(null);
+  const [photos, setPhotos] = useState<string[]>([]);
   const { data: licenses = [] } = useForestLicenses({ status: 'active' });
   const createTree = useCreateTree();
 
