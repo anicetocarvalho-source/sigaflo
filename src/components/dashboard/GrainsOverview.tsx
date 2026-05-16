@@ -4,11 +4,24 @@ import { useGrainsOverview } from '@/hooks/useRice';
 import { GRAIN_TYPES, getGrainLabel, type GrainType } from '@/lib/grains';
 import { cn } from '@/lib/utils';
 
+// Todos os valores de produção/importação vêm da base em TONELADAS (unidade padronizada).
+const TON_TO_KG = 1000;
+
 const fmt = (n: number) => {
   if (!n) return '—';
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
   if (n >= 1_000) return `${(n / 1_000).toFixed(0)}K`;
   return n.toLocaleString('pt-AO');
+};
+
+// Formata um valor em toneladas mostrando também o equivalente em kg.
+const formatTonnes = (tonnes: number) => {
+  const abs = Math.abs(tonnes);
+  const kg = abs * TON_TO_KG;
+  const kgLabel = kg >= 1_000_000
+    ? `${(kg / 1_000_000).toFixed(2)} M kg`
+    : `${kg.toLocaleString('pt-AO')} kg`;
+  return { ton: `${fmt(abs)} t`, kg: kgLabel };
 };
 
 export function GrainsOverview() {
@@ -97,7 +110,18 @@ export function GrainsOverview() {
                         r.balance > 0 ? 'text-success' : r.balance < 0 ? 'text-destructive' : 'text-muted-foreground',
                       )}
                     >
-                      {r.balance === 0 ? '—' : `${r.balance > 0 ? '+' : ''}${fmt(Math.abs(r.balance))}`}
+                      {r.balance === 0 ? (
+                        '—'
+                      ) : (() => {
+                        const { ton, kg } = formatTonnes(r.balance);
+                        const sign = r.balance > 0 ? '+' : '−';
+                        return (
+                          <div className="flex flex-col items-end leading-tight">
+                            <span>{sign}{ton}</span>
+                            <span className="text-[10px] font-normal text-muted-foreground">{sign}{kg}</span>
+                          </div>
+                        );
+                      })()}
                     </td>
                   </tr>
                 );
