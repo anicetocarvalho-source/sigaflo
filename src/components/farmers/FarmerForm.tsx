@@ -83,6 +83,16 @@ const farmerSchema = z.object({
   family_workers_count: z.number().min(0, 'O valor deve ser positivo').optional().nullable(),
   head_of_household: z.boolean().optional().nullable(),
   household_notes: z.string().optional().nullable(),
+}).superRefine((data, ctx) => {
+  if (data.activity_category && data.activity_category !== 'agricultural') {
+    if (!data.pfnl_products || data.pfnl_products.length === 0) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['pfnl_products'],
+        message: 'Selecione pelo menos um produto PFNL.',
+      });
+    }
+  }
 });
 
 type FarmerFormData = z.infer<typeof farmerSchema>;
