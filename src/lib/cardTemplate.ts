@@ -163,7 +163,7 @@ export const cardCss = `
   .sigaflo-card.front .photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
   .sigaflo-card.front .photo .ini { font-size: 14pt; font-weight: 700; color: ${CARD_COLORS.green}; }
 
-  .sigaflo-card.front .info { display: flex; flex-direction: column; gap: 1.2mm; min-width: 0; padding-top: 0.5mm; }
+  .sigaflo-card.front .info { display: flex; flex-direction: column; gap: 0.7mm; min-width: 0; padding-top: 0.5mm; }
   .sigaflo-card.front .info .field { min-width: 0; }
   .sigaflo-card.front .info .label,
   .sigaflo-card.front .loc .label {
