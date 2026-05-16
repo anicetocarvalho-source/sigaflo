@@ -117,9 +117,9 @@ export default function PortalHome() {
     {
       image: heroRice,
       eyebrow: "Soberania Alimentar",
-      title: "Arroz para Angola",
-      subtitle: "Produção nacional, importações e estratégias para a segurança alimentar.",
-      ctaLabel: "Ver indicadores do arroz",
+      title: "Grãos para Angola",
+      subtitle: "Arroz, milho, trigo e outros cereais — produção nacional, importações e estratégias de segurança alimentar.",
+      ctaLabel: "Ver indicadores de grãos",
       ctaHref: "/portal/arroz",
     },
     {
@@ -136,7 +136,7 @@ export default function PortalHome() {
     <div>
       <SeoHead
         title="SIGAFLO — Portal Agro-Florestal de Angola"
-        description="Plataforma oficial de gestão agro-florestal: agricultores, cooperativas, café, arroz, florestas, legislação e indicadores nacionais."
+        description="Plataforma oficial de gestão agro-florestal: agricultores, cooperativas, café, grãos (arroz, milho, trigo, sorgo), florestas, legislação e indicadores nacionais."
         path="/portal"
       />
       {/* Hero carousel */}
@@ -204,7 +204,7 @@ export default function PortalHome() {
               { title: "Agricultura", desc: "Registo de agricultores, produção, cooperativas e escolas de campo.", icon: Wheat, path: "/portal/agricultura", stat: loadingAgri ? "..." : `${fmt(agriStats?.total_farmers)} agricultores`, image: sectorAgricultura },
               { title: "Florestas", desc: "Licenciamento florestal, rastreabilidade de madeira e reflorestamento.", icon: TreePine, path: "/portal/florestal", stat: loadingForest ? "..." : `${fmt(forestStats?.total_licenses)} licenças`, image: sectorFlorestas },
               { title: "Café", desc: "Cadeia de valor do café angolano — lotes, qualidade e exportação.", icon: Coffee, path: "/portal/cafe", stat: loadingCoffee ? "..." : `${fmt(coffeeStats?.total_lots)} lotes`, image: sectorCafe },
-              { title: "Arroz", desc: "Produção nacional, importações, preços e soberania alimentar.", icon: Wheat, path: "/portal/arroz", stat: "Dados estratégicos", image: sectorArroz },
+              { title: "Grãos", desc: "Arroz, milho, trigo e outros cereais — produção, importações e preços.", icon: Wheat, path: "/portal/arroz", stat: "Dados estratégicos", image: sectorArroz },
             ].map((sector) => (
               <Link key={sector.path} to={sector.path} className="group">
                 <Card className="h-full overflow-hidden border-0 shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl">

@@ -18,7 +18,7 @@ const sectorItems = [
   { label: "Agricultura", path: "/portal/agricultura", icon: Wheat, desc: "Produção agrícola e agricultores" },
   { label: "Florestas", path: "/portal/florestal", icon: TreePine, desc: "Licenciamento e reflorestamento" },
   { label: "Café", path: "/portal/cafe", icon: Coffee, desc: "Cadeia de valor do café" },
-  { label: "Arroz", path: "/portal/arroz", icon: Wheat, desc: "Produção e importações" },
+  { label: "Grãos", path: "/portal/arroz", icon: Wheat, desc: "Arroz, milho, trigo e outros cereais" },
 ];
 
 const infoItems = [
@@ -219,7 +219,7 @@ export default function PublicLayout() {
                 <li><Link to="/portal/agricultura" className="hover:text-foreground transition-colors">Agricultura</Link></li>
                 <li><Link to="/portal/florestal" className="hover:text-foreground transition-colors">Florestas</Link></li>
                 <li><Link to="/portal/cafe" className="hover:text-foreground transition-colors">Café</Link></li>
-                <li><Link to="/portal/arroz" className="hover:text-foreground transition-colors">Arroz</Link></li>
+                <li><Link to="/portal/arroz" className="hover:text-foreground transition-colors">Grãos</Link></li>
               </ul>
             </div>
             <div>
