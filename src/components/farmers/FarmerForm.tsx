@@ -33,6 +33,8 @@ import { toast } from 'sonner';
 import { optionalEmailSchema, optionalPhoneAOSchema, optionalBiOrNifSchema, normalizeBiOrNif } from '@/lib/validation';
 import { PhoneInputAO } from '@/components/ui/phone-input-ao';
 import { EmailInput } from '@/components/ui/email-input';
+import { Textarea } from '@/components/ui/textarea';
+import { ACTIVITY_CATEGORIES, PFNL_PRODUCTS, type ActivityCategory } from '@/lib/pfnl';
 
 const farmerSchema = z.object({
   farmer_type: z.enum(['individual', 'family', 'cooperative', 'field_school', 'company']),
@@ -52,6 +54,13 @@ const farmerSchema = z.object({
   cultivated_area_ha: z.number().min(0, 'O valor deve ser positivo').optional().nullable(),
   main_crops: z.array(z.string()).optional().nullable(),
   irrigation_type: z.string().max(50, 'Máximo de 50 caracteres').optional().nullable(),
+  // PFNL — Produtos Florestais Não-Lenhosos
+  activity_category: z.enum(['agricultural', 'pfnl', 'mixed']).default('agricultural'),
+  pfnl_products: z.array(z.string()).optional().nullable(),
+  pfnl_collection_area_ha: z.number().min(0, 'O valor deve ser positivo').optional().nullable(),
+  pfnl_target_species: z.array(z.string()).optional().nullable(),
+  pfnl_seasonality: z.string().max(255, 'Máximo de 255 caracteres').optional().nullable(),
+  pfnl_forest_authorization_ref: z.string().max(100, 'Máximo de 100 caracteres').optional().nullable(),
   parent_cooperative_id: z.string().uuid().optional().nullable(),
   field_school_id: z.string().uuid().optional().nullable(),
   // Fields for individual/family farmers
@@ -74,6 +83,16 @@ const farmerSchema = z.object({
   family_workers_count: z.number().min(0, 'O valor deve ser positivo').optional().nullable(),
   head_of_household: z.boolean().optional().nullable(),
   household_notes: z.string().optional().nullable(),
+}).superRefine((data, ctx) => {
+  if (data.activity_category && data.activity_category !== 'agricultural') {
+    if (!data.pfnl_products || data.pfnl_products.length === 0) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['pfnl_products'],
+        message: 'Selecione pelo menos um produto PFNL.',
+      });
+    }
+  }
 });
 
 type FarmerFormData = z.infer<typeof farmerSchema>;
@@ -170,6 +189,12 @@ export const FarmerForm = ({ farmer, onSubmit, isLoading, defaultCooperativeId, 
       cultivated_area_ha: farmer?.cultivated_area_ha || undefined,
       main_crops: farmer?.main_crops || [],
       irrigation_type: farmer?.irrigation_type || '',
+      activity_category: ((farmer as any)?.activity_category as ActivityCategory) || 'agricultural',
+      pfnl_products: (farmer as any)?.pfnl_products || [],
+      pfnl_collection_area_ha: (farmer as any)?.pfnl_collection_area_ha ?? undefined,
+      pfnl_target_species: (farmer as any)?.pfnl_target_species || [],
+      pfnl_seasonality: (farmer as any)?.pfnl_seasonality || '',
+      pfnl_forest_authorization_ref: (farmer as any)?.pfnl_forest_authorization_ref || '',
       parent_cooperative_id: defaultCooperativeId || farmer?.parent_cooperative_id || undefined,
       field_school_id: defaultFieldSchoolId || farmer?.field_school_id || undefined,
       photo_url: (farmer as any)?.photo_url || undefined,
@@ -1040,108 +1065,286 @@ export const FarmerForm = ({ farmer, onSubmit, isLoading, defaultCooperativeId, 
           <TabsContent value="agriculture">
             <Card>
               <CardHeader>
-                <CardTitle>Dados Agrícolas</CardTitle>
+                <CardTitle>Atividade Produtiva</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid gap-4 md:grid-cols-2">
-                  <FormField
-                    control={form.control}
-                    name="total_area_ha"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Área Total (hectares)</FormLabel>
-                        <FormControl>
-                          <Input 
-                            {...field} 
-                            type="number"
-                            step="0.01"
-                            value={field.value ?? ''} 
-                            onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : undefined)}
-                            placeholder="0.00" 
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="cultivated_area_ha"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Área Cultivada (hectares)</FormLabel>
-                        <FormControl>
-                          <Input 
-                            {...field} 
-                            type="number"
-                            step="0.01"
-                            value={field.value ?? ''} 
-                            onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : undefined)}
-                            placeholder="0.00" 
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
+              <CardContent className="space-y-6">
                 <FormField
                   control={form.control}
-                  name="irrigation_type"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Tipo de Irrigação</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value || undefined}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Selecione o tipo de irrigação" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {irrigationOptions.map((option) => (
-                            <SelectItem key={option} value={option}>
-                              {option}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+                  name="activity_category"
+                  render={({ field }) => {
+                    const value = (field.value as ActivityCategory) || 'agricultural';
+                    return (
+                      <FormItem>
+                        <FormLabel>Categoria de Atividade</FormLabel>
+                        <div className="grid gap-2 md:grid-cols-3">
+                          {ACTIVITY_CATEGORIES.map((opt) => {
+                            const active = value === opt.value;
+                            return (
+                              <button
+                                key={opt.value}
+                                type="button"
+                                onClick={() => field.onChange(opt.value)}
+                                className={`text-left rounded-lg border p-3 transition ${
+                                  active
+                                    ? 'border-primary bg-primary/5 ring-1 ring-primary'
+                                    : 'border-border hover:border-primary/40 hover:bg-muted/30'
+                                }`}
+                              >
+                                <div className="font-medium text-sm">{opt.label}</div>
+                                <div className="text-xs text-muted-foreground mt-1">{opt.description}</div>
+                              </button>
+                            );
+                          })}
+                        </div>
+                        <FormMessage />
+                      </FormItem>
+                    );
+                  }}
                 />
 
-                <FormField
-                  control={form.control}
-                  name="main_crops"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Culturas Principais</FormLabel>
-                      <div className="flex flex-wrap gap-2">
-                        {cropOptions.map((crop) => (
-                          <Button
-                            key={crop}
-                            type="button"
-                            variant={field.value?.includes(crop) ? 'default' : 'outline'}
-                            size="sm"
-                            onClick={() => {
-                              const current = field.value || [];
-                              if (current.includes(crop)) {
-                                field.onChange(current.filter((c) => c !== crop));
-                              } else {
-                                field.onChange([...current, crop]);
-                              }
+                {(() => {
+                  const cat = (form.watch('activity_category') as ActivityCategory) || 'agricultural';
+                  const showAgri = cat === 'agricultural' || cat === 'mixed';
+                  const showPfnl = cat === 'pfnl' || cat === 'mixed';
+                  return (
+                    <>
+                      {showAgri && (
+                        <div className="space-y-4 rounded-lg border bg-card p-4">
+                          <h4 className="font-semibold text-sm">Dados Agrícolas</h4>
+                          <div className="grid gap-4 md:grid-cols-2">
+                            <FormField
+                              control={form.control}
+                              name="total_area_ha"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Área Total (hectares)</FormLabel>
+                                  <FormControl>
+                                    <Input
+                                      {...field}
+                                      type="number"
+                                      step="0.01"
+                                      value={field.value ?? ''}
+                                      onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : undefined)}
+                                      placeholder="0.00"
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+
+                            <FormField
+                              control={form.control}
+                              name="cultivated_area_ha"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Área Cultivada (hectares)</FormLabel>
+                                  <FormControl>
+                                    <Input
+                                      {...field}
+                                      type="number"
+                                      step="0.01"
+                                      value={field.value ?? ''}
+                                      onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : undefined)}
+                                      placeholder="0.00"
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+
+                          <FormField
+                            control={form.control}
+                            name="irrigation_type"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Tipo de Irrigação</FormLabel>
+                                <Select onValueChange={field.onChange} defaultValue={field.value || undefined}>
+                                  <FormControl>
+                                    <SelectTrigger>
+                                      <SelectValue placeholder="Selecione o tipo de irrigação" />
+                                    </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                    {irrigationOptions.map((option) => (
+                                      <SelectItem key={option} value={option}>
+                                        {option}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name="main_crops"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Culturas Principais</FormLabel>
+                                <div className="flex flex-wrap gap-2">
+                                  {cropOptions.map((crop) => (
+                                    <Button
+                                      key={crop}
+                                      type="button"
+                                      variant={field.value?.includes(crop) ? 'default' : 'outline'}
+                                      size="sm"
+                                      onClick={() => {
+                                        const current = field.value || [];
+                                        if (current.includes(crop)) {
+                                          field.onChange(current.filter((c) => c !== crop));
+                                        } else {
+                                          field.onChange([...current, crop]);
+                                        }
+                                      }}
+                                    >
+                                      {crop}
+                                    </Button>
+                                  ))}
+                                </div>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                      )}
+
+                      {showPfnl && (
+                        <div className="space-y-4 rounded-lg border border-amber-200 bg-amber-50/40 p-4">
+                          <div>
+                            <h4 className="font-semibold text-sm">Produtos Florestais Não-Lenhosos (PFNL)</h4>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              Recolha sustentável em florestas e savanas (mel silvestre, plantas medicinais, frutos, resinas…).
+                            </p>
+                          </div>
+
+                          <FormField
+                            control={form.control}
+                            name="pfnl_products"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Produtos PFNL recolhidos</FormLabel>
+                                <div className="flex flex-wrap gap-2">
+                                  {PFNL_PRODUCTS.map((p) => (
+                                    <Button
+                                      key={p}
+                                      type="button"
+                                      variant={field.value?.includes(p) ? 'default' : 'outline'}
+                                      size="sm"
+                                      onClick={() => {
+                                        const current = field.value || [];
+                                        if (current.includes(p)) {
+                                          field.onChange(current.filter((c: string) => c !== p));
+                                        } else {
+                                          field.onChange([...current, p]);
+                                        }
+                                      }}
+                                    >
+                                      {p}
+                                    </Button>
+                                  ))}
+                                </div>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <div className="grid gap-4 md:grid-cols-2">
+                            <FormField
+                              control={form.control}
+                              name="pfnl_collection_area_ha"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Área / Zona de Coleta (hectares)</FormLabel>
+                                  <FormControl>
+                                    <Input
+                                      {...field}
+                                      type="number"
+                                      step="0.01"
+                                      value={field.value ?? ''}
+                                      onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : undefined)}
+                                      placeholder="0.00"
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+
+                            <FormField
+                              control={form.control}
+                              name="pfnl_forest_authorization_ref"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Ref.ª Autorização Florestal</FormLabel>
+                                  <FormControl>
+                                    <Input
+                                      {...field}
+                                      value={field.value ?? ''}
+                                      placeholder="Ex.: LEX-2026-000123"
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+
+                          <FormField
+                            control={form.control}
+                            name="pfnl_target_species"
+                            render={({ field }) => {
+                              const value: string[] = Array.isArray(field.value) ? field.value : [];
+                              return (
+                                <FormItem>
+                                  <FormLabel>Espécies-alvo</FormLabel>
+                                  <FormControl>
+                                    <Input
+                                      placeholder="Separe por vírgula (ex.: Adansonia digitata, Brachystegia spp.)"
+                                      value={value.join(', ')}
+                                      onChange={(e) =>
+                                        field.onChange(
+                                          e.target.value
+                                            .split(',')
+                                            .map((s) => s.trim())
+                                            .filter(Boolean)
+                                        )
+                                      }
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              );
                             }}
-                          >
-                            {crop}
-                          </Button>
-                        ))}
-                      </div>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name="pfnl_seasonality"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Sazonalidade</FormLabel>
+                                <FormControl>
+                                  <Textarea
+                                    {...field}
+                                    value={field.value ?? ''}
+                                    placeholder="Ex.: Mel — Maio a Setembro; Múcua — Junho a Agosto"
+                                    rows={2}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                      )}
+                    </>
+                  );
+                })()}
               </CardContent>
             </Card>
           </TabsContent>
