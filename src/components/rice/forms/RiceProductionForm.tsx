@@ -41,7 +41,7 @@ interface Props {
   onOpenChange: (open: boolean) => void;
 }
 
-export function RiceProductionForm({ open, onOpenChange }: Props) {
+export function RiceProductionForm({ open, onOpenChange, defaultGrainType }: Props & FormProps) {
   const queryClient = useQueryClient();
 
   const { data: provinces } = useQuery({
@@ -59,6 +59,7 @@ export function RiceProductionForm({ open, onOpenChange }: Props) {
   const form = useForm<RiceProductionFormValues>({
     resolver: zodResolver(riceProductionFormSchema),
     defaultValues: {
+      grain_type: defaultGrainType ?? 'arroz',
       year: new Date().getFullYear(),
       season: 'principal',
       cultivated_area_ha: 0,
@@ -74,6 +75,7 @@ export function RiceProductionForm({ open, onOpenChange }: Props) {
         : null;
 
       const { error } = await supabase.from('rice_production').insert({
+        grain_type: values.grain_type,
         province_id: values.province_id,
         year: values.year,
         season: values.season,
