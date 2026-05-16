@@ -422,7 +422,7 @@ export function ForestInventoryDashboard() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    const code = `INV-${Date.now().toString(36).toUpperCase()}`;
+    const code = formData.concession_code || generateConcessionCode();
     
     createInventory.mutate({
       inventory_code: code,
