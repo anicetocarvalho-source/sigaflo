@@ -332,10 +332,6 @@ export function renderCardFrontHtml(ctx: CardTemplateCtx, qrSrc: string): string
         </div>
       </div>
       <div class="logo">${sigafloLogoHtml}</div>
-      <div class="gov-badge">
-        <div class="map">${mapaAngolaSvg}</div>
-        <div class="gov-tag">GOVERNO DE<br/>ANGOLA</div>
-      </div>
     </div>
 
     <div class="title">CARTÃO DE IDENTIFICAÇÃO DO AGRICULTOR</div>

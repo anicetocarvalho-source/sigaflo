@@ -202,16 +202,6 @@ async function drawCardFront(pdf: jsPDF, x: number, y: number, ctx: CardCtx) {
   pdf.setFont('helvetica', 'bold').setFontSize(3.5).setTextColor(12, 61, 26);
   pdf.text('SISTEMA INTEGRADO DE GESTÃO AGRO FLORESTAL', x + CARD_W / 2, y + 7.2, { align: 'center' });
 
-  // Mapa Angola + GOVERNO badge (canto direito)
-  pdf.setFillColor(31, 107, 52);
-  pdf.roundedRect(x + CARD_W - 11.5, y + 1.5, 4.2, 5, 0.5, 0.5, 'F');
-  pdf.setFillColor(212, 160, 23);
-  pdf.circle(x + CARD_W - 9.4, y + 4, 0.6, 'F');
-  pdf.setFillColor(12, 61, 26);
-  pdf.roundedRect(x + CARD_W - 7, y + 1.5, 6.5, 5, 0.5, 0.5, 'F');
-  pdf.setTextColor(255).setFont('helvetica', 'bold').setFontSize(3.4);
-  pdf.text('GOVERNO DE', x + CARD_W - 3.75, y + 3.5, { align: 'center' });
-  pdf.text('ANGOLA', x + CARD_W - 3.75, y + 5.2, { align: 'center' });
 
   // ===== Título (faixa verde central) =====
   pdf.setFillColor(31, 107, 52);
