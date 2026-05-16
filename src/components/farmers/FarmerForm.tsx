@@ -178,6 +178,7 @@ export const FarmerForm = ({ farmer, onSubmit, isLoading, defaultCooperativeId, 
   const [selectedMunicipality, setSelectedMunicipality] = useState<string | undefined>(farmer?.municipality_id || undefined);
   const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
   const [biDuplicateWarning, setBiDuplicateWarning] = useState<string | null>(null);
+  const [pfnlSearch, setPfnlSearch] = useState('');
   const [checkingBi, setCheckingBi] = useState(false);
 
   const checkBiDuplicate = useCallback(async (rawBi: string) => {
