@@ -30,8 +30,10 @@ import {
 } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
+import { GRAIN_TYPES, type GrainType } from '@/lib/grains';
 
 const importSchema = z.object({
+  grain_type: z.enum(['arroz','milho','trigo','sorgo','massambala','massango','cevada','aveia']),
   year: z.coerce.number().min(2000).max(2100),
   month: z.coerce.number().min(1).max(12),
   origin_country: z.string().min(1, 'Seleccione o país de origem').max(100),
@@ -49,6 +51,7 @@ type ImportFormData = z.infer<typeof importSchema>;
 interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  defaultGrainType?: GrainType;
 }
 
 const originCountries = [
