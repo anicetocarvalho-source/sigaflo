@@ -30,8 +30,10 @@ import {
 } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
+import { GRAIN_TYPES, type GrainType } from '@/lib/grains';
 
 const priceSchema = z.object({
+  grain_type: z.enum(['arroz','milho','trigo','sorgo','massambala','massango','cevada','aveia']),
   province_id: z.string().min(1, 'Seleccione uma província'),
   recorded_date: z.string().min(1, 'Data é obrigatória'),
   retail_price_aoa: z.coerce.number().min(0, 'Valor deve ser positivo'),
@@ -47,6 +49,7 @@ type PriceFormData = z.infer<typeof priceSchema>;
 interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  defaultGrainType?: GrainType;
 }
 
 export function RicePriceForm({ open, onOpenChange }: Props) {
