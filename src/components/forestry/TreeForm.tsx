@@ -29,6 +29,7 @@ import {
 } from '@/components/ui/select';
 import { useCreateTree, useForestLicenses, type ForestTree } from '@/hooks/useForestry';
 import { MapPin, TreePine, Save, Loader2 } from 'lucide-react';
+import { TreeLocationPicker } from './TreeLocationPicker';
 
 const treeSchema = z.object({
   license_id: z.string().min(1, 'Licença é obrigatória'),
@@ -99,6 +100,7 @@ const speciesOptions = [
 
 export function TreeForm({ open, onClose, tree, preselectedLicenseId }: TreeFormProps) {
   const [gettingLocation, setGettingLocation] = useState(false);
+  const [gpsAccuracyM, setGpsAccuracyM] = useState<number | undefined>(undefined);
   const { data: licenses = [] } = useForestLicenses({ status: 'active' });
   const createTree = useCreateTree();
 
@@ -187,7 +189,12 @@ export function TreeForm({ open, onClose, tree, preselectedLicenseId }: TreeForm
       estimated_volume_m3: data.estimated_volume_m3 ?? null,
       plot_number: data.plot_number || null,
       health_status: data.health_status || null,
-      notes: data.notes || null,
+      notes: [
+        gpsAccuracyM != null ? `[GPS ±${gpsAccuracyM}m @ ${new Date().toISOString()}]` : null,
+        data.notes?.trim() || null,
+      ]
+        .filter(Boolean)
+        .join('\n') || null,
       status: 'logged',
     });
     
@@ -305,26 +312,29 @@ export function TreeForm({ open, onClose, tree, preselectedLicenseId }: TreeForm
                 )}
               />
 
+              <div className="md:col-span-2">
+                <FormLabel className="mb-2 block">Localização da Árvore *</FormLabel>
+                <TreeLocationPicker
+                  latitude={form.watch('latitude')}
+                  longitude={form.watch('longitude')}
+                  accuracyM={gpsAccuracyM}
+                  onChange={(lat, lng, acc) => {
+                    form.setValue('latitude', lat, { shouldValidate: true, shouldDirty: true });
+                    form.setValue('longitude', lng, { shouldValidate: true, shouldDirty: true });
+                    if (acc !== undefined) setGpsAccuracyM(acc);
+                  }}
+                />
+              </div>
+
               <FormField
                 control={form.control}
                 name="latitude"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Latitude *</FormLabel>
-                    <div className="flex gap-2">
-                      <FormControl>
-                        <Input type="number" step="any" {...field} />
-                      </FormControl>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="icon"
-                        onClick={getCurrentLocation}
-                        disabled={gettingLocation}
-                      >
-                        {gettingLocation ? <Loader2 className="h-4 w-4 animate-spin" /> : <MapPin className="h-4 w-4" />}
-                      </Button>
-                    </div>
+                    <FormControl>
+                      <Input type="number" step="any" {...field} />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
