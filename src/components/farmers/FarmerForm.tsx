@@ -1340,6 +1340,8 @@ export const FarmerForm = ({ farmer, onSubmit, isLoading, defaultCooperativeId, 
                             name="pfnl_products"
                             render={({ field }) => {
                               const selected: string[] = field.value || [];
+                              const MAX_PFNL = 15;
+                              const atLimit = selected.length >= MAX_PFNL;
                               const filtered = PFNL_PRODUCTS.filter((p) =>
                                 p.toLowerCase().includes((pfnlSearch || '').toLowerCase())
                               );
@@ -1347,8 +1349,8 @@ export const FarmerForm = ({ farmer, onSubmit, isLoading, defaultCooperativeId, 
                                 if (selected.includes(p)) {
                                   field.onChange(selected.filter((c) => c !== p));
                                 } else {
-                                  if (selected.length >= 15) {
-                                    toast.error('Máximo de 15 produtos PFNL');
+                                  if (selected.length >= MAX_PFNL) {
+                                    toast.error(`Máximo de ${MAX_PFNL} produtos PFNL atingido`);
                                     return;
                                   }
                                   field.onChange([...selected, p]);
@@ -1360,8 +1362,11 @@ export const FarmerForm = ({ farmer, onSubmit, isLoading, defaultCooperativeId, 
                                     <FormLabel className="mb-0">
                                       Produtos PFNL recolhidos <span className="text-destructive">*</span>
                                     </FormLabel>
-                                    <span className="text-xs text-muted-foreground">
-                                      {selected.length}/15 selecionados
+                                    <span
+                                      className={`text-xs font-medium ${atLimit ? 'text-destructive' : 'text-muted-foreground'}`}
+                                      aria-live="polite"
+                                    >
+                                      {selected.length}/{MAX_PFNL} selecionados
                                     </span>
                                   </div>
 
