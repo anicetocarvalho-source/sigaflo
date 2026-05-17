@@ -1342,9 +1342,25 @@ export const FarmerForm = ({ farmer, onSubmit, isLoading, defaultCooperativeId, 
                               const selected: string[] = field.value || [];
                               const MAX_PFNL = 15;
                               const atLimit = selected.length >= MAX_PFNL;
-                              const filtered = PFNL_PRODUCTS.filter((p) =>
-                                p.toLowerCase().includes((pfnlSearch || '').toLowerCase())
-                              );
+                              const q = (pfnlSearch || '').trim().toLowerCase();
+                              const escapeRe = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                              const scoreOf = (p: string) => {
+                                if (!q) return 3;
+                                const lp = p.toLowerCase();
+                                if (lp.startsWith(q)) return 0;
+                                if (new RegExp('\\b' + escapeRe(q)).test(lp)) return 1;
+                                if (lp.includes(q)) return 2;
+                                return -1;
+                              };
+                              const filtered = PFNL_PRODUCTS
+                                .map((p) => ({ p, s: scoreOf(p) }))
+                                .filter((x) => x.s !== -1)
+                                .sort((a, b) =>
+                                  a.s !== b.s
+                                    ? a.s - b.s
+                                    : a.p.localeCompare(b.p, 'pt', { sensitivity: 'base' })
+                                )
+                                .map((x) => x.p);
                               const toggle = (p: string) => {
                                 if (selected.includes(p)) {
                                   field.onChange(selected.filter((c) => c !== p));
