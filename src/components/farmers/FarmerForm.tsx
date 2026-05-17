@@ -1420,6 +1420,15 @@ export const FarmerForm = ({ farmer, onSubmit, isLoading, defaultCooperativeId, 
                                     )}
                                   </div>
 
+                                  {atLimit && (
+                                    <p
+                                      role="alert"
+                                      className="rounded-md border border-destructive/40 bg-destructive/10 px-2.5 py-1.5 text-xs text-destructive"
+                                    >
+                                      Limite máximo de {MAX_PFNL} produtos atingido. Remova um produto da seleção para adicionar outro.
+                                    </p>
+                                  )}
+
                                   <div className="max-h-56 overflow-y-auto rounded-md border bg-background/40 p-2">
                                     {filtered.length === 0 ? (
                                       <p className="text-xs text-muted-foreground text-center py-4">
