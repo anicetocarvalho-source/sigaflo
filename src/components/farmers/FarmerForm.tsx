@@ -1340,6 +1340,8 @@ export const FarmerForm = ({ farmer, onSubmit, isLoading, defaultCooperativeId, 
                             name="pfnl_products"
                             render={({ field }) => {
                               const selected: string[] = field.value || [];
+                              const MAX_PFNL = 15;
+                              const atLimit = selected.length >= MAX_PFNL;
                               const filtered = PFNL_PRODUCTS.filter((p) =>
                                 p.toLowerCase().includes((pfnlSearch || '').toLowerCase())
                               );
@@ -1347,8 +1349,8 @@ export const FarmerForm = ({ farmer, onSubmit, isLoading, defaultCooperativeId, 
                                 if (selected.includes(p)) {
                                   field.onChange(selected.filter((c) => c !== p));
                                 } else {
-                                  if (selected.length >= 15) {
-                                    toast.error('Máximo de 15 produtos PFNL');
+                                  if (selected.length >= MAX_PFNL) {
+                                    toast.error(`Máximo de ${MAX_PFNL} produtos PFNL atingido`);
                                     return;
                                   }
                                   field.onChange([...selected, p]);
@@ -1360,8 +1362,11 @@ export const FarmerForm = ({ farmer, onSubmit, isLoading, defaultCooperativeId, 
                                     <FormLabel className="mb-0">
                                       Produtos PFNL recolhidos <span className="text-destructive">*</span>
                                     </FormLabel>
-                                    <span className="text-xs text-muted-foreground">
-                                      {selected.length}/15 selecionados
+                                    <span
+                                      className={`text-xs font-medium ${atLimit ? 'text-destructive' : 'text-muted-foreground'}`}
+                                      aria-live="polite"
+                                    >
+                                      {selected.length}/{MAX_PFNL} selecionados
                                     </span>
                                   </div>
 
@@ -1415,6 +1420,15 @@ export const FarmerForm = ({ farmer, onSubmit, isLoading, defaultCooperativeId, 
                                     )}
                                   </div>
 
+                                  {atLimit && (
+                                    <p
+                                      role="alert"
+                                      className="rounded-md border border-destructive/40 bg-destructive/10 px-2.5 py-1.5 text-xs text-destructive"
+                                    >
+                                      Limite máximo de {MAX_PFNL} produtos atingido. Remova um produto da seleção para adicionar outro.
+                                    </p>
+                                  )}
+
                                   <div className="max-h-56 overflow-y-auto rounded-md border bg-background/40 p-2">
                                     {filtered.length === 0 ? (
                                       <p className="text-xs text-muted-foreground text-center py-4">
@@ -1424,15 +1438,21 @@ export const FarmerForm = ({ farmer, onSubmit, isLoading, defaultCooperativeId, 
                                       <div className="flex flex-wrap gap-1.5">
                                         {filtered.map((p) => {
                                           const isSel = selected.includes(p);
+                                          const disabled = !isSel && atLimit;
                                           return (
                                             <button
                                               key={p}
                                               type="button"
                                               onClick={() => toggle(p)}
+                                              disabled={disabled}
+                                              aria-disabled={disabled}
+                                              title={disabled ? `Limite de ${MAX_PFNL} produtos atingido` : undefined}
                                               className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs transition-colors ${
                                                 isSel
                                                   ? 'bg-primary text-primary-foreground border-primary'
-                                                  : 'bg-background hover:bg-muted border-border'
+                                                  : disabled
+                                                    ? 'bg-muted/40 text-muted-foreground border-border opacity-50 cursor-not-allowed'
+                                                    : 'bg-background hover:bg-muted border-border'
                                               }`}
                                             >
                                               {isSel && <Check className="h-3 w-3" />}
