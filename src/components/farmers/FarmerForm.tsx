@@ -1429,15 +1429,21 @@ export const FarmerForm = ({ farmer, onSubmit, isLoading, defaultCooperativeId, 
                                       <div className="flex flex-wrap gap-1.5">
                                         {filtered.map((p) => {
                                           const isSel = selected.includes(p);
+                                          const disabled = !isSel && atLimit;
                                           return (
                                             <button
                                               key={p}
                                               type="button"
                                               onClick={() => toggle(p)}
+                                              disabled={disabled}
+                                              aria-disabled={disabled}
+                                              title={disabled ? `Limite de ${MAX_PFNL} produtos atingido` : undefined}
                                               className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs transition-colors ${
                                                 isSel
                                                   ? 'bg-primary text-primary-foreground border-primary'
-                                                  : 'bg-background hover:bg-muted border-border'
+                                                  : disabled
+                                                    ? 'bg-muted/40 text-muted-foreground border-border opacity-50 cursor-not-allowed'
+                                                    : 'bg-background hover:bg-muted border-border'
                                               }`}
                                             >
                                               {isSel && <Check className="h-3 w-3" />}
