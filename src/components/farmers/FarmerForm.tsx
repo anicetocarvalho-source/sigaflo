@@ -353,6 +353,7 @@ export const FarmerForm = ({ farmer, onSubmit, isLoading, defaultCooperativeId, 
         ? selectedMembers 
         : undefined,
     };
+    try { localStorage.removeItem(pfnlDraftKey); } catch { /* ignore */ }
     onSubmit(cleanedData);
   };
 
