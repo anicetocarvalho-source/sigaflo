@@ -268,6 +268,70 @@ export const FarmerForm = ({ farmer, onSubmit, isLoading, defaultCooperativeId, 
 
   const farmerType = form.watch('farmer_type');
 
+  // ---- Autosave PFNL draft to localStorage (restored on reopen) ----
+  const pfnlDraftKey = `sigaflo:pfnl-draft:${farmer?.id || 'new'}`;
+
+  // Restore PFNL draft on mount when current values are empty
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(pfnlDraftKey);
+      if (!raw) return;
+      const draft = JSON.parse(raw);
+      if (!draft || typeof draft !== 'object') return;
+      const cat = draft.activity_category as ActivityCategory | undefined;
+      if (cat !== 'pfnl' && cat !== 'mixed') return;
+
+      const currentCat = form.getValues('activity_category');
+      if (currentCat === 'agricultural') {
+        form.setValue('activity_category', cat, { shouldDirty: false });
+      }
+      const restoreIfEmpty = (key: any, value: any) => {
+        if (value === undefined || value === null) return;
+        const cur = form.getValues(key);
+        const isEmpty =
+          cur === undefined || cur === null || cur === '' ||
+          (Array.isArray(cur) && cur.length === 0);
+        if (isEmpty) form.setValue(key, value, { shouldDirty: false });
+      };
+      restoreIfEmpty('pfnl_products', draft.pfnl_products);
+      restoreIfEmpty('pfnl_collection_area_ha', draft.pfnl_collection_area_ha);
+      restoreIfEmpty('pfnl_target_species', draft.pfnl_target_species);
+      restoreIfEmpty('pfnl_seasonality', draft.pfnl_seasonality);
+      restoreIfEmpty('pfnl_forest_authorization_ref', draft.pfnl_forest_authorization_ref);
+      toast.info('Rascunho PFNL restaurado automaticamente.');
+    } catch {
+      /* ignore corrupt draft */
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Persist PFNL fields on every change
+  useEffect(() => {
+    const sub = form.watch((values, { name }) => {
+      if (name && name !== 'activity_category' && !name.startsWith('pfnl_')) return;
+      try {
+        const cat = values.activity_category as ActivityCategory | undefined;
+        if (!cat || cat === 'agricultural') {
+          localStorage.removeItem(pfnlDraftKey);
+          return;
+        }
+        const payload = {
+          activity_category: cat,
+          pfnl_products: values.pfnl_products || [],
+          pfnl_collection_area_ha: values.pfnl_collection_area_ha ?? null,
+          pfnl_target_species: values.pfnl_target_species || [],
+          pfnl_seasonality: values.pfnl_seasonality || '',
+          pfnl_forest_authorization_ref: values.pfnl_forest_authorization_ref || '',
+          savedAt: new Date().toISOString(),
+        };
+        localStorage.setItem(pfnlDraftKey, JSON.stringify(payload));
+      } catch {
+        /* storage unavailable */
+      }
+    });
+    return () => sub.unsubscribe();
+  }, [form, pfnlDraftKey]);
+
   useEffect(() => {
     if (farmer?.province_id) {
       setSelectedProvince(farmer.province_id);
