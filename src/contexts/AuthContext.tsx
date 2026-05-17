@@ -140,6 +140,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       return;
     }
     try {
+      const { data: { session: currentSession } } = await supabase.auth.getSession();
+      if (!currentSession?.refresh_token) {
+        return;
+      }
+
       const { error } = await supabase.auth.refreshSession();
       if (error) {
         // Erros de rede não devem deslogar; apenas log
@@ -238,7 +243,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (!error && data.session) {
+      setSession(data.session);
+      setUser(data.session.user);
+      scheduleRefresh(data.session);
+
+      const userId = data.session.user.id;
+      if (userId && userId !== lastFetchedUserIdRef.current) {
+        lastFetchedUserIdRef.current = userId;
+        setIsLoading(true);
+        await fetchUserData(userId);
+        setIsLoading(false);
+      }
+    }
     return { error: error as Error | null };
   };
 
